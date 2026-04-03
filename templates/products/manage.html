@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Products - Vendora{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Manage Products</h2>
+        <a href="{% url 'products:create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Product
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Your Products ({{ total_products }})</h5>
+        </div>
+        <div class="card-body">
+            {% if products %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>SKU</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>
+                                    {% if product.images.first %}
+                                        <img src="{{ product.images.first.image.url }}" width="50" height="50" style="object-fit: cover;">
+                                    {% else %}
+                                        <i class="fas fa-image fa-2x text-muted"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ product.name }}</strong><br>
+                                    <small class="text-muted">{{ product.category.name }}</small>
+                                </td>
+                                <td>{{ product.sku }}</td>
+                                <td>${{ product.price }}</td>
+                                <td>
+                                    {% if product.stock_quantity <= product.low_stock_threshold %}
+                                        <span class="badge bg-warning">{{ product.stock_quantity }}</span>
+                                    {% else %}
+                                        {{ product.stock_quantity }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if product.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                    {% if product.is_featured %}
+                                        <span class="badge bg-info">Featured</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'products:detail' product.slug %}" class="btn btn-sm btn-info" target="_blank">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'products:edit' product.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'products:images' product.id %}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-image"></i>
+                                        </a>
+                                        <a href="{% url 'products:delete' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                    <h4>No Products Yet</h4>
+                    <p>Start by adding your first product to showcase to customers.</p>
+                    <a href="{% url 'products:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Your First Product
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

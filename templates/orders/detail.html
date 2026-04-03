@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.order_number }} - Vendora{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Order #{{ order.order_number }}</h2>
+                <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% elif order.status == 'pending' %}warning{% else %}info{% endif %} fs-5">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Order Items -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Order Items</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in order.items.all %}
+                                        <tr>
+                                            <td>{{ item.product.name }}</td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>${{ item.price }}</td>
+                                            <td>${{ item.total }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                            <td>${{ order.subtotal }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Shipping:</strong></td>
+                                            <td>${{ order.shipping_cost }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Tax:</strong></td>
+                                            <td>${{ order.tax_amount }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Discount:</strong></td>
+                                            <td>-${{ order.discount_amount }}</td>
+                                        </tr>
+                                        <tr class="table-primary">
+                                            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                            <td><strong>${{ order.total_amount }}</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- Shipping Information -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Shipping Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Address:</strong><br>{{ order.shipping_address }}</p>
+                            <p><strong>City:</strong> {{ order.shipping_city }}</p>
+                            <p><strong>State:</strong> {{ order.shipping_state }}</p>
+                            <p><strong>Country:</strong> {{ order.shipping_country }}</p>
+                            <p><strong>Postal Code:</strong> {{ order.shipping_postal_code }}</p>
+                            <p><strong>Phone:</strong> {{ order.shipping_phone }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Information -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Payment Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Method:</strong> {{ order.get_payment_method_display }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge bg-{% if order.payment_status == 'paid' %}success{% elif order.payment_status == 'failed' %}danger{% else %}warning{% endif %}">
+                                    {{ order.get_payment_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Actions -->
+                    {% if order.status == 'pending' %}
+                    <div class="card">
+                        <div class="card-header bg-warning">
+                            <h5 class="mb-0">Order Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <a href="{% url 'orders:cancel' order.id %}" class="btn btn-danger w-100" onclick="return confirm('Cancel this order?')">
+                                <i class="fas fa-times"></i> Cancel Order
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

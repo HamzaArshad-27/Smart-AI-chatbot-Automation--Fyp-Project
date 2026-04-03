@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Sellers - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Manage Sellers</h2>
+                <a href="{% url 'companies:add_seller' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Seller
+                </a>
+            </div>
+            
+            <!-- Company Info Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>{{ company.name }}</h4>
+                            <p class="text-muted">{{ company.email }}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> {{ company.address|default:"Address not set" }}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if company.logo %}
+                                <img src="{{ company.logo.url }}" height="80" alt="Logo">
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sellers Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Your Sellers ({{ sellers.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if sellers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Email</th>
+                                        <th>Employee ID</th>
+                                        <th>Department</th>
+                                        <th>Position</th>
+                                        <th>Hire Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for seller in sellers %}
+                                    <tr>
+                                        <td>{{ seller.id }}</td>
+                                        <td>
+                                            {{ seller.user.email }}
+                                            {% if seller.user.profile_image %}
+                                                <br>
+                                                <img src="{{ seller.user.profile_image.url }}" width="30" height="30" class="rounded-circle mt-1">
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ seller.employee_id }}</td>
+                                        <td>{{ seller.department }}</td>
+                                        <td>{{ seller.position }}</td>
+                                        <td>{{ seller.hire_date|date:"Y-m-d" }}</td>
+                                        <td>
+                                            {% if seller.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'companies:edit_seller' seller.id %}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <a href="{% url 'companies:delete_seller' seller.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this seller?')">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                            <h4>No Sellers Yet</h4>
+                            <p>Start by adding your first seller to help manage your products and orders.</p>
+                            <a href="{% url 'companies:add_seller' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add Your First Seller
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

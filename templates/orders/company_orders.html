@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Company Orders - Vendora{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Order Management</h2>
+            
+            <!-- Status Filter Buttons -->
+            <div class="mb-4">
+                <div class="btn-group" role="group">
+                    <a href="?status=" class="btn btn-outline-primary {% if not status_filter %}active{% endif %}">
+                        All ({{ total_orders }})
+                    </a>
+                    <a href="?status=pending" class="btn btn-outline-warning {% if status_filter == 'pending' %}active{% endif %}">
+                        Pending ({{ pending_count }})
+                    </a>
+                    <a href="?status=approved" class="btn btn-outline-info {% if status_filter == 'approved' %}active{% endif %}">
+                        Approved ({{ approved_count }})
+                    </a>
+                    <a href="?status=processing" class="btn btn-outline-primary {% if status_filter == 'processing' %}active{% endif %}">
+                        Processing ({{ processing_count }})
+                    </a>
+                    <a href="?status=shipped" class="btn btn-outline-info {% if status_filter == 'shipped' %}active{% endif %}">
+                        Shipped ({{ shipped_count }})
+                    </a>
+                    <a href="?status=delivered" class="btn btn-outline-success {% if status_filter == 'delivered' %}active{% endif %}">
+                        Delivered ({{ delivered_count }})
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Orders Table -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Customer Orders</h5>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr class="{% if order.status == 'pending' %}table-warning{% endif %}">
+                                        <td>
+                                            <strong>{{ order.order_number }}</strong>
+                                            <br>
+                                            <small class="text-muted">ID: #{{ order.id }}</small>
+                                        </td>
+                                        <td>
+                                            {{ order.user.email }}
+                                            <br>
+                                            <small>{{ order.shipping_phone }}</small>
+                                        </td>
+                                        <td>
+                                            {% for item in order.items.all|slice:":3" %}
+                                                {{ item.product.name }} x{{ item.quantity }}<br>
+                                            {% endfor %}
+                                            {% if order.items.count > 3 %}
+                                                <small>+{{ order.items.count|add:"-3" }} more</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>${{ order.total_amount }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ order.get_payment_method_display }}
+                                            <br>
+                                            <small class="badge bg-{% if order.payment_status == 'paid' %}success{% else %}warning{% endif %}">
+                                                {{ order.get_payment_status_display }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% elif order.status == 'pending' %}warning{% elif order.status == 'shipped' %}info{% else %}primary{% endif %} fs-6">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ order.created_at|date:"Y-m-d" }}
+                                            <br>
+                                            <small>{{ order.created_at|time:"H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            <!-- Action Buttons based on status -->
+                                            {% if order.status == 'pending' %}
+                                                <a href="{% url 'orders:approve_order' order.id %}" 
+                                                   class="btn btn-success btn-sm w-100 mb-1"
+                                                   onclick="return confirm('Approve this order?')">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </a>
+                                                <a href="{% url 'orders:detail' order.id %}" 
+                                                   class="btn btn-info btn-sm w-100">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                
+                                            {% elif order.status == 'approved' %}
+                                                <a href="{% url 'orders:process_order' order.id %}" 
+                                                   class="btn btn-primary btn-sm w-100 mb-1"
+                                                   onclick="return confirm('Start processing this order?')">
+                                                    <i class="fas fa-cogs"></i> Process
+                                                </a>
+                                                <a href="{% url 'orders:detail' order.id %}" 
+                                                   class="btn btn-info btn-sm w-100">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                
+                                            {% elif order.status == 'processing' %}
+                                                <a href="{% url 'orders:ship_order' order.id %}" 
+                                                   class="btn btn-info btn-sm w-100 mb-1">
+                                                    <i class="fas fa-truck"></i> Ship Order
+                                                </a>
+                                                <a href="{% url 'orders:detail' order.id %}" 
+                                                   class="btn btn-info btn-sm w-100">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                
+                                            {% elif order.status == 'shipped' %}
+                                                <a href="{% url 'orders:detail' order.id %}" 
+                                                   class="btn btn-info btn-sm w-100">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                
+                                            {% else %}
+                                                <a href="{% url 'orders:detail' order.id %}" 
+                                                   class="btn btn-info btn-sm w-100">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if orders.has_other_pages %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if orders.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                            Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for i in orders.paginator.page_range %}
+                                    {% if orders.number == i %}
+                                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if orders.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                            Next
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                        
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                            <h4>No Orders Found</h4>
+                            <p>No orders are available in this category.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

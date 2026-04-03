@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Product - Vendora{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Delete Product</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
+                    <h5>Are you sure you want to delete this product?</h5>
+                    <p><strong>{{ product.name }}</strong></p>
+                    <p>SKU: {{ product.sku }}</p>
+                    <p>Price: ${{ product.price }}</p>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle"></i> This action cannot be undone. All product data and images will be permanently deleted.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Yes, Delete Product
+                            </button>
+                            <a href="{% url 'products:manage' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

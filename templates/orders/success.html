@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Success - Vendora{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                    <h2>Order Placed Successfully!</h2>
+                    <p class="lead">Thank you for your purchase.</p>
+                    
+                    <div class="alert alert-info">
+                        <strong>Order Number:</strong> {{ order.order_number }}
+                    </div>
+                    
+                    <p>Your order has been received and is being processed.</p>
+                    <p>You will receive an email confirmation shortly.</p>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'orders:detail' order.id %}" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View Order Details
+                        </a>
+                        <a href="{% url 'products:list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-shopping-cart"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

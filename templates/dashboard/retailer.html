@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Retailer Dashboard - Vendora{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2">
+            <div class="dashboard-sidebar p-3">
+                <h5>Retailer Menu</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'dashboard:retailer' %}">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'products:list' %}">
+                            <i class="fas fa-shopping-cart"></i> Shop
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'orders:checkout' %}">
+                            <i class="fas fa-truck"></i> Bulk Orders
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <h2>Retailer Dashboard</h2>
+            <p>Welcome back, {{ user.email }}!</p>
+            
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Orders</h5>
+                            <h2>{{ total_orders }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Spent</h5>
+                            <h3>${{ total_spent|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Average Order Value</h5>
+                            <h3>${{ average_order_value|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Orders by Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Orders by Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-2">
+                            <div class="border rounded p-3">
+                                <h4>{{ orders_by_status.pending }}</h4>
+                                <small>Pending</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="border rounded p-3">
+                                <h4>{{ orders_by_status.approved }}</h4>
+                                <small>Approved</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="border rounded p-3">
+                                <h4>{{ orders_by_status.processing }}</h4>
+                                <small>Processing</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="border rounded p-3">
+                                <h4>{{ orders_by_status.shipped }}</h4>
+                                <small>Shipped</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="border rounded p-3">
+                                <h4>{{ orders_by_status.delivered }}</h4>
+                                <small>Delivered</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="border rounded p-3">
+                                <h4>{{ orders_by_status.cancelled }}</h4>
+                                <small>Cancelled</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Company</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>{{ order.order_number }}</td>
+                                    <td>{{ order.company.name|default:"N/A" }}</td>
+                                    <td>${{ order.total_amount }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% elif order.status == 'pending' %}warning{% else %}info{% endif %}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ order.created_at|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <a href="{% url 'orders:detail' order.id %}" class="btn btn-sm btn-primary">Track</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No orders yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

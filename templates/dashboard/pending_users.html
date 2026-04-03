@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Approvals - Vendora{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2">
+            <div class="dashboard-sidebar p-3">
+                <h5>Admin Menu</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:admin' %}">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'dashboard:pending_users' %}">
+                            <i class="fas fa-user-check"></i> Pending Approvals
+                            {% if total_pending > 0 %}
+                                <span class="badge bg-danger float-end">{{ total_pending }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:all_users' %}">
+                            <i class="fas fa-users"></i> All Users
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Pending User Approvals</h2>
+                <span class="badge bg-warning fs-5">{{ total_pending }} user(s) waiting</span>
+            </div>
+            
+            {% if pending_users %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Phone</th>
+                                        <th>Registered On</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in pending_users %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ user.email }}</strong>
+                                            {% if user.profile_image %}
+                                                <br>
+                                                <img src="{{ user.profile_image.url }}" width="50" height="50" class="rounded-circle mt-1">
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ user.get_role_display }}</span>
+                                        </td>
+                                        <td>{{ user.phone|default:"Not provided" }}</td>
+                                        <td>{{ user.date_joined|date:"F j, Y, H:i" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <form method="post" action="{% url 'dashboard:approve_user' user.id %}" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Approve this user?')">
+                                                        <i class="fas fa-check"></i> Approve
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{% url 'dashboard:reject_user' user.id %}" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject and delete this user?')">
+                                                        <i class="fas fa-times"></i> Reject
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> No pending approvals! All users have been verified.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

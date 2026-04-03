@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Company Dashboard - Vendora{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2">
+<div class="dashboard-sidebar p-3">
+    <h5>Seller Menu</h5>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'dashboard:seller' %}">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'products:manage' %}">
+                <i class="fas fa-box"></i> My Products
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'orders:seller_orders' %}">
+                <i class="fas fa-shopping-cart"></i> All Orders
+            </a>
+        </li>
+        <!-- <li class="nav-item">
+            <a class="nav-link" href="{% url 'orders:seller_orders' %}?status=pending">
+                <i class="fas fa-clock"></i> Pending
+                {% if pending_count > 0 %}
+                    <span class="badge bg-danger float-end">{{ pending_count }}</span>
+                {% endif %}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'orders:seller_orders' %}?status=processing">
+                <i class="fas fa-cogs"></i> Processing
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'orders:seller_orders' %}?status=shipped">
+                <i class="fas fa-truck"></i> Shipped
+            </a>
+        </li> -->
+
+    </ul>
+</div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Company Dashboard</h2>
+                <div>
+                    <h5>Welcome, {{ company.name }}</h5>
+                    {% if company.logo %}
+                        <img src="{{ company.logo.url }}" height="50" alt="Logo">
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Sellers</h5>
+                            <h2>{{ total_sellers }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Products</h5>
+                            <h2>{{ total_products }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Orders</h5>
+                            <h2>{{ total_orders }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Revenue</h5>
+                            <h3>${{ total_revenue|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pending Orders Alert -->
+            {% if pending_orders > 0 %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> You have <strong>{{ pending_orders }}</strong> pending orders that need approval.
+            </div>
+            {% endif %}
+            
+            <!-- Low Stock Alert -->
+            {% if low_stock %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> The following products are running low on stock:
+                <ul>
+                    {% for product in low_stock %}
+                        <li>{{ product.name }} - Only {{ product.stock_quantity }} left</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Recent Orders -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>{{ order.order_number }}</td>
+                                    <td>{{ order.user.email }}</td>
+                                    <td>${{ order.total_amount }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% elif order.status == 'pending' %}warning{% else %}info{% endif %}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ order.created_at|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <a href="{% url 'orders:detail' order.id %}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No orders yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'companies:add_seller' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Add New Seller
+                    </a>
+                    <a href="{% url 'products:create' %}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </a>
+                    <a href="{% url 'products:manage' %}" class="btn btn-info">
+                        <i class="fas fa-box"></i> Manage Products
+                    </a>
+                    <a href="{% url 'companies:manage_sellers' %}" class="btn btn-secondary">
+                        <i class="fas fa-users"></i> Manage Sellers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Company Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ company.name }}</p>
+                <p><strong>Email:</strong> {{ company.email }}</p>
+                <p><strong>Phone:</strong> {{ company.phone|default:"Not set" }}</p>
+                <p><strong>Address:</strong> {{ company.address|default:"Not set" }}</p>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-sm btn-outline-primary">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}All Users - Vendora{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2">
+            <div class="dashboard-sidebar p-3">
+                <h5>Admin Menu</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:admin' %}">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:pending_users' %}">
+                            <i class="fas fa-user-check"></i> Pending Approvals
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'dashboard:all_users' %}">
+                            <i class="fas fa-users"></i> All Users
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <h2>All Users</h2>
+            
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label>Filter by Role</label>
+                            <select name="role" class="form-select">
+                                <option value="">All Roles</option>
+                                <option value="admin" {% if current_role == 'admin' %}selected{% endif %}>Admin</option>
+                                <option value="company" {% if current_role == 'company' %}selected{% endif %}>Company</option>
+                                <option value="seller" {% if current_role == 'seller' %}selected{% endif %}>Seller</option>
+                                <option value="retailer" {% if current_role == 'retailer' %}selected{% endif %}>Retailer</option>
+                                <option value="customer" {% if current_role == 'customer' %}selected{% endif %}>Customer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Filter by Status</label>
+                            <select name="approved" class="form-select">
+                                <option value="">All Users</option>
+                                <option value="approved" {% if current_approved == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="pending" {% if current_approved == 'pending' %}selected{% endif %}>Pending</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-primary d-block">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Users Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Email Verified</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        {{ user.email }}
+                                        {% if user.profile_image %}
+                                            <br>
+                                            <img src="{{ user.profile_image.url }}" width="40" height="40" class="rounded-circle">
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ user.get_role_display }}</span>
+                                    </td>
+                                    <td>{{ user.phone|default:"-" }}</td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                        <br>
+                                        {% if user.is_approved %}
+                                            <span class="badge bg-success mt-1">Approved</span>
+                                        {% else %}
+                                            <span class="badge bg-warning mt-1">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.email_verified %}
+                                            <i class="fas fa-check-circle text-success"></i> Yes
+                                        {% else %}
+                                            <i class="fas fa-times-circle text-danger"></i> No
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'dashboard:toggle_user_status' user.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            {% if user.is_active %}
+                                                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Deactivate this user?')">
+                                                    <i class="fas fa-ban"></i> Deactivate
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Activate this user?')">
+                                                    <i class="fas fa-check"></i> Activate
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No users found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
