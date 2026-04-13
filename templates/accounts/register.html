@@ -1,82 +1,482 @@
-
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Register - Vendora{% endblock %}
+{% block title %}Join Vendora — Create your account{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern register page specific styles */
+    .register-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 32px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .register-hero::before {
+        content: '';
+        position: absolute;
+        top: -30%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .register-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -20%;
+        left: -5%;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .register-card {
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(0px);
+        border-radius: 32px;
+        border: none;
+        box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .card-header-modern {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: none;
+    }
+    
+    .card-header-modern h3 {
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .form-modern {
+        padding: 2rem 2rem 1.5rem;
+    }
+    
+    /* Crispy forms override to match modern style */
+    .form-modern .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-modern label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #475569;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-modern input, 
+    .form-modern select, 
+    .form-modern textarea {
+        border-radius: 16px !important;
+        border: 1.5px solid #e2e8f0;
+        padding: 0.7rem 1rem;
+        transition: all 0.2s ease;
+        background: #fefefe;
+    }
+    
+    .form-modern input:focus, 
+    .form-modern select:focus, 
+    .form-modern textarea:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+        outline: none;
+    }
+    
+    .btn-register-modern {
+        background: linear-gradient(105deg, #3b82f6, #2563eb);
+        border: none;
+        border-radius: 60px;
+        padding: 0.9rem 1.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+    }
+    
+    .btn-register-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px -8px rgba(37,99,235,0.4);
+        background: linear-gradient(105deg, #2563eb, #1d4ed8);
+    }
+    
+    /* Company fields section styling */
+    .company-section {
+        background: #f8fafc;
+        border-radius: 24px;
+        padding: 1.25rem 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #eef2ff;
+        transition: all 0.3s ease;
+    }
+    
+    .company-section h4 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .company-section h4 i {
+        color: #3b82f6;
+    }
+    
+    /* Dev mode alert modern */
+    .alert-dev {
+        background: linear-gradient(105deg, #fef3c7, #fffbeb);
+        border-left: 4px solid #f59e0b;
+        border-radius: 20px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    
+    .divider-custom {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+    
+    .divider-custom::before,
+    .divider-custom::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .divider-custom::before {
+        margin-right: 1rem;
+    }
+    
+    .divider-custom::after {
+        margin-left: 1rem;
+    }
+    
+    .login-link {
+        background: #f1f5f9;
+        border-radius: 60px;
+        padding: 0.8rem;
+        text-align: center;
+        transition: 0.2s;
+    }
+    
+    .login-link a {
+        font-weight: 700;
+        text-decoration: none;
+        color: #2563eb;
+    }
+    
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+    
+    /* file input styling */
+    .form-modern input[type="file"] {
+        padding: 0.5rem;
+        background: #f8fafc;
+    }
+    
+    /* role select custom highlight */
+    select#id_role {
+        cursor: pointer;
+    }
+    
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .register-card {
+        animation: fadeSlideUp 0.5s ease-out;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-modern {
+            padding: 1.5rem;
+        }
+        .card-header-modern h3 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const roleSelect = document.getElementById('id_role');
         const companyFields = document.getElementById('company-fields');
+        const companySection = document.getElementById('company-section');
         
         function toggleCompanyFields() {
-            if (roleSelect.value === 'company') {
-                companyFields.style.display = 'block';
+            if (roleSelect && roleSelect.value === 'company') {
+                if (companySection) {
+                    companySection.style.display = 'block';
+                    // Add smooth fade in
+                    companySection.style.animation = 'fadeSlideUp 0.3s ease-out';
+                }
+                if (companyFields) {
+                    // Enable required fields if needed
+                    const requiredInputs = companyFields.querySelectorAll('input, select, textarea');
+                    requiredInputs.forEach(input => {
+                        if (input.hasAttribute('data-required-on-company')) {
+                            input.required = true;
+                        }
+                    });
+                }
             } else {
-                companyFields.style.display = 'none';
+                if (companySection) {
+                    companySection.style.display = 'none';
+                }
+                if (companyFields) {
+                    const optionalInputs = companyFields.querySelectorAll('input, select, textarea');
+                    optionalInputs.forEach(input => {
+                        if (input.hasAttribute('data-required-on-company')) {
+                            input.required = false;
+                        }
+                    });
+                }
             }
         }
         
-        roleSelect.addEventListener('change', toggleCompanyFields);
-        toggleCompanyFields();
+        if (roleSelect) {
+            roleSelect.addEventListener('change', toggleCompanyFields);
+            toggleCompanyFields();
+        }
+        
+        // Add floating label effect? optional: add input focus class
+        const inputs = document.querySelectorAll('.form-modern input, .form-modern select, .form-modern textarea');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                if (!this.value) this.parentElement.classList.remove('focused');
+            });
+        });
     });
 </script>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            {% if dev_mode %}
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="fas fa-code"></i> <strong>Development Mode Active!</strong>
-                <ul class="mb-0 mt-2">
-                    <li>Any email will work (no real email verification)</li>
-                    <li>Use any 6-digit OTP (e.g., 123456)</li>
-                    <li>Accounts are auto-approved</li>
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endif %}
+<div class="container py-5">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-lg-10 col-xl-8">
             
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Create an Account</h3>
+            <!-- Hero / decorative header -->
+            <div class="register-hero text-white text-center" data-aos="fade-down">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-sparkle me-2"></i> Start selling & shopping
+                </h1>
+                <p class="lead mb-0 opacity-90">Join {{ site_name|default:"Vendora" }} — the community where creators, brands, and buyers connect</p>
+                <div class="mt-3 d-flex justify-content-center gap-3 flex-wrap">
+                    <span class="badge bg-white text-dark rounded-pill px-3 py-2"><i class="fas fa-chart-line text-primary me-1"></i> 10k+ vendors</span>
+                    <span class="badge bg-white text-dark rounded-pill px-3 py-2"><i class="fas fa-shopping-bag text-primary me-1"></i> 50k+ products</span>
+                    <span class="badge bg-white text-dark rounded-pill px-3 py-2"><i class="fas fa-shield-alt text-primary me-1"></i> secure payments</span>
                 </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+            </div>
+            
+            <!-- Registration Card -->
+            <div class="register-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-header-modern">
+                    <h3 class="text-white">
+                        <i class="fas fa-user-plus fa-fw"></i> Create account
+                        <span class="ms-auto fs-6 fw-normal opacity-75"><i class="fas fa-lock"></i> Secure & free</span>
+                    </h3>
+                </div>
+                
+                <div class="form-modern">
+                    {% if dev_mode %}
+                    <div class="alert-dev d-flex align-items-start gap-3" role="alert">
+                        <i class="fas fa-code fa-2x text-warning"></i>
+                        <div>
+                            <strong class="d-block"><i class="fas fa-flask"></i> Development Mode Active</strong>
+                            <small class="text-secondary">✨ Any email works • Use dummy OTP (123456) • Auto‑approval enabled — perfect for testing.</small>
+                        </div>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
                         
-                        <!-- User Fields -->
-                        {{ form.email|as_crispy_field }}
-                        {{ form.phone|as_crispy_field }}
-                        {{ form.role|as_crispy_field }}
-                        {{ form.password|as_crispy_field }}
-                        {{ form.confirm_password|as_crispy_field }}
-                        {{ form.profile_image|as_crispy_field }}
-                        
-                        <!-- Company Specific Fields -->
-                        <div id="company-fields" style="display: none;">
-                            <hr>
-                            <h4>Company Information</h4>
-                            {{ form.company_name|as_crispy_field }}
-                            {{ form.company_address|as_crispy_field }}
-                            {{ form.company_phone|as_crispy_field }}
-                            {{ form.company_website|as_crispy_field }}
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ form.email|as_crispy_field }}
+                            </div>
                         </div>
                         
-                        <div class="d-grid gap-2 mt-3">
-                            <button type="submit" class="btn btn-primary">Register</button>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.phone|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.role|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.password|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.confirm_password|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ form.profile_image|as_crispy_field }}
+                                <small class="text-muted d-block mt-1"><i class="fas fa-info-circle"></i> Recommended: Square image, max 2MB</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Company Fields - wrapped in modern section -->
+                        <div id="company-section" style="display: none;" class="company-section mt-3">
+                            <h4><i class="fas fa-building"></i> Business profile</h4>
+                            <div id="company-fields">
+                                {{ form.company_name|as_crispy_field }}
+                                {{ form.company_address|as_crispy_field }}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.company_phone|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.company_website|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="alert alert-light mt-2 p-2 small rounded-3">
+                                    <i class="fas fa-store text-primary me-1"></i> Company info will be visible on your vendor profile & storefront.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-register-modern text-white">
+                                <i class="fas fa-arrow-right-to-bracket me-2"></i> Register & continue
+                            </button>
                         </div>
                     </form>
-                    <hr>
-                    <p class="text-center mb-0">
-                        Already have an account? <a href="{% url 'accounts:login' %}">Login here</a>
+                    
+                    <div class="divider-custom">
+                        <span>Already have an account?</span>
+                    </div>
+                    
+                    <div class="login-link">
+                        <a href="{% url 'accounts:login' %}" class="d-block">
+                            <i class="fas fa-sign-in-alt me-2"></i> Sign in to your dashboard
+                        </a>
+                    </div>
+                    
+                    <p class="text-center text-muted small mt-4 mb-0">
+                        <i class="fas fa-shield-heart"></i> By registering you agree to our <a href="{% url 'core:terms' %}" class="text-decoration-none">Terms</a> & <a href="{% url 'core:privacy' %}" class="text-decoration-none">Privacy</a>.
                     </p>
+                </div>
+            </div>
+            
+            <!-- extra modern testimonial / trust badge (optional) -->
+            <div class="text-center mt-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="d-flex justify-content-center gap-4 flex-wrap">
+                    <span><i class="fas fa-check-circle text-success"></i> No hidden fees</span>
+                    <span><i class="fas fa-headset"></i> 24/7 support</span>
+                    <span><i class="fas fa-rocket"></i> Quick onboarding</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Additional overrides for crispy forms to look modern within .form-modern */
+    .form-modern .form-control, 
+    .form-modern .form-select {
+        border-radius: 18px !important;
+        border: 1.5px solid #e2edff;
+        background: #ffffff;
+    }
+    .form-modern .form-control:focus, 
+    .form-modern .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+    }
+    .form-modern .invalid-feedback {
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-top: 0.3rem;
+    }
+    .form-modern .alert-danger {
+        background: #fee2e2;
+        border: none;
+        border-radius: 18px;
+        color: #b91c1c;
+        padding: 0.6rem 1rem;
+    }
+    /* file input styling */
+    .form-modern input[type="file"] {
+        padding: 8px;
+        background: #f9fafb;
+        border-radius: 18px;
+    }
+    .company-section {
+        transition: all 0.25s ease-in-out;
+    }
+    /* add small responsive */
+    @media (max-width: 576px) {
+        .register-hero h1 {
+            font-size: 1.6rem;
+        }
+        .form-modern {
+            padding: 1.2rem;
+        }
+    }
+</style>
+
+<script>
+    // For animation on company section if role is pre-filled
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleField = document.getElementById('id_role');
+        if (roleField && roleField.value === 'company') {
+            const compSection = document.getElementById('company-section');
+            if (compSection) compSection.style.display = 'block';
+        }
+        // add data-required-on-company flag to company fields if needed (optional server side)
+        const companyInputs = document.querySelectorAll('#company-fields input, #company-fields select, #company-fields textarea');
+        companyInputs.forEach(input => {
+            input.setAttribute('data-required-on-company', 'true');
+            if (roleField && roleField.value !== 'company') {
+                input.required = false;
+            } else if (roleField && roleField.value === 'company') {
+                input.required = true;
+            }
+        });
+    });
+</script>
 {% endblock %}

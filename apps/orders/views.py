@@ -170,7 +170,7 @@ def company_orders(request):
     context = {
         'orders': orders,
         'status_filter': status_filter,
-        'total_orders': orders.count(),
+        'total_orders': paginator.count,
         'pending_count': Order.objects.filter(company=company, status='pending').count(),
         'approved_count': Order.objects.filter(company=company, status='approved').count(),
         'processing_count': Order.objects.filter(company=company, status='processing').count(),
@@ -336,3 +336,26 @@ def deliver_order_item(request, item_id):
         messages.error(request, 'This order item cannot be marked as delivered at this stage.')
     
     return redirect('orders:seller_orders')
+
+@login_required
+@user_passes_test(lambda u: u.role == 'company')
+def deliver_order(request, order_id):
+    """Mark order as delivered"""
+    order = get_object_or_404(Order, id=order_id, company=request.user.company_profile)
+    
+    if order.status == 'shipped':
+        order.status = 'delivered'
+        order.delivered_at = timezone.now()
+        order.save()
+        
+        # Also mark all order items as delivered
+        for item in order.items.all():
+            if item.status != 'delivered':
+                item.status = 'delivered'
+                item.save()
+        
+        messages.success(request, f'Order #{order.order_number} has been marked as delivered!')
+    else:
+        messages.error(request, 'This order cannot be marked as delivered at this stage.')
+    
+    return redirect('orders:company_orders')

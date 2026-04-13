@@ -1,0 +1,101 @@
+﻿name,category,company,seller,description,short_description,price,compare_price,cost_per_item,stock_quantity,sku,barcode,weight,dimensions,is_active,is_featured,is_digital
+Puzzle 1,Toys,c,s,High quality Puzzle 1 perfect for daily use in the Toys category.,Best Puzzle on the market.,695,1085,391,335,SKU-1001,1000001,11.76,42x17x17,FALSE,TRUE,FALSE
+Serum 2,Beauty,c,s,High quality Serum 2 perfect for daily use in the Beauty category.,Best Serum on the market.,1207,1474,722,379,SKU-1002,1000002,10.8,19x16x3,TRUE,FALSE,FALSE
+Action Figure 3,Toys,c,s,High quality Action Figure 3 perfect for daily use in the Toys category.,Best Action Figure on the market.,1498,1828,1104,352,SKU-1003,1000003,1.98,36x7x5,FALSE,TRUE,FALSE
+Lipstick 4,Home & Kitchen,c,s,High quality Lipstick 4 perfect for daily use in the Home & Kitchen category.,Best Lipstick on the market.,749,1140,352,250,SKU-1004,1000004,13.47,10x11x9,TRUE,FALSE,TRUE
+Gloves 5,Apparel,c,s,High quality Gloves 5 perfect for daily use in the Apparel category.,Best Gloves on the market.,754,1101,501,196,SKU-1005,1000005,10.31,22x39x8,TRUE,TRUE,FALSE
+Doll 6,Sports,c,s,High quality Doll 6 perfect for daily use in the Sports category.,Best Doll on the market.,917,1215,647,3,SKU-1006,1000006,2.91,22x16x17,FALSE,FALSE,FALSE
+Keyboard 7,Sports,c,s,High quality Keyboard 7 perfect for daily use in the Sports category.,Best Keyboard on the market.,1496,1886,618,251,SKU-1007,1000007,13.47,41x34x19,TRUE,FALSE,FALSE
+Soap 8,Home & Kitchen,c,s,High quality Soap 8 perfect for daily use in the Home & Kitchen category.,Best Soap on the market.,1591,1721,1099,190,SKU-1008,1000008,0.61,39x50x18,FALSE,TRUE,FALSE
+Drone 9,Food,c,s,High quality Drone 9 perfect for daily use in the Food category.,Best Drone on the market.,598,1037,455,295,SKU-1009,1000009,12.11,44x44x20,TRUE,FALSE,TRUE
+Puzzle 10,Sports,c,s,High quality Puzzle 10 perfect for daily use in the Sports category.,Best Puzzle on the market.,1175,1226,740,265,SKU-1010,1000010,0.83,17x11x13,FALSE,TRUE,FALSE
+Headphones 11,Home & Kitchen,c,s,High quality Headphones 11 perfect for daily use in the Home & Kitchen category.,Best Headphones on the market.,1354,1651,1073,380,SKU-1011,1000011,3.21,45x5x10,TRUE,TRUE,TRUE
+Jacket 12,Apparel,c,s,High quality Jacket 12 perfect for daily use in the Apparel category.,Best Jacket on the market.,806,876,407,451,SKU-1012,1000012,5.17,12x11x2,TRUE,FALSE,FALSE
+T-Shirt 13,Sports,c,s,High quality T-Shirt 13 perfect for daily use in the Sports category.,Best T-Shirt on the market.,1606,1781,1255,282,SKU-1013,1000013,6.73,30x42x16,TRUE,FALSE,FALSE
+Heater 14,Beauty,c,s,High quality Heater 14 perfect for daily use in the Beauty category.,Best Heater on the market.,565,1009,411,70,SKU-1014,1000014,5.33,21x18x13,TRUE,TRUE,FALSE
+Fan 15,Home & Kitchen,c,s,High quality Fan 15 perfect for daily use in the Home & Kitchen category.,Best Fan on the market.,1908,2060,1276,368,SKU-1015,1000015,13.34,17x47x18,TRUE,FALSE,FALSE
+Bicycle 16,Electronics,c,s,High quality Bicycle 16 perfect for daily use in the Electronics category.,Best Bicycle on the market.,640,743,349,252,SKU-1016,1000016,10.16,14x20x7,FALSE,FALSE,FALSE
+Soap 17,Home & Kitchen,c,s,High quality Soap 17 perfect for daily use in the Home & Kitchen category.,Best Soap on the market.,1560,1886,873,231,SKU-1017,1000017,13.84,12x10x12,FALSE,TRUE,TRUE
+Sneakers 18,Home & Kitchen,c,s,High quality Sneakers 18 perfect for daily use in the Home & Kitchen category.,Best Sneakers on the market.,977,1348,756,214,SKU-1018,1000018,5.88,16x36x6,TRUE,FALSE,TRUE
+Yo-Yo 19,Home & Kitchen,c,s,High quality Yo-Yo 19 perfect for daily use in the Home & Kitchen category.,Best Yo-Yo on the market.,953,1136,714,43,SKU-1019,1000019,4.81,34x18x16,TRUE,FALSE,TRUE
+Bicycle 20,Sports,c,s,High quality Bicycle 20 perfect for daily use in the Sports category.,Best Bicycle on the market.,1331,1677,607,401,SKU-1020,1000020,2.4,35x16x5,TRUE,TRUE,TRUE
+Soccer Ball 21,Sports,c,s,High quality Soccer Ball 21 perfect for daily use in the Sports category.,Best Soccer Ball on the market.,1989,2464,906,180,SKU-1021,1000021,14.24,35x7x7,FALSE,TRUE,TRUE
+Socks 22,Home & Kitchen,c,s,High quality Socks 22 perfect for daily use in the Home & Kitchen category.,Best Socks on the market.,29,47,13,213,SKU-1022,1000022,5.96,39x31x3,TRUE,TRUE,FALSE
+Gloves 23,Beauty,c,s,High quality Gloves 23 perfect for daily use in the Beauty category.,Best Gloves on the market.,33,446,14,186,SKU-1023,1000023,11.96,30x27x19,TRUE,FALSE,FALSE
+Perfume 24,Sports,c,s,High quality Perfume 24 perfect for daily use in the Sports category.,Best Perfume on the market.,745,1126,506,223,SKU-1024,1000024,1.44,34x45x13,FALSE,TRUE,FALSE
+Camera 25,Home & Kitchen,c,s,High quality Camera 25 perfect for daily use in the Home & Kitchen category.,Best Camera on the market.,1303,1457,941,174,SKU-1025,1000025,6.63,12x37x6,TRUE,FALSE,TRUE
+Sneakers 26,Toys,c,s,High quality Sneakers 26 perfect for daily use in the Toys category.,Best Sneakers on the market.,668,710,463,177,SKU-1026,1000026,7.64,29x18x19,TRUE,TRUE,TRUE
+Bicycle 27,Sports,c,s,High quality Bicycle 27 perfect for daily use in the Sports category.,Best Bicycle on the market.,283,381,156,360,SKU-1027,1000027,8.45,10x19x11,TRUE,TRUE,FALSE
+Helmet 28,Apparel,c,s,High quality Helmet 28 perfect for daily use in the Apparel category.,Best Helmet on the market.,277,595,199,500,SKU-1028,1000028,5.87,37x30x19,TRUE,FALSE,TRUE
+Scarf 29,Beauty,c,s,High quality Scarf 29 perfect for daily use in the Beauty category.,Best Scarf on the market.,1473,1761,614,275,SKU-1029,1000029,13.84,32x28x16,TRUE,FALSE,FALSE
+Fan 30,Electronics,c,s,High quality Fan 30 perfect for daily use in the Electronics category.,Best Fan on the market.,1657,1734,1260,420,SKU-1030,1000030,14.69,45x18x9,FALSE,TRUE,FALSE
+Keyboard 31,Sports,c,s,High quality Keyboard 31 perfect for daily use in the Sports category.,Best Keyboard on the market.,988,1172,723,109,SKU-1031,1000031,0.58,12x12x3,TRUE,FALSE,FALSE
+Keyboard 32,Sports,c,s,High quality Keyboard 32 perfect for daily use in the Sports category.,Best Keyboard on the market.,1811,1904,830,4,SKU-1032,1000032,4.92,11x48x12,TRUE,TRUE,FALSE
+Blocks 33,Home & Kitchen,c,s,High quality Blocks 33 perfect for daily use in the Home & Kitchen category.,Best Blocks on the market.,1210,1608,565,379,SKU-1033,1000033,14.23,42x8x12,FALSE,TRUE,FALSE
+Puzzle 34,Beauty,c,s,High quality Puzzle 34 perfect for daily use in the Beauty category.,Best Puzzle on the market.,80,255,45,11,SKU-1034,1000034,10.7,22x25x16,TRUE,TRUE,TRUE
+Hat 35,Apparel,c,s,High quality Hat 35 perfect for daily use in the Apparel category.,Best Hat on the market.,188,307,108,66,SKU-1035,1000035,2.53,21x5x6,FALSE,TRUE,FALSE
+Burger 36,Beauty,c,s,High quality Burger 36 perfect for daily use in the Beauty category.,Best Burger on the market.,114,171,58,76,SKU-1036,1000036,11.89,39x50x13,TRUE,FALSE,FALSE
+Soccer Ball 37,Toys,c,s,High quality Soccer Ball 37 perfect for daily use in the Toys category.,Best Soccer Ball on the market.,425,692,272,472,SKU-1037,1000037,0.68,26x17x9,TRUE,FALSE,FALSE
+Perfume 38,Toys,c,s,High quality Perfume 38 perfect for daily use in the Toys category.,Best Perfume on the market.,1829,2258,1060,386,SKU-1038,1000038,4.78,43x29x3,FALSE,FALSE,FALSE
+Blender 39,Beauty,c,s,High quality Blender 39 perfect for daily use in the Beauty category.,Best Blender on the market.,1857,1929,821,157,SKU-1039,1000039,2.95,22x33x18,TRUE,TRUE,FALSE
+Action Figure 40,Home & Kitchen,c,s,High quality Action Figure 40 perfect for daily use in the Home & Kitchen category.,Best Action Figure on the market.,204,427,101,420,SKU-1040,1000040,4.22,21x19x5,TRUE,TRUE,FALSE
+Smartphone 41,Home & Kitchen,c,s,High quality Smartphone 41 perfect for daily use in the Home & Kitchen category.,Best Smartphone on the market.,1473,1964,720,153,SKU-1041,1000041,5.93,42x9x9,TRUE,TRUE,FALSE
+Shampoo 42,Apparel,c,s,High quality Shampoo 42 perfect for daily use in the Apparel category.,Best Shampoo on the market.,348,642,156,217,SKU-1042,1000042,13.01,13x24x9,TRUE,TRUE,TRUE
+Coffee 43,Apparel,c,s,High quality Coffee 43 perfect for daily use in the Apparel category.,Best Coffee on the market.,228,566,178,349,SKU-1043,1000043,12.1,35x21x3,TRUE,FALSE,FALSE
+Toy Car 44,Toys,c,s,High quality Toy Car 44 perfect for daily use in the Toys category.,Best Toy Car on the market.,1382,1823,1064,434,SKU-1044,1000044,11.14,12x16x10,FALSE,FALSE,FALSE
+Headphones 45,Beauty,c,s,High quality Headphones 45 perfect for daily use in the Beauty category.,Best Headphones on the market.,549,557,349,342,SKU-1045,1000045,9.66,28x24x5,FALSE,FALSE,FALSE
+Lotion 46,Home & Kitchen,c,s,High quality Lotion 46 perfect for daily use in the Home & Kitchen category.,Best Lotion on the market.,1552,2016,1053,34,SKU-1046,1000046,6.49,15x47x3,TRUE,FALSE,TRUE
+Doll 47,Food,c,s,High quality Doll 47 perfect for daily use in the Food category.,Best Doll on the market.,911,1388,546,197,SKU-1047,1000047,6.09,22x38x17,TRUE,FALSE,FALSE
+Helmet 48,Electronics,c,s,High quality Helmet 48 perfect for daily use in the Electronics category.,Best Helmet on the market.,465,574,322,345,SKU-1048,1000048,6.46,11x19x10,TRUE,FALSE,FALSE
+Coffee 49,Toys,c,s,High quality Coffee 49 perfect for daily use in the Toys category.,Best Coffee on the market.,1059,1398,566,427,SKU-1049,1000049,11.2,30x17x7,TRUE,TRUE,TRUE
+Salad 50,Apparel,c,s,High quality Salad 50 perfect for daily use in the Apparel category.,Best Salad on the market.,489,935,376,168,SKU-1050,1000050,4.66,21x41x12,TRUE,FALSE,TRUE
+Dumbbell 51,Toys,c,s,High quality Dumbbell 51 perfect for daily use in the Toys category.,Best Dumbbell on the market.,1290,1415,713,321,SKU-1051,1000051,9.81,21x17x20,FALSE,TRUE,FALSE
+Helmet 52,Home & Kitchen,c,s,High quality Helmet 52 perfect for daily use in the Home & Kitchen category.,Best Helmet on the market.,1549,1941,641,127,SKU-1052,1000052,9.86,47x18x3,TRUE,FALSE,TRUE
+Sneakers 53,Toys,c,s,High quality Sneakers 53 perfect for daily use in the Toys category.,Best Sneakers on the market.,1347,1385,844,461,SKU-1053,1000053,6.22,40x25x20,TRUE,FALSE,TRUE
+Laptop 54,Toys,c,s,High quality Laptop 54 perfect for daily use in the Toys category.,Best Laptop on the market.,1658,1750,860,498,SKU-1054,1000054,1.04,36x19x7,FALSE,FALSE,FALSE
+Helmet 55,Home & Kitchen,c,s,High quality Helmet 55 perfect for daily use in the Home & Kitchen category.,Best Helmet on the market.,1540,1844,1163,50,SKU-1055,1000055,5.03,40x50x17,TRUE,TRUE,TRUE
+Pizza 56,Toys,c,s,High quality Pizza 56 perfect for daily use in the Toys category.,Best Pizza on the market.,1321,1382,628,140,SKU-1056,1000056,11.5,35x5x5,TRUE,FALSE,TRUE
+Toy Car 57,Beauty,c,s,High quality Toy Car 57 perfect for daily use in the Beauty category.,Best Toy Car on the market.,1166,1278,749,349,SKU-1057,1000057,11.37,22x15x9,TRUE,FALSE,TRUE
+Soap 58,Beauty,c,s,High quality Soap 58 perfect for daily use in the Beauty category.,Best Soap on the market.,976,1050,508,17,SKU-1058,1000058,6.81,7x44x17,TRUE,FALSE,FALSE
+Hat 59,Beauty,c,s,High quality Hat 59 perfect for daily use in the Beauty category.,Best Hat on the market.,191,300,92,86,SKU-1059,1000059,10.17,35x35x8,TRUE,FALSE,FALSE
+Soap 60,Home & Kitchen,c,s,High quality Soap 60 perfect for daily use in the Home & Kitchen category.,Best Soap on the market.,1053,1167,476,324,SKU-1060,1000060,13.27,37x26x12,TRUE,TRUE,FALSE
+Shampoo 61,Apparel,c,s,High quality Shampoo 61 perfect for daily use in the Apparel category.,Best Shampoo on the market.,206,479,157,97,SKU-1061,1000061,10.93,37x36x7,TRUE,TRUE,FALSE
+Mascara 62,Home & Kitchen,c,s,High quality Mascara 62 perfect for daily use in the Home & Kitchen category.,Best Mascara on the market.,1706,1835,1042,301,SKU-1062,1000062,0.43,7x20x10,TRUE,TRUE,TRUE
+Juice 63,Food,c,s,High quality Juice 63 perfect for daily use in the Food category.,Best Juice on the market.,870,1340,615,470,SKU-1063,1000063,4.55,35x18x12,TRUE,TRUE,FALSE
+Speaker 64,Sports,c,s,High quality Speaker 64 perfect for daily use in the Sports category.,Best Speaker on the market.,594,850,318,1,SKU-1064,1000064,10.12,8x15x20,TRUE,FALSE,FALSE
+Camera 65,Beauty,c,s,High quality Camera 65 perfect for daily use in the Beauty category.,Best Camera on the market.,1425,1777,1031,489,SKU-1065,1000065,10.63,41x38x15,FALSE,FALSE,FALSE
+Perfume 66,Toys,c,s,High quality Perfume 66 perfect for daily use in the Toys category.,Best Perfume on the market.,941,1067,397,260,SKU-1066,1000066,2.15,23x47x19,TRUE,TRUE,FALSE
+Jacket 67,Apparel,c,s,High quality Jacket 67 perfect for daily use in the Apparel category.,Best Jacket on the market.,1271,1704,909,429,SKU-1067,1000067,14.99,6x28x15,TRUE,FALSE,FALSE
+Gloves 68,Beauty,c,s,High quality Gloves 68 perfect for daily use in the Beauty category.,Best Gloves on the market.,1262,1281,578,380,SKU-1068,1000068,11.75,18x38x9,TRUE,TRUE,FALSE
+Speaker 69,Food,c,s,High quality Speaker 69 perfect for daily use in the Food category.,Best Speaker on the market.,160,206,68,413,SKU-1069,1000069,3.02,13x13x3,FALSE,FALSE,FALSE
+Gloves 70,Electronics,c,s,High quality Gloves 70 perfect for daily use in the Electronics category.,Best Gloves on the market.,1307,1592,948,377,SKU-1070,1000070,1.67,28x8x14,TRUE,FALSE,TRUE
+Perfume 71,Beauty,c,s,High quality Perfume 71 perfect for daily use in the Beauty category.,Best Perfume on the market.,1882,2283,1006,172,SKU-1071,1000071,11.73,12x32x20,TRUE,FALSE,FALSE
+Toy Car 72,Beauty,c,s,High quality Toy Car 72 perfect for daily use in the Beauty category.,Best Toy Car on the market.,1159,1585,925,440,SKU-1072,1000072,1.18,10x49x12,FALSE,TRUE,FALSE
+Kettle 73,Beauty,c,s,High quality Kettle 73 perfect for daily use in the Beauty category.,Best Kettle on the market.,1328,1360,853,216,SKU-1073,1000073,5.98,37x13x2,TRUE,FALSE,FALSE
+Chocolate 74,Apparel,c,s,High quality Chocolate 74 perfect for daily use in the Apparel category.,Best Chocolate on the market.,1911,2122,1294,103,SKU-1074,1000074,10.02,42x10x11,TRUE,FALSE,FALSE
+Mouse 75,Food,c,s,High quality Mouse 75 perfect for daily use in the Food category.,Best Mouse on the market.,1754,2006,837,379,SKU-1075,1000075,13.72,25x6x11,TRUE,FALSE,TRUE
+Socks 76,Beauty,c,s,High quality Socks 76 perfect for daily use in the Beauty category.,Best Socks on the market.,599,1098,313,23,SKU-1076,1000076,6.44,30x15x20,FALSE,TRUE,FALSE
+Monitor 77,Electronics,c,s,High quality Monitor 77 perfect for daily use in the Electronics category.,Best Monitor on the market.,1773,2157,947,25,SKU-1077,1000077,1.32,16x39x14,TRUE,FALSE,FALSE
+Juice 78,Sports,c,s,High quality Juice 78 perfect for daily use in the Sports category.,Best Juice on the market.,460,759,203,113,SKU-1078,1000078,0.67,30x13x19,FALSE,TRUE,FALSE
+Cream 79,Apparel,c,s,High quality Cream 79 perfect for daily use in the Apparel category.,Best Cream on the market.,366,792,168,223,SKU-1079,1000079,2.9,26x18x6,TRUE,TRUE,TRUE
+Headphones 80,Beauty,c,s,High quality Headphones 80 perfect for daily use in the Beauty category.,Best Headphones on the market.,636,781,307,465,SKU-1080,1000080,6.91,26x40x3,TRUE,FALSE,FALSE
+Speaker 81,Toys,c,s,High quality Speaker 81 perfect for daily use in the Toys category.,Best Speaker on the market.,879,1285,424,75,SKU-1081,1000081,11.98,32x11x8,FALSE,FALSE,TRUE
+Jeans 82,Beauty,c,s,High quality Jeans 82 perfect for daily use in the Beauty category.,Best Jeans on the market.,1393,1607,732,325,SKU-1082,1000082,7.96,36x49x20,TRUE,TRUE,FALSE
+Pasta 83,Sports,c,s,High quality Pasta 83 perfect for daily use in the Sports category.,Best Pasta on the market.,721,848,436,189,SKU-1083,1000083,5.26,46x7x4,TRUE,FALSE,FALSE
+Drone 84,Apparel,c,s,High quality Drone 84 perfect for daily use in the Apparel category.,Best Drone on the market.,1331,1553,756,454,SKU-1084,1000084,11.09,19x25x13,FALSE,FALSE,FALSE
+Salad 85,Sports,c,s,High quality Salad 85 perfect for daily use in the Sports category.,Best Salad on the market.,615,738,419,386,SKU-1085,1000085,5.74,46x39x17,TRUE,FALSE,FALSE
+Socks 86,Electronics,c,s,High quality Socks 86 perfect for daily use in the Electronics category.,Best Socks on the market.,1193,1612,943,314,SKU-1086,1000086,12.64,21x20x16,TRUE,FALSE,FALSE
+Burger 87,Sports,c,s,High quality Burger 87 perfect for daily use in the Sports category.,Best Burger on the market.,1833,2228,1340,248,SKU-1087,1000087,9.91,45x37x16,FALSE,TRUE,TRUE
+Dumbbell 88,Electronics,c,s,High quality Dumbbell 88 perfect for daily use in the Electronics category.,Best Dumbbell on the market.,405,871,193,152,SKU-1088,1000088,3.73,22x38x16,TRUE,FALSE,FALSE
+Speaker 89,Toys,c,s,High quality Speaker 89 perfect for daily use in the Toys category.,Best Speaker on the market.,1017,1062,658,136,SKU-1089,1000089,9.8,7x47x14,TRUE,TRUE,FALSE
+Gloves 90,Toys,c,s,High quality Gloves 90 perfect for daily use in the Toys category.,Best Gloves on the market.,252,474,140,379,SKU-1090,1000090,10.59,44x33x3,FALSE,TRUE,FALSE
+Lipstick 91,Toys,c,s,High quality Lipstick 91 perfect for daily use in the Toys category.,Best Lipstick on the market.,853,1267,595,480,SKU-1091,1000091,10.13,13x10x19,FALSE,TRUE,FALSE
+Yo-Yo 92,Apparel,c,s,High quality Yo-Yo 92 perfect for daily use in the Apparel category.,Best Yo-Yo on the market.,839,1042,578,131,SKU-1092,1000092,1.32,25x48x6,TRUE,TRUE,FALSE
+Perfume 93,Beauty,c,s,High quality Perfume 93 perfect for daily use in the Beauty category.,Best Perfume on the market.,1141,1296,516,299,SKU-1093,1000093,1.96,15x40x9,TRUE,FALSE,FALSE
+Jacket 94,Food,c,s,High quality Jacket 94 perfect for daily use in the Food category.,Best Jacket on the market.,64,419,46,337,SKU-1094,1000094,5.94,5x49x19,FALSE,FALSE,FALSE
+Keyboard 95,Electronics,c,s,High quality Keyboard 95 perfect for daily use in the Electronics category.,Best Keyboard on the market.,920,1098,459,124,SKU-1095,1000095,3.77,9x42x6,TRUE,TRUE,FALSE
+Yoga Mat 96,Food,c,s,High quality Yoga Mat 96 perfect for daily use in the Food category.,Best Yoga Mat on the market.,226,391,133,388,SKU-1096,1000096,6.52,39x38x17,TRUE,FALSE,FALSE
+Doll 97,Apparel,c,s,High quality Doll 97 perfect for daily use in the Apparel category.,Best Doll on the market.,491,931,220,162,SKU-1097,1000097,2.03,13x13x15,TRUE,TRUE,FALSE
+Kettle 98,Apparel,c,s,High quality Kettle 98 perfect for daily use in the Apparel category.,Best Kettle on the market.,756,1010,440,229,SKU-1098,1000098,8,20x31x3,TRUE,FALSE,FALSE
+Board Game 99,Home & Kitchen,c,s,High quality Board Game 99 perfect for daily use in the Home & Kitchen category.,Best Board Game on the market.,466,718,276,90,SKU-1099,1000099,8.63,27x23x3,TRUE,FALSE,FALSE
+Perfume 100,Electronics,c,s,High quality Perfume 100 perfect for daily use in the Electronics category.,Best Perfume on the market.,1075,1129,763,97,SKU-1100,1000100,4.22,9x46x12,TRUE,FALSE,FALSE

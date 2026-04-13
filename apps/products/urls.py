@@ -23,4 +23,5 @@ urlpatterns = [
     path('categories/create/', views.category_create, name='category_create'),
     path('categories/edit/<int:category_id>/', views.category_edit, name='category_edit'),
     path('categories/delete/<int:category_id>/', views.category_delete, name='category_delete'),
+    path('api/products/', views.api_products, name='api_products'),
 ]

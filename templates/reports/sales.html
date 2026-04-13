@@ -1,0 +1,583 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sales Report - Vendora{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    }
+
+    .report-wrapper {
+        background: #f8f9fc;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    /* Page Header */
+    .page-header {
+        background: var(--primary-gradient);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+
+    .stat-card .card-body {
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .stat-icon {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        font-size: 3rem;
+        opacity: 0.2;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    /* Chart Container */
+    .chart-container {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    /* Table Styles */
+    .data-table {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    .data-table thead th {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .data-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f8f9fc;
+        transform: scale(1.01);
+    }
+
+    .data-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    /* Export Buttons */
+    .export-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-export {
+        padding: 8px 20px;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-export:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .report-wrapper {
+            padding: 1rem;
+        }
+        
+        .export-buttons {
+            flex-direction: column;
+        }
+        
+        .stat-card h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="report-wrapper">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header animated" style="animation-delay: 0.1s;">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-6 mb-2">
+                        <i class="fas fa-chart-line"></i> Sales Report
+                    </h1>
+                    <p class="mb-0 opacity-75">Track and analyze your sales performance</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="export-buttons">
+                        <button class="btn btn-light btn-export" onclick="exportReport('csv')">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </button>
+                        <button class="btn btn-light btn-export" onclick="exportReport('excel')">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4 animated" style="animation-delay: 0.2s;">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h6 class="card-title opacity-75">Total Orders</h6>
+                        <h2 class="mb-0">{{ total_orders }}</h2>
+                        <small class="opacity-75 mt-2 d-block">
+                            <i class="fas fa-chart-line"></i> All time
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card bg-success text-white">
+                    <div class="card-body">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <h6 class="card-title opacity-75">Total Revenue</h6>
+                        <h2 class="mb-0">${{ total_revenue|floatformat:2 }}</h2>
+                        <small class="opacity-75 mt-2 d-block">
+                            <i class="fas fa-trending-up"></i> Gross sales
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card bg-info text-white">
+                    <div class="card-body">
+                        <div class="stat-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <h6 class="card-title opacity-75">Average Order Value</h6>
+                        <h2 class="mb-0">${{ average_order_value|floatformat:2 }}</h2>
+                        <small class="opacity-75 mt-2 d-block">
+                            <i class="fas fa-calculator"></i> Per order
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h6 class="card-title opacity-75">Total Customers</h6>
+                        <h2 class="mb-0">{{ total_customers|default:0 }}</h2>
+                        <small class="opacity-75 mt-2 d-block">
+                            <i class="fas fa-user-plus"></i> Unique buyers
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section animated" style="animation-delay: 0.3s;">
+            <form method="get" id="filterForm">
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted small">Date From</label>
+                        <input type="date" name="from" class="form-control" value="{{ date_from|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted small">Date To</label>
+                        <input type="date" name="to" class="form-control" value="{{ date_to|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted small">Quick Select</label>
+                        <select class="form-select" id="quickSelect">
+                            <option value="">Custom Range</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="week">Last 7 Days</option>
+                            <option value="month">Last 30 Days</option>
+                            <option value="quarter">Last 90 Days</option>
+                            <option value="year">Last 365 Days</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-chart-line"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="chart-container animated" style="animation-delay: 0.4s;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-primary"></i> Revenue Overview
+                </h5>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary active" onclick="changeChartType('line')">Line</button>
+                    <button class="btn btn-outline-primary" onclick="changeChartType('bar')">Bar</button>
+                </div>
+            </div>
+            <canvas id="revenueChart" height="100"></canvas>
+        </div>
+
+        <!-- Daily Sales Table -->
+        <div class="data-table animated" style="animation-delay: 0.5s;">
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Orders</th>
+                            <th>Revenue</th>
+                            <th>Average Order Value</th>
+                            <th>Growth</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in daily_sales %}
+                        <tr>
+                            <td>
+                                <strong>{{ day.day|date:"M d, Y" }}</strong>
+                                <br>
+                                <small class="text-muted">{{ day.day|date:"l" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ day.count }} orders</span>
+                            </td>
+                            <td>
+                                <strong class="text-success">${{ day.total|floatformat:2 }}</strong>
+                            </td>
+                            <td>
+                                ${{ day.total|floatformat:2|default:"0" }}
+                            </td>
+                            <td>
+                                {% if day.growth > 0 %}
+                                    <span class="text-success">
+                                        <i class="fas fa-arrow-up"></i> +{{ day.growth }}%
+                                    </span>
+                                {% elif day.growth < 0 %}
+                                    <span class="text-danger">
+                                        <i class="fas fa-arrow-down"></i> {{ day.growth }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No sales data available for the selected period</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="row mt-4 animated" style="animation-delay: 0.6s;">
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-pie text-primary"></i> Payment Method Breakdown
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="paymentChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-truck text-primary"></i> Order Status Distribution
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let revenueChart;
+    let paymentChart;
+    let statusChart;
+
+    // Initialize charts
+    document.addEventListener('DOMContentLoaded', function() {
+        initRevenueChart();
+        initPaymentChart();
+        initStatusChart();
+        setupQuickSelect();
+    });
+
+    function initRevenueChart() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const dates = [{% for day in daily_sales %}'{{ day.day|date:"M d" }}',{% endfor %}];
+        const revenues = [{% for day in daily_sales %}{{ day.total|default:0 }},{% endfor %}];
+        
+        revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Revenue',
+                    data: revenues,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '$' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function initPaymentChart() {
+        const ctx = document.getElementById('paymentChart').getContext('2d');
+        paymentChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Credit Card', 'PayPal', 'Cash on Delivery', 'Bank Transfer'],
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: ['#667eea', '#764ba2', '#f6d365', '#84fab0'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    }
+
+    function initStatusChart() {
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        statusChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+                datasets: [{
+                    label: 'Orders',
+                    data: [12, 8, 15, 45, 5],
+                    backgroundColor: '#667eea',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function changeChartType(type) {
+        if (revenueChart) {
+            revenueChart.config.type = type;
+            revenueChart.update();
+            
+            // Update button states
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+    }
+
+    function setupQuickSelect() {
+        const quickSelect = document.getElementById('quickSelect');
+        if (quickSelect) {
+            quickSelect.addEventListener('change', function() {
+                const today = new Date();
+                let from = new Date();
+                let to = new Date();
+                
+                switch(this.value) {
+                    case 'today':
+                        from = today;
+                        to = today;
+                        break;
+                    case 'yesterday':
+                        from = new Date(today.setDate(today.getDate() - 1));
+                        to = from;
+                        break;
+                    case 'week':
+                        from = new Date(today.setDate(today.getDate() - 7));
+                        to = new Date();
+                        break;
+                    case 'month':
+                        from = new Date(today.setDate(today.getDate() - 30));
+                        to = new Date();
+                        break;
+                    case 'quarter':
+                        from = new Date(today.setDate(today.getDate() - 90));
+                        to = new Date();
+                        break;
+                    case 'year':
+                        from = new Date(today.setDate(today.getDate() - 365));
+                        to = new Date();
+                        break;
+                    default:
+                        return;
+                }
+                
+                document.querySelector('input[name="from"]').value = formatDate(from);
+                document.querySelector('input[name="to"]').value = formatDate(to);
+                document.getElementById('filterForm').submit();
+            });
+        }
+    }
+
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    function exportReport(format) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('format', format);
+        window.location.href = `/reports/download/?${params.toString()}`;
+    }
+</script>
+{% endblock %}

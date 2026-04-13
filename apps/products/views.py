@@ -359,3 +359,54 @@ def category_delete(request, category_id):
         return redirect('products:category_list')
     
     return render(request, 'products/categories/delete.html', {'category': category})
+
+
+
+
+
+
+import json
+from django.http import JsonResponse
+
+
+
+def api_products(request):
+    """API endpoint for products with filtering"""
+    products = Product.objects.filter(is_active=True)
+    
+    # Category filter
+    category_slug = request.GET.get('category')
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+    
+    # Search filter
+    search_query = request.GET.get('search')
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(short_description__icontains=search_query)
+        )
+    
+    # Order by
+    products = products.order_by('-created_at')[:12]
+    
+    # Prepare data
+    products_data = []
+    for product in products:
+        products_data.append({
+            'id': product.id,
+            'name': product.name,
+            'slug': product.slug,
+            'price': float(product.price),
+            'compare_price': float(product.compare_price) if product.compare_price else None,
+            'discount_percentage': product.discount_percentage,
+            'average_rating': float(product.average_rating) if product.average_rating else 0,
+            'total_reviews': product.total_reviews,
+            'image': product.images.first().image.url if product.images.first() else None,
+        })
+    
+    return JsonResponse({
+        'products': products_data,
+        'total': len(products_data)
+    })

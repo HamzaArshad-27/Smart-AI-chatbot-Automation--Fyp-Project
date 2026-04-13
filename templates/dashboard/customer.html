@@ -4,113 +4,611 @@
 {% block title %}My Dashboard - Vendora{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    {% if user.profile_image %}
-                        <img src="{{ user.profile_image.url }}" class="rounded-circle img-fluid mb-3" style="width: 120px; height: 120px; object-fit: cover;">
-                    {% else %}
-                        <i class="fas fa-user-circle fa-5x mb-3 text-muted"></i>
-                    {% endif %}
-                    <h5>{{ user.email }}</h5>
-                    <p class="text-muted">Member since {{ user.date_joined|date:"F Y" }}</p>
-                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-sm">Edit Profile</a>
-                </div>
-            </div>
-            
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6>Quick Links</h6>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="{% url 'products:list' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-search"></i> Browse Products
-                    </a>
-                    <a href="{% url 'cart:view' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-shopping-cart"></i> My Cart
-                    </a>
-                    <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-user"></i> Account Settings
-                    </a>
-                </div>
-            </div>
-        </div>
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    }
+
+    .dashboard-wrapper {
+        background: #f8f9fc;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+    }
+
+    .profile-header {
+        background: var(--primary-gradient);
+        padding: 2rem 1rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .profile-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 150px;
+        height: 150px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .profile-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 4px solid white;
+        object-fit: cover;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-name {
+        color: white;
+        margin-bottom: 0.25rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-email {
+        color: rgba(255,255,255,0.9);
+        font-size: 0.85rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-stats {
+        padding: 1.5rem;
+        background: white;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    /* Quick Links */
+    .quick-links-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        margin-top: 1.5rem;
+    }
+
+    .quick-link-item {
+        padding: 0.75rem 1.25rem;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .quick-link-item:hover {
+        background: #f8f9fc;
+        border-left-color: #667eea;
+        transform: translateX(5px);
+    }
+
+    .quick-link-item i {
+        width: 25px;
+        color: #667eea;
+        margin-right: 10px;
+    }
+
+    /* Welcome Banner */
+    .welcome-banner {
+        background: var(--primary-gradient);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -5%;
+        width: 250px;
+        height: 250px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .welcome-banner::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 180px;
+        height: 180px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    /* Stat Cards */
+    .stat-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+
+    .stat-card .card-body {
+        padding: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-icon-bg {
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        font-size: 6rem;
+        opacity: 0.15;
+        z-index: 0;
+    }
+
+    /* Orders Table */
+    .orders-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    }
+
+    .orders-card .card-header {
+        background: white;
+        border-bottom: 2px solid #f0f0f0;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .orders-table {
+        margin-bottom: 0;
+    }
+
+    .orders-table thead th {
+        background: #f8f9fc;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+    }
+
+    .orders-table tbody tr {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .orders-table tbody tr:hover {
+        background: #f8f9fc;
+        transform: scale(1.01);
+    }
+
+    .orders-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    /* Status Badges */
+    .badge-status {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-wrapper {
+            padding: 1rem;
+        }
         
-        <!-- Main Content -->
-        <div class="col-md-9">
-            <h2>My Dashboard</h2>
-            <p>Welcome back, {{ user.email }}!</p>
-            
-            <!-- Stats Cards -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card text-white bg-primary">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Orders</h5>
-                            <h2>{{ total_orders }}</h2>
+        .welcome-banner {
+            padding: 1.5rem;
+        }
+        
+        .stat-card h2 {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* Loading Skeleton */
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 8px;
+    }
+
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <!-- Profile Card -->
+                <div class="profile-card animated" style="animation-delay: 0.1s;">
+                    <div class="profile-header">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" class="profile-image" alt="{{ user.email }}">
+                        {% else %}
+                            <div class="profile-image bg-white d-inline-flex align-items-center justify-content-center">
+                                <i class="fas fa-user fa-3x text-primary"></i>
+                            </div>
+                        {% endif %}
+                        <h5 class="profile-name">{{ user.get_full_name|default:user.email|truncatechars:20 }}</h5>
+                        <p class="profile-email">{{ user.email }}</p>
+                    </div>
+                    <div class="profile-stats">
+
+                        <div class="mt-3">
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </a>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card text-white bg-success">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Spent</h5>
-                            <h3>${{ total_spent|floatformat:2 }}</h3>
-                        </div>
+                
+                <!-- Quick Links Card -->
+                <div class="quick-links-card animated" style="animation-delay: 0.2s;">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'products:list' %}" class="quick-link-item text-decoration-none d-block text-dark">
+                            <i class="fas fa-search"></i> Browse Products
+                        </a>
+                        <a href="{% url 'cart:view' %}" class="quick-link-item text-decoration-none d-block text-dark">
+                            <i class="fas fa-shopping-cart"></i> My Cart
+                            {% if cart_total_items %}
+                                <span class="badge bg-primary float-end">{{ cart_total_items }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'accounts:profile' %}" class="quick-link-item text-decoration-none d-block text-dark">
+                            <i class="fas fa-user-cog"></i> Account Settings
+                        </a>
+
+                        <a href="{% url 'accounts:logout' %}" class="quick-link-item text-decoration-none d-block text-danger">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
                     </div>
                 </div>
             </div>
             
-            <!-- Recent Orders -->
-            <div class="card">
-                <div class="card-header">
-                    <h5>Recent Orders</h5>
-                </div>
-                <div class="card-body">
-                    {% if recent_orders %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Date</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for order in recent_orders %}
-                                    <tr>
-                                        <td>{{ order.order_number }}</td>
-                                        <td>{{ order.created_at|date:"M d, Y" }}</td>
-                                        <td>${{ order.total_amount }}</td>
-                                        <td>
-                                            <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% elif order.status == 'pending' %}warning{% else %}info{% endif %}">
-                                                {{ order.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'orders:detail' order.id %}" class="btn btn-sm btn-primary">View Details</a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <!-- Welcome Banner -->
+                <div class="welcome-banner animated" style="animation-delay: 0.3s;">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 mb-2">Welcome back, {{ user.first_name|default:user.email|truncatechars:20 }}!</h1>
+                            <p class="mb-0 opacity-75">Track your orders, discover new products, and manage your account</p>
                         </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
-                            <p>You haven't placed any orders yet.</p>
-                            <a href="{% url 'products:list' %}" class="btn btn-primary">Start Shopping</a>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <a href="{% url 'products:list' %}" class="btn btn-light">
+                                <i class="fas fa-shopping-bag"></i> Shop Now
+                            </a>
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card stat-card animated" style="animation-delay: 0.4s;">
+                            <div class="card-body bg-primary text-white">
+                                <div class="stat-icon-bg">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                <h6 class="card-title opacity-75 mb-2">Total Orders</h6>
+                                <h2 class="mb-0">{{ total_orders }}</h2>
+                                <small class="opacity-75 mt-2 d-block">
+                                    <i class="fas fa-chart-line"></i> {{ orders_this_year|default:0 }} this year
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card stat-card animated" style="animation-delay: 0.5s;">
+                            <div class="card-body bg-success text-white">
+                                <div class="stat-icon-bg">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <h6 class="card-title opacity-75 mb-2">Total Spent</h6>
+                                <h2 class="mb-0">${{ total_spent|floatformat:2 }}</h2>
+                                <small class="opacity-75 mt-2 d-block">
+                                    <i class="fas fa-trending-up"></i> Lifetime value
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Status Summary -->
+                <div class="row mb-4 animated" style="animation-delay: 0.6s;">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="mb-3">
+                                    <i class="fas fa-chart-pie text-primary"></i> Order Summary
+                                </h6>
+                                <div class="row text-center">
+                                    <div class="col-4 col-md-2 mb-2">
+                                        <div class="border rounded p-2">
+                                            <div class="text-warning fw-bold">{{ orders_by_status.pending|default:0 }}</div>
+                                            <small>Pending</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-2">
+                                        <div class="border rounded p-2">
+                                            <div class="text-info fw-bold">{{ orders_by_status.processing|default:0 }}</div>
+                                            <small>Processing</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-2">
+                                        <div class="border rounded p-2">
+                                            <div class="text-primary fw-bold">{{ orders_by_status.shipped|default:0 }}</div>
+                                            <small>Shipped</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-2">
+                                        <div class="border rounded p-2">
+                                            <div class="text-success fw-bold">{{ orders_by_status.delivered|default:0 }}</div>
+                                            <small>Delivered</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-2">
+                                        <div class="border rounded p-2">
+                                            <div class="text-danger fw-bold">{{ orders_by_status.cancelled|default:0 }}</div>
+                                            <small>Cancelled</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                    <div class="card-body p-0">
+                        {% if recent_orders %}
+                            <div class="table-responsive">
+                                <table class="table orders-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Date</th>
+                                            <th>Items</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in recent_orders %}
+                                        <tr onclick="window.location.href='{% url 'orders:detail' order.id %}'">
+                                            <td>
+                                                <strong>{{ order.order_number }}</strong>
+                                                <br>
+                                                <small class="text-muted">#{{ order.id }}</small>
+                                            </td>
+                                            <td>
+                                                {{ order.created_at|date:"M d, Y" }}
+                                                <br>
+                                                <small class="text-muted">{{ order.created_at|time:"h:i A" }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ order.items.count }} item(s)</span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-primary">${{ order.total_amount }}</strong>
+                                                <br>
+                                                <small>{{ order.get_payment_method_display }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge-status {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% elif order.status == 'pending' %}bg-warning{% elif order.status == 'shipped' %}bg-info{% else %}bg-primary{% endif %}">
+                                                    <i class="fas {% if order.status == 'delivered' %}fa-check-circle{% elif order.status == 'pending' %}fa-clock{% elif order.status == 'shipped' %}fa-truck{% elif order.status == 'cancelled' %}fa-times-circle{% else %}fa-cogs{% endif %}"></i>
+                                                    {{ order.get_status_display }}
+                                                </span>
+                                                {% if order.status == 'shipped' and order.tracking_number %}
+                                                    <br>
+                                                    <small class="text-muted">Tracking: {{ order.tracking_number|truncatechars:12 }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{% url 'orders:detail' order.id %}" class="btn btn-outline-primary" onclick="event.stopPropagation()">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </a>
+                                                    {% if order.status == 'delivered' %}
+                                                        <a href="#" class="btn btn-outline-success" onclick="event.stopPropagation()">
+                                                            <i class="fas fa-star"></i> Review
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+                                <h5>No Orders Yet</h5>
+                                <p class="text-muted">You haven't placed any orders yet. Start shopping to see your orders here!</p>
+                                <a href="{% url 'products:list' %}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-shopping-cart"></i> Start Shopping
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Recommended Products Section (Optional) -->
+                {% if recommended_products %}
+                <div class="mt-4 animated" style="animation-delay: 0.8s;">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-star text-warning"></i> Recommended for You
+                                </h6>
+                                <a href="{% url 'products:list' %}" class="text-decoration-none">View All →</a>
+                            </div>
+                            <div class="row">
+                                {% for product in recommended_products|slice:":4" %}
+                                <div class="col-md-3 col-6 mb-2">
+                                    <a href="{% url 'products:detail' product.slug %}" class="text-decoration-none">
+                                        <div class="text-center">
+                                            {% if product.images.first %}
+                                                <img src="{{ product.images.first.image.url }}" class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-white rounded d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                                    <i class="fas fa-box fa-2x text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                            <small class="d-block mt-1 text-dark">{{ product.name|truncatechars:20 }}</small>
+                                            <small class="text-primary fw-bold">${{ product.price }}</small>
+                                        </div>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Animate numbers on scroll
+    function animateNumbers() {
+        const numbers = document.querySelectorAll('.stat-value, .stat-card h2');
+        numbers.forEach(num => {
+            const finalValue = parseFloat(num.innerText);
+            if (!isNaN(finalValue) && finalValue > 0) {
+                let current = 0;
+                const increment = finalValue / 30;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= finalValue) {
+                        num.innerText = finalValue % 1 === 0 ? Math.floor(finalValue) : finalValue.toFixed(2);
+                        clearInterval(timer);
+                    } else {
+                        num.innerText = current % 1 === 0 ? Math.floor(current) : current.toFixed(2);
+                    }
+                }, 30);
+            }
+        });
+    }
+    
+    // Trigger animation when page loads
+    // animateNumbers();
+    
+    // Add hover effect to stat cards
+
+    
+    // Update cart badge dynamically (optional)
+    function updateCartBadge() {
+        fetch('/cart/get-total-items/')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadge = document.querySelector('.quick-link-item .badge');
+                if (cartBadge && data.total > 0) {
+                    cartBadge.innerText = data.total;
+                    cartBadge.style.display = 'inline-block';
+                } else if (cartBadge) {
+                    cartBadge.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    
+    // Uncomment to enable dynamic cart update
+    // updateCartBadge();
+</script>
 {% endblock %}

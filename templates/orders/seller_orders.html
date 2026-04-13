@@ -1,173 +1,765 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Seller Orders - Vendora{% endblock %}
 
 {% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: var(--primary-gradient);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    /* Stats Cards */
+    .stat-card-mini {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+
+    .stat-card-mini:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .stat-card-mini.active {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-box input {
+        padding-left: 40px;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 15px;
+        top: 12px;
+        color: #6c757d;
+    }
+
+    /* Orders Table */
+    .orders-table {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .orders-table thead th {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .orders-table tbody tr {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .orders-table tbody tr:hover {
+        background: #f8f9fc;
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .orders-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    /* Status Badges */
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .badge-status i {
+        font-size: 0.7rem;
+    }
+
+    .status-pending { background: #ffc107; color: #856404; }
+    .status-processing { background: #007bff; color: white; }
+    .status-shipped { background: #17a2b8; color: white; }
+    .status-delivered { background: #28a745; color: white; }
+    .status-cancelled { background: #dc3545; color: white; }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Product Image */
+    .product-image-mini {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        object-fit: cover;
+    }
+
+    /* Customer Info */
+    .customer-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .customer-info i {
+        width: 20px;
+        color: #667eea;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    /* Priority Badge */
+    .priority-high {
+        background: #dc3545;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+    }
+
+    .priority-medium {
+        background: #ffc107;
+        color: #856404;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+    }
+
+    .priority-low {
+        background: #28a745;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-action {
+            width: 100%;
+        }
+        
+        .product-image-mini {
+            width: 40px;
+            height: 40px;
+        }
+    }
+
+    /* Bulk Actions */
+    .bulk-actions {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        animation: fadeInUp 0.3s ease;
+    }
+
+    .bulk-actions.show {
+        display: block;
+    }
+
+    /* Tooltip */
+    .tooltip-custom {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip-custom .tooltip-text {
+        visibility: hidden;
+        background-color: #2c3e50;
+        color: white;
+        text-align: center;
+        padding: 5px 10px;
+        border-radius: 6px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .tooltip-custom:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>
+
 <div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <h2 class="mb-4">My Assigned Orders</h2>
-            
-            <!-- Status Filter Buttons -->
-            <div class="mb-4">
-                <div class="btn-group" role="group">
-                    <a href="?status=" class="btn btn-outline-primary {% if not status_filter %}active{% endif %}">
-                        All ({{ total_items }})
-                    </a>
-                    <a href="?status=pending" class="btn btn-outline-warning {% if status_filter == 'pending' %}active{% endif %}">
-                        Pending ({{ pending_count }})
-                    </a>
-                    <a href="?status=processing" class="btn btn-outline-primary {% if status_filter == 'processing' %}active{% endif %}">
-                        Processing ({{ processing_count }})
-                    </a>
-                    <a href="?status=shipped" class="btn btn-outline-info {% if status_filter == 'shipped' %}active{% endif %}">
-                        Shipped ({{ shipped_count }})
-                    </a>
-                    <a href="?status=delivered" class="btn btn-outline-success {% if status_filter == 'delivered' %}active{% endif %}">
-                        Delivered ({{ delivered_count }})
-                    </a>
-                </div>
+    <!-- Page Header -->
+    <div class="page-header animated" style="animation-delay: 0.1s;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">
+                    <i class="fas fa-shopping-cart"></i> My Assigned Orders
+                </h1>
+                <p class="mb-0 opacity-75">Manage and track products assigned to you for fulfillment</p>
             </div>
-            
-            <!-- Order Items Table -->
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Products to Fulfill</h5>
-                </div>
-                <div class="card-body">
-                    {% if order_items %}
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Product</th>
-                                        <th>Quantity</th>
-                                        <th>Price</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Customer</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in order_items %}
-                                    <tr class="{% if item.status == 'pending' %}table-warning{% endif %}">
-                                        <td>
-                                            <strong>{{ item.order.order_number }}</strong>
-                                            <br>
-                                            <small class="text-muted">ID: #{{ item.order.id }}</small>
-                                        </td>
-                                        <td>
-                                            <strong>{{ item.product.name }}</strong>
-                                            <br>
-                                            <small>SKU: {{ item.product.sku }}</small>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-secondary fs-6">{{ item.quantity }}</span>
-                                        </td>
-                                        <td>${{ item.price }}</td>
-                                        <td><strong>${{ item.total }}</strong></td>
-                                        <td>
-                                            <span class="badge bg-{% if item.status == 'delivered' %}success{% elif item.status == 'shipped' %}info{% elif item.status == 'processing' %}primary{% elif item.status == 'pending' %}warning{% else %}secondary{% endif %} fs-6">
-                                                {{ item.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {{ item.order.user.email }}
-                                            <br>
-                                            <small>{{ item.order.shipping_phone }}</small>
-                                        </td>
-                                        <td>
-                                            <!-- Action Buttons based on status -->
-                                            {% if item.status == 'pending' %}
-                                                <a href="{% url 'orders:process_order_item' item.id %}" 
-                                                   class="btn btn-primary btn-sm w-100 mb-1"
-                                                   onclick="return confirm('Start processing this item?')">
-                                                    <i class="fas fa-cogs"></i> Process
-                                                </a>
-                                                <a href="{% url 'orders:detail' item.order.id %}" 
-                                                   class="btn btn-info btn-sm w-100">
-                                                    <i class="fas fa-eye"></i> View Order
-                                                </a>
-                                                
-                                            {% elif item.status == 'processing' %}
-                                                <a href="{% url 'orders:ship_order_item' item.id %}" 
-                                                   class="btn btn-info btn-sm w-100 mb-1">
-                                                    <i class="fas fa-truck"></i> Ship
-                                                </a>
-                                                <a href="{% url 'orders:detail' item.order.id %}" 
-                                                   class="btn btn-info btn-sm w-100">
-                                                    <i class="fas fa-eye"></i> View Order
-                                                </a>
-                                                
-                                            {% elif item.status == 'shipped' %}
-                                                <a href="{% url 'orders:deliver_order_item' item.id %}" 
-                                                   class="btn btn-success btn-sm w-100 mb-1"
-                                                   onclick="return confirm('Mark as delivered?')">
-                                                    <i class="fas fa-check-circle"></i> Deliver
-                                                </a>
-                                                <a href="{% url 'orders:detail' item.order.id %}" 
-                                                   class="btn btn-info btn-sm w-100">
-                                                    <i class="fas fa-eye"></i> View Order
-                                                </a>
-                                                
-                                            {% else %}
-                                                <a href="{% url 'orders:detail' item.order.id %}" 
-                                                   class="btn btn-info btn-sm w-100">
-                                                    <i class="fas fa-eye"></i> View Order
-                                                </a>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        {% if order_items.has_other_pages %}
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                {% if order_items.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ order_items.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
-                                            Previous
-                                        </a>
-                                    </li>
-                                {% endif %}
-                                
-                                {% for i in order_items.paginator.page_range %}
-                                    {% if order_items.number == i %}
-                                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
-                                    {% else %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-                                
-                                {% if order_items.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ order_items.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
-                                            Next
-                                        </a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                        {% endif %}
-                        
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
-                            <h4>No Orders Assigned</h4>
-                            <p>You don't have any orders to process at the moment.</p>
-                        </div>
-                    {% endif %}
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="d-inline-block bg-white bg-opacity-25 rounded px-3 py-2">
+                    <i class="fas fa-store"></i> {{ request.user.seller_profile.company.name|default:"Your Store" }}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4 animated" style="animation-delay: 0.2s;">
+        <div class="col-md-3 col-sm-6 mb-2">
+            <div class="stat-card-mini {% if not status_filter %}active{% endif %}" onclick="filterStatus('')">
+                <div class="stat-number">{{ total_items }}</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'pending' %}active{% endif %}" onclick="filterStatus('pending')">
+                <div class="stat-number text-warning">{{ pending_count }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'processing' %}active{% endif %}" onclick="filterStatus('processing')">
+                <div class="stat-number text-primary">{{ processing_count }}</div>
+                <div class="stat-label">Processing</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'shipped' %}active{% endif %}" onclick="filterStatus('shipped')">
+                <div class="stat-number text-info">{{ shipped_count }}</div>
+                <div class="stat-label">Shipped</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'delivered' %}active{% endif %}" onclick="filterStatus('delivered')">
+                <div class="stat-number text-success">{{ delivered_count }}</div>
+                <div class="stat-label">Delivered</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section animated" style="animation-delay: 0.3s;">
+        <div class="row align-items-center">
+            <div class="col-md-5 mb-3 mb-md-0">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by order #, product, or customer...">
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <select id="dateFilter" class="form-select">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3 mb-md-0">
+                <select id="priorityFilter" class="form-select">
+                    <option value="">All Priority</option>
+                    <option value="high">High Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="low">Low Priority</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="bulk-actions" id="bulkActions">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <strong><span id="selectedCount">0</span> items selected</strong>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button class="btn btn-success btn-sm" onclick="bulkProcess()">
+                    <i class="fas fa-cogs"></i> Bulk Process
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="clearSelection()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Items Table -->
+    <div class="orders-table animated" style="animation-delay: 0.4s;">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                        </th>
+                        <th>Order Details</th>
+                        <th>Product Info</th>
+                        <th>Quantity</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Customer</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    {% for item in order_items %}
+                    <tr class="order-row" data-item-id="{{ item.id }}" data-status="{{ item.status }}">
+                        <td>
+                            <input type="checkbox" class="order-checkbox" value="{{ item.id }}" onchange="updateBulkActions()">
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ item.order.order_number }}</div>
+                            <small class="text-muted">#{{ item.order.id }}</small>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-alt"></i> {{ item.order.created_at|date:"M d, Y" }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if item.product.images.first %}
+                                    <img src="{{ item.product.images.first.image.url }}" class="product-image-mini" alt="{{ item.product.name }}">
+                                {% else %}
+                                    <div class="product-image-mini bg-light d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-box text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ item.product.name|truncatechars:35 }}</div>
+                                    <small class="text-muted">SKU: {{ item.product.sku|default:"N/A" }}</small>
+                                    {% if item.product.category %}
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="fas fa-tag"></i> {{ item.product.category.name }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary px-3 py-2">{{ item.quantity }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-primary">${{ item.total }}</div>
+                            <small class="text-muted">${{ item.price }} each</small>
+                        </td>
+                        <td>
+                            <span class="badge-status status-{{ item.status }}">
+                                <i class="fas {% if item.status == 'pending' %}fa-clock{% elif item.status == 'processing' %}fa-cogs{% elif item.status == 'shipped' %}fa-truck{% elif item.status == 'delivered' %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                                {{ item.get_status_display }}
+                            </span>
+                            {% if item.status == 'pending' and item.order.created_at|timesince > "2 days" %}
+                                <br>
+                                <span class="priority-high mt-1 d-inline-block">
+                                    <i class="fas fa-exclamation-circle"></i> Urgent
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="customer-info">
+                                <div>
+                                    <i class="fas fa-user"></i> {{ item.order.user.get_full_name|default:item.order.user.email|truncatechars:15 }}
+                                </div>
+                                <div>
+                                    <i class="fas fa-phone"></i> {{ item.order.shipping_phone }}
+                                </div>
+                                <div>
+                                    <i class="fas fa-map-marker-alt"></i> {{ item.order.shipping_city }}, {{ item.order.shipping_country }}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <!-- View Order Details -->
+                                <a href="{% url 'orders:detail' item.order.id %}" 
+                                   class="btn btn-info btn-action tooltip-custom" title="View Order">
+                                    <i class="fas fa-eye"></i>
+                                    <span class="tooltip-text">View Order Details</span>
+                                </a>
+                                
+                                {% if item.status == 'pending' %}
+                                    <!-- Process Item -->
+                                    <a href="{% url 'orders:process_order_item' item.id %}" 
+                                       class="btn btn-primary btn-action tooltip-custom"
+                                       onclick="return confirm('Start processing this item?')">
+                                        <i class="fas fa-cogs"></i> Process
+                                        <span class="tooltip-text">Start Processing</span>
+                                    </a>
+                                    
+                                {% elif item.status == 'processing' %}
+                                    <!-- Ship Item -->
+                                    <a href="{% url 'orders:ship_order_item' item.id %}" 
+                                       class="btn btn-info btn-action tooltip-custom">
+                                        <i class="fas fa-truck"></i> Ship
+                                        <span class="tooltip-text">Mark as Shipped</span>
+                                    </a>
+                                    
+                                {% elif item.status == 'shipped' %}
+                                    <!-- Deliver Item -->
+                                    <a href="{% url 'orders:deliver_order_item' item.id %}" 
+                                       class="btn btn-success btn-action tooltip-custom"
+                                       onclick="return confirm('Mark this item as delivered?')">
+                                        <i class="fas fa-check-circle"></i> Deliver
+                                        <span class="tooltip-text">Mark as Delivered</span>
+                                    </a>
+                                {% endif %}
+                                
+                                <!-- Contact Customer -->
+                                <a href="mailto:{{ item.order.user.email }}" 
+                                   class="btn btn-outline-secondary btn-action tooltip-custom">
+                                    <i class="fas fa-envelope"></i>
+                                    <span class="tooltip-text">Email Customer</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                            <h4>No Orders Assigned</h4>
+                            <p class="text-muted">You don't have any orders to process at the moment.</p>
+                            <a href="{% url 'products:manage' %}" class="btn btn-primary mt-2">
+                                <i class="fas fa-box"></i> View My Products
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if order_items.has_other_pages %}
+        <div class="p-3 bg-light">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if order_items.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ order_items.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for i in order_items.paginator.page_range %}
+                        {% if order_items.number == i %}
+                            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% elif i > order_items.number|add:'-3' and i < order_items.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if order_items.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ order_items.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
 </div>
+
+<script>
+    // Filter by status
+    function filterStatus(status) {
+        window.location.href = '?status=' + status;
+    }
+    
+    // Search functionality
+    document.getElementById('searchInput')?.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.order-row');
+        
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+    
+    // Date filter
+    document.getElementById('dateFilter')?.addEventListener('change', function() {
+        const filter = this.value;
+        const rows = document.querySelectorAll('.order-row');
+        const today = new Date();
+        
+        rows.forEach(row => {
+            const dateText = row.cells[0]?.innerText || '';
+            const match = dateText.match(/\d{4}-\d{2}-\d{2}/);
+            if (match) {
+                const rowDate = new Date(match[0]);
+                let show = true;
+                
+                if (filter === 'today') {
+                    show = rowDate.toDateString() === today.toDateString();
+                } else if (filter === 'week') {
+                    const weekAgo = new Date(today.setDate(today.getDate() - 7));
+                    show = rowDate >= weekAgo;
+                } else if (filter === 'month') {
+                    const monthAgo = new Date(today.setMonth(today.getMonth() - 1));
+                    show = rowDate >= monthAgo;
+                }
+                
+                row.style.display = show ? '' : 'none';
+            }
+        });
+    });
+    
+    // Priority filter
+    document.getElementById('priorityFilter')?.addEventListener('change', function() {
+        const filter = this.value;
+        const rows = document.querySelectorAll('.order-row');
+        
+        rows.forEach(row => {
+            if (filter === '') {
+                row.style.display = '';
+            } else {
+                const hasUrgent = row.innerText.toLowerCase().includes('urgent');
+                if (filter === 'high' && hasUrgent) {
+                    row.style.display = '';
+                } else if (filter === 'medium' && !hasUrgent) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    });
+    
+    // Reset filters
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('dateFilter').value = '';
+        document.getElementById('priorityFilter').value = '';
+        location.reload();
+    }
+    
+    // Bulk actions
+    let selectedItems = [];
+    
+    function updateBulkActions() {
+        const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+        selectedItems = Array.from(checkboxes).map(cb => cb.value);
+        
+        const bulkActions = document.getElementById('bulkActions');
+        const selectedCount = document.getElementById('selectedCount');
+        
+        if (selectedItems.length > 0) {
+            bulkActions.classList.add('show');
+            selectedCount.innerText = selectedItems.length;
+        } else {
+            bulkActions.classList.remove('show');
+        }
+    }
+    
+    function toggleSelectAll() {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.order-checkbox');
+        
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+        });
+        
+        updateBulkActions();
+    }
+    
+    function clearSelection() {
+        const checkboxes = document.querySelectorAll('.order-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+        });
+        updateBulkActions();
+    }
+    
+    function bulkProcess() {
+        if (selectedItems.length === 0) return;
+        
+        if (confirm(`Process ${selectedItems.length} item(s)?`)) {
+            // Implement bulk process via AJAX
+            fetch('/orders/bulk-process-items/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({item_ids: selectedItems})
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
+    }
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Add row click handler for view details
+    document.querySelectorAll('.order-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox' && !e.target.classList.contains('btn') && !e.target.closest('.btn')) {
+                const viewLink = this.querySelector('.btn-info');
+                if (viewLink) {
+                    window.location.href = viewLink.href;
+                }
+            }
+        });
+    });
+    
+    // Auto-refresh every 60 seconds (optional)
+    let autoRefresh = true;
+    if (autoRefresh && document.querySelector('.order-row')) {
+        setTimeout(() => {
+            location.reload();
+        }, 60000);
+    }
+</script>
 {% endblock %}

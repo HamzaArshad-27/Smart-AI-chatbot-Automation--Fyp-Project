@@ -1,28 +1,583 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Ship Order - Vendora{% endblock %}
+{% block title %}Ship Order #{{ order.order_number }} - Vendora{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Ship Order #{{ order.order_number }}</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label">Tracking Number</label>
-                            <input type="text" name="tracking_number" class="form-control" required placeholder="Enter tracking number">
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    }
+
+    .page-wrapper {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: calc(100vh - 56px);
+        padding: 2rem 0;
+    }
+
+    .shipment-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        animation: fadeInUp 0.6s ease;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header-premium {
+        background: var(--primary-gradient);
+        padding: 1.5rem;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header-premium::before {
+        content: '';
+        position: absolute;
+        top: -30%;
+        right: -10%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .card-header-premium::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 150px;
+        height: 150px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .order-info {
+        background: #f8f9fc;
+        border-radius: 15px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .info-value {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .items-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border-radius: 15px;
+        background: #f8f9fc;
+        padding: 1rem;
+    }
+
+    .item-card {
+        background: white;
+        border-radius: 12px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid #e0e0e0;
+    }
+
+    .item-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-color: #667eea;
+    }
+
+    .item-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        object-fit: cover;
+        background: #f8f9fc;
+    }
+
+    .item-details {
+        flex: 1;
+    }
+
+    .item-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .item-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .tracking-form {
+        background: #f8f9fc;
+        border-radius: 15px;
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label i {
+        color: #667eea;
+    }
+
+    .form-control-premium {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .form-control-premium:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+
+    .btn-premium {
+        background: var(--primary-gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+    }
+
+    .btn-premium:active {
+        transform: translateY(0);
+    }
+
+    .btn-outline-premium {
+        border: 2px solid #667eea;
+        border-radius: 12px;
+        padding: 0.75rem;
+        font-weight: 600;
+        color: #667eea;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-premium:hover {
+        background: var(--primary-gradient);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .shipping-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 1rem;
+        color: white;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .shipping-icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-tip {
+        background: #d4edda;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: #155724;
+    }
+
+    /* Loading Animation */
+    .btn-loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .btn-loading::after {
+        content: '';
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        margin-left: 0.5rem;
+        border: 2px solid white;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-wrapper {
+            padding: 1rem;
+        }
+        
+        .item-card {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .item-image {
+            width: 80px;
+            height: 80px;
+        }
+    }
+</style>
+
+<div class="page-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Main Shipment Card -->
+                <div class="card shipment-card">
+                    <div class="card-header-premium">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="text-white mb-1">
+                                    <i class="fas fa-truck"></i> Ship Order
+                                </h3>
+                                <p class="text-white-50 mb-0">
+                                    Order #{{ order.order_number }}
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-light text-dark px-3 py-2">
+                                    <i class="fas fa-calendar-alt"></i> {{ order.created_at|date:"M d, Y" }}
+                                </span>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Mark as Shipped</button>
-                        <a href="{% url 'orders:company_orders' %}" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
-                    </form>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <!-- Shipping Information Banner -->
+                        <div class="shipping-info">
+                            <div class="shipping-icon">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <h5 class="mb-1">Ready to Ship?</h5>
+                            <p class="mb-0 opacity-75">Enter tracking number to mark order as shipped</p>
+                        </div>
+                        
+                        <!-- Order Summary -->
+                        <div class="order-info">
+                            <h6 class="mb-3">
+                                <i class="fas fa-clipboard-list text-primary"></i> Order Summary
+                            </h6>
+                            <div class="info-row">
+                                <span class="info-label">Order Number:</span>
+                                <span class="info-value">{{ order.order_number }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Order Date:</span>
+                                <span class="info-value">{{ order.created_at|date:"F d, Y h:i A" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Total Amount:</span>
+                                <span class="info-value text-primary fw-bold">${{ order.total_amount }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Payment Method:</span>
+                                <span class="info-value">{{ order.get_payment_method_display }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Information -->
+                        <div class="order-info">
+                            <h6 class="mb-3">
+                                <i class="fas fa-user text-primary"></i> Customer Information
+                            </h6>
+                            <div class="info-row">
+                                <span class="info-label">Name:</span>
+                                <span class="info-value">{{ order.user.get_full_name|default:order.user.email }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Email:</span>
+                                <span class="info-value">{{ order.user.email }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Phone:</span>
+                                <span class="info-value">{{ order.shipping_phone }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Shipping Address -->
+                        <div class="order-info">
+                            <h6 class="mb-3">
+                                <i class="fas fa-map-marker-alt text-primary"></i> Shipping Address
+                            </h6>
+                            <div class="info-row">
+                                <span class="info-label">Address:</span>
+                                <span class="info-value">{{ order.shipping_address }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">City:</span>
+                                <span class="info-value">{{ order.shipping_city }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">State/Province:</span>
+                                <span class="info-value">{{ order.shipping_state }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Country:</span>
+                                <span class="info-value">{{ order.shipping_country }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Postal Code:</span>
+                                <span class="info-value">{{ order.shipping_postal_code }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Items -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">
+                                <i class="fas fa-boxes text-primary"></i> Order Items ({{ order.items.count }})
+                            </h6>
+                            <div class="items-list">
+                                {% for item in order.items.all %}
+                                <div class="item-card">
+                                    {% if item.product.images.first %}
+                                        <img src="{{ item.product.images.first.image.url }}" class="item-image" alt="{{ item.product.name }}">
+                                    {% else %}
+                                        <div class="item-image bg-light d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-box fa-2x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="item-details">
+                                        <div class="item-name">{{ item.product.name }}</div>
+                                        <div class="item-meta">
+                                            Quantity: {{ item.quantity }} × ${{ item.price }} = 
+                                            <strong>${{ item.get_total_price }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-info">
+                                            {{ item.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Tracking Form -->
+                        <div class="tracking-form">
+                            <form method="post" id="shipOrderForm">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-qrcode"></i> Tracking Number
+                                    </label>
+                                    <input type="text" 
+                                           name="tracking_number" 
+                                           id="trackingNumber"
+                                           class="form-control form-control-premium" 
+                                           required 
+                                           placeholder="Enter tracking number (e.g., 1Z999AA10123456784)">
+                                    <small class="text-muted mt-2 d-block">
+                                        <i class="fas fa-info-circle"></i> 
+                                        You can update tracking number later from order details
+                                    </small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-truck"></i> Shipping Carrier (Optional)
+                                    </label>
+                                    <select name="carrier" class="form-control form-control-premium">
+                                        <option value="">Select carrier</option>
+                                        <option value="fedex">FedEx</option>
+                                        <option value="ups">UPS</option>
+                                        <option value="usps">USPS</option>
+                                        <option value="dhl">DHL</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar"></i> Estimated Delivery Date (Optional)
+                                    </label>
+                                    <input type="date" 
+                                           name="estimated_delivery" 
+                                           class="form-control form-control-premium">
+                                </div>
+                                
+                                <div class="alert-tip">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <strong>Pro Tip:</strong> Send the tracking number to the customer via email or SMS for better customer experience.
+                                </div>
+                                
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-premium text-white" id="submitBtn">
+                                        <i class="fas fa-paper-plane"></i> Mark as Shipped & Notify Customer
+                                    </button>
+                                    <a href="{% url 'orders:company_orders' %}" class="btn btn-outline-premium">
+                                        <i class="fas fa-arrow-left"></i> Back to Orders
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Form submission with loading state
+    document.getElementById('shipOrderForm')?.addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const trackingNumber = document.getElementById('trackingNumber');
+        
+        // Validate tracking number format (basic validation)
+        if (trackingNumber.value.trim().length < 5) {
+            e.preventDefault();
+            showNotification('Please enter a valid tracking number', 'error');
+            trackingNumber.focus();
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.classList.add('btn-loading');
+        submitBtn.innerHTML = '<i class="fas fa-spinner"></i> Processing...';
+        submitBtn.disabled = true;
+        
+        // Show success notification (will continue with form submission)
+        showNotification('Shipping order... Please wait', 'info');
+    });
+    
+    // Auto-generate tracking number suggestion
+    function generateTrackingNumber() {
+        const prefix = 'TRK';
+        const timestamp = Date.now().toString().slice(-8);
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        return `${prefix}${timestamp}${random}`;
+    }
+    
+    // Add tracking number suggestion
+    const trackingInput = document.getElementById('trackingNumber');
+    if (trackingInput && !trackingInput.value) {
+        // Optional: Add a suggestion button
+        const suggestionHtml = `
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="suggestTrackingNumber()">
+                <i class="fas fa-magic"></i> Suggest Tracking Number
+            </button>
+        `;
+        trackingInput.insertAdjacentHTML('afterend', suggestionHtml);
+    }
+    
+    function suggestTrackingNumber() {
+        const trackingInput = document.getElementById('trackingNumber');
+        trackingInput.value = generateTrackingNumber();
+        trackingInput.classList.add('border-success');
+        setTimeout(() => {
+            trackingInput.classList.remove('border-success');
+        }, 2000);
+        showNotification('Tracking number generated!', 'success');
+    }
+    
+    // Notification system
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 end-0 m-3`;
+        notification.style.zIndex = '9999';
+        notification.style.animation = 'fadeInUp 0.3s ease';
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} me-2"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'fadeInUp 0.3s reverse';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    // Add keyboard shortcut (Ctrl+Enter to submit)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            const form = document.getElementById('shipOrderForm');
+            if (form) {
+                form.dispatchEvent(new Event('submit'));
+            }
+        }
+    });
+    
+    // Track input changes for better UX
+    trackingInput?.addEventListener('input', function() {
+        if (this.value.length > 0) {
+            this.classList.add('border-success');
+        } else {
+            this.classList.remove('border-success');
+        }
+    });
+    
+    // Prevent accidental navigation
+    window.addEventListener('beforeunload', function(e) {
+        const form = document.getElementById('shipOrderForm');
+        const trackingNumber = document.getElementById('trackingNumber');
+        if (form && trackingNumber && trackingNumber.value.trim().length > 0 && !form.submitted) {
+            e.preventDefault();
+            e.returnValue = 'You have entered a tracking number. Are you sure you want to leave?';
+        }
+    });
+</script>
 {% endblock %}

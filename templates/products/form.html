@@ -1,92 +1,768 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Product - Vendora{% endblock %}
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    }
+
+    .product-form-wrapper {
+        background: #f8f9fc;
+        min-height: calc(100vh - 56px);
+        padding: 2rem 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    }
+
+    .form-card .card-header {
+        background: var(--primary-gradient);
+        padding: 1.5rem;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-card .card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .form-card .card-header h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-card .card-header p {
+        margin: 0.5rem 0 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-card .card-body {
+        padding: 2rem;
+    }
+
+    /* Form Sections */
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+        border-color: #667eea;
+        box-shadow: 0 5px 15px rgba(102,126,234,0.1);
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title i {
+        color: #667eea;
+        font-size: 1.2rem;
+    }
+
+    /* Form Styling */
     .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label i {
+        color: #667eea;
+        font-size: 0.9rem;
+    }
+
+    .form-control, select, textarea {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, select:focus, textarea:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+
+    /* Image Upload Area */
+    .image-upload-area {
+        border: 2px dashed #667eea;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8f9fc;
+    }
+
+    .image-upload-area:hover {
+        background: rgba(102,126,234,0.05);
+        border-color: #764ba2;
+    }
+
+    .image-upload-area i {
+        font-size: 3rem;
+        color: #667eea;
         margin-bottom: 1rem;
     }
-    .image-preview {
-        max-width: 200px;
-        margin-top: 10px;
+
+    .image-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .image-preview-item {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+
+    .image-preview-item:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+    }
+
+    .image-preview-item img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .image-preview-item .image-actions {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        display: flex;
+        gap: 5px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .image-preview-item:hover .image-actions {
+        opacity: 1;
+    }
+
+    .image-preview-item .main-badge {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        background: rgba(102,126,234,0.9);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+    }
+
+    /* Switch Toggle */
+    .switch-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        background: #f8f9fc;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+    }
+
+    .switch-label {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: #667eea;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    /* Button Styling */
+    .btn-submit {
+        background: var(--primary-gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+    }
+
+    /* Price Input Group */
+    .input-group-custom {
+        position: relative;
+    }
+
+    .input-group-custom .currency-symbol {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        z-index: 1;
+    }
+
+    .input-group-custom input {
+        padding-left: 30px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-section {
+            padding: 1rem;
+        }
+    }
+
+    /* Loading State */
+    .btn-loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .btn-loading::after {
+        content: '';
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        margin-left: 0.5rem;
+        border: 2px solid white;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">{% if is_edit %}Edit Product{% else %}Add New Product{% endif %}</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.name|as_crispy_field }}
-                                {{ form.category|as_crispy_field }}
-                                {{ form.sku|as_crispy_field }}
-                                {{ form.barcode|as_crispy_field }}
+<div class="product-form-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-card animated" style="animation-delay: 0.1s;">
+                    <div class="card-header">
+                        <h4>
+                            <i class="fas {% if is_edit %}fa-edit{% else %}fa-plus-circle{% endif %}"></i>
+                            {% if is_edit %}Edit Product{% else %}Add New Product{% endif %}
+                        </h4>
+                        <p>Fill in the product details below. All fields marked with * are required.</p>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" id="productForm">
+                            {% csrf_token %}
+                            
+                            <!-- Basic Information Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    Basic Information
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        {{ form.name|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.category|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.sku|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        {{ form.barcode|as_crispy_field }}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                {{ form.price|as_crispy_field }}
-                                {{ form.compare_price|as_crispy_field }}
-                                {{ form.cost_per_item|as_crispy_field }}
-                                {{ form.stock_quantity|as_crispy_field }}
-                                {{ form.low_stock_threshold|as_crispy_field }}
+                            
+                            <!-- Pricing & Inventory Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Pricing & Inventory
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="input-group-custom">
+                                            <span class="currency-symbol">$</span>
+                                            {{ form.price|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group-custom">
+                                            <span class="currency-symbol">$</span>
+                                            {{ form.compare_price|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group-custom">
+                                            <span class="currency-symbol">$</span>
+                                            {{ form.cost_per_item|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.stock_quantity|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.low_stock_threshold|as_crispy_field }}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        {{ form.short_description|as_crispy_field }}
-                        {{ form.description|as_crispy_field }}
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.weight|as_crispy_field }}
+                            
+                            <!-- Description Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-align-left"></i>
+                                    Description
+                                </div>
+                                {{ form.short_description|as_crispy_field }}
+                                {{ form.description|as_crispy_field }}
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Support markdown formatting for product description
+                                </small>
                             </div>
-                            <div class="col-md-6">
-                                {{ form.dimensions|as_crispy_field }}
+                            
+                            <!-- Shipping Details Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-truck"></i>
+                                    Shipping Details
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.weight|as_crispy_field }}
+                                        <small class="text-muted">Weight in kg/lbs</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.dimensions|as_crispy_field }}
+                                        <small class="text-muted">Format: L x W x H (cm)</small>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                {{ form.is_active|as_crispy_field }}
+                            
+                            <!-- Product Status Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-toggle-on"></i>
+                                    Product Status
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="switch-toggle">
+                                            <span class="switch-label">
+                                                <i class="fas fa-eye"></i> Active Product
+                                            </span>
+                                            <label class="switch">
+                                                {{ form.is_active }}
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="switch-toggle">
+                                            <span class="switch-label">
+                                                <i class="fas fa-star"></i> Featured Product
+                                            </span>
+                                            <label class="switch">
+                                                {{ form.is_featured }}
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="switch-toggle">
+                                            <span class="switch-label">
+                                                <i class="fas fa-download"></i> Digital Product
+                                            </span>
+                                            <label class="switch">
+                                                {{ form.is_digital }}
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                {{ form.is_featured|as_crispy_field }}
+                            
+                            <!-- Product Images Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-images"></i>
+                                    Product Images
+                                </div>
+                                
+                                <div class="image-upload-area" onclick="document.getElementById('imageInput').click()">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <h6>Click to upload images</h6>
+                                    <p class="text-muted small mb-0">PNG, JPG, WEBP up to 5MB each</p>
+                                </div>
+                                <input type="file" name="images" id="imageInput" multiple accept="image/*" style="display: none;">
+                                
+                                <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                                
+                                {% if is_edit and existing_images %}
+                                <div class="mt-3">
+                                    <label class="form-label">Existing Images</label>
+                                    <div class="image-preview-grid">
+                                        {% for image in existing_images %}
+                                        <div class="image-preview-item">
+                                            <img src="{{ image.image.url }}" alt="Product Image">
+                                            <div class="image-actions">
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteImage({{ image.id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% if forloop.first %}
+                                                    <span class="main-badge">Main</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle"></i> 
+                                    First image will be used as the main product image. You can upload up to 10 images.
+                                </small>
                             </div>
-                            <div class="col-md-4">
-                                {{ form.is_digital|as_crispy_field }}
+                            
+                            <!-- Form Actions -->
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-submit text-white" id="submitBtn">
+                                    <i class="fas fa-save"></i> 
+                                    {% if is_edit %}Update Product{% else %}Create Product{% endif %}
+                                </button>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'products:manage' %}" class="btn btn-outline-secondary flex-grow-1">
+                                        <i class="fas fa-arrow-left"></i> Back to Products
+                                    </a>
+                                    {% if not is_edit %}
+                                    <button type="button" class="btn btn-outline-primary" onclick="saveAndAddAnother()">
+                                        <i class="fas fa-plus"></i> Save & Add Another
+                                    </button>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
-                        
-                        {% if not is_edit %}
-                        <div class="mb-3">
-                            <label class="form-label">Product Images</label>
-                            <input type="file" name="images" multiple accept="image/*" class="form-control">
-                            <small class="text-muted">You can upload multiple images. First image will be the main image.</small>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="d-grid gap-2 mt-3">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> {% if is_edit %}Update{% else %}Create{% endif %} Product
-                            </button>
-                            <a href="{% url 'products:manage' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Products
-                            </a>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Image preview functionality
+    const imageInput = document.getElementById('imageInput');
+    const imagePreviewGrid = document.getElementById('imagePreviewGrid');
+    let uploadedFiles = [];
+    
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            uploadedFiles = [...uploadedFiles, ...files];
+            displayImagePreviews();
+        });
+    }
+    
+    function displayImagePreviews() {
+        if (!imagePreviewGrid) return;
+        
+        imagePreviewGrid.innerHTML = '';
+        uploadedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'image-preview-item';
+                previewItem.innerHTML = `
+                    <img src="${event.target.result}" alt="Preview">
+                    <div class="image-actions">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeImage(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    ${index === 0 ? '<span class="main-badge">Main</span>' : ''}
+                `;
+                imagePreviewGrid.appendChild(previewItem);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    function removeImage(index) {
+        uploadedFiles.splice(index, 1);
+        const newFileList = new DataTransfer();
+        uploadedFiles.forEach(file => newFileList.items.add(file));
+        imageInput.files = newFileList.files;
+        displayImagePreviews();
+    }
+    
+    function deleteImage(imageId) {
+        if (confirm('Delete this image?')) {
+            fetch(`/products/delete-image/${imageId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            }).then(() => location.reload());
+        }
+    }
+    
+    // Price validation
+    const priceInput = document.querySelector('#id_price');
+    const comparePriceInput = document.querySelector('#id_compare_price');
+    
+    if (priceInput && comparePriceInput) {
+        comparePriceInput.addEventListener('change', function() {
+            const price = parseFloat(priceInput.value);
+            const comparePrice = parseFloat(this.value);
+            if (comparePrice && price && comparePrice <= price) {
+                this.classList.add('is-invalid');
+                showNotification('Compare price should be greater than regular price', 'warning');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    }
+    
+    // Stock validation
+    const stockInput = document.querySelector('#id_stock_quantity');
+    const thresholdInput = document.querySelector('#id_low_stock_threshold');
+    
+    if (stockInput && thresholdInput) {
+        thresholdInput.addEventListener('change', function() {
+            const threshold = parseInt(this.value);
+            if (threshold < 0) {
+                this.classList.add('is-invalid');
+                showNotification('Low stock threshold cannot be negative', 'warning');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    }
+    
+    // Form submission with loading state
+    const form = document.getElementById('productForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            submitBtn.classList.add('btn-loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            submitBtn.disabled = true;
+        });
+    }
+    
+    // Save and add another
+    function saveAndAddAnother() {
+        const form = document.getElementById('productForm');
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'save_and_add';
+        form.appendChild(actionInput);
+        form.submit();
+    }
+    
+    // Notification system
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+        notification.style.zIndex = '9999';
+        notification.style.animation = 'slideDown 0.5s ease';
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    // Auto-save draft (optional)
+    let autoSaveTimeout;
+    const formInputs = document.querySelectorAll('#productForm input, #productForm select, #productForm textarea');
+    
+    formInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                // Implement auto-save functionality here
+                console.log('Auto-saving draft...');
+            }, 3000);
+        });
+    });
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Character counter for description
+    const descriptionField = document.querySelector('#id_description');
+    if (descriptionField) {
+        const counter = document.createElement('small');
+        counter.className = 'text-muted float-end';
+        counter.innerHTML = '0 characters';
+        descriptionField.parentNode.appendChild(counter);
+        
+        descriptionField.addEventListener('input', function() {
+            const count = this.value.length;
+            counter.innerHTML = `${count} characters`;
+            if (count > 5000) {
+                counter.classList.add('text-danger');
+            } else {
+                counter.classList.remove('text-danger');
+            }
+        });
+    }
+    
+    // Slug auto-generation (if name field exists)
+    const nameField = document.querySelector('#id_name');
+    const slugField = document.querySelector('#id_slug');
+    
+    if (nameField && slugField && !slugField.value) {
+        nameField.addEventListener('blur', function() {
+            const slug = this.value.toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/--+/g, '-')
+                .trim();
+            slugField.value = slug;
+        });
+    }
+</script>
 {% endblock %}
