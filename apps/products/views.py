@@ -300,14 +300,19 @@ def product_image_delete(request, image_id):
 
 
 
-####################################### Categoy ####################################
-# Add these imports at the top
+
+import json
+from django.http import JsonResponse
+from django.contrib.auth.decorators import user_passes_test
 from .models import Product, Category, ProductReview, ProductImage
 from .forms import ProductForm, ProductReviewForm, ProductImageForm, CategoryForm
 
+def is_admin(user):
+    return user.is_superuser or getattr(user, 'role', '') == 'admin'
+
 # Category Management Views
 @login_required
-#@user_passes_test(lambda u: u.is_superuser or u.role == 'admin,company')
+@user_passes_test(is_admin)
 def category_list(request):
     """List all categories for admin"""
     categories = Category.objects.all()
@@ -315,7 +320,7 @@ def category_list(request):
     return render(request, 'products/categories/category_list.html', {'categories': categories})
 
 @login_required
-#@user_passes_test(lambda u: u.is_superuser or u.role == 'admin,company')
+@user_passes_test(is_admin)
 def category_create(request):
     """Create new category"""
     if request.method == 'POST':
@@ -330,7 +335,7 @@ def category_create(request):
     return render(request, 'products/categories/form.html', {'form': form, 'is_edit': False})
 
 @login_required
-#@user_passes_test(lambda u: u.is_superuser or u.role == 'admin,company')
+@user_passes_test(is_admin)
 def category_edit(request, category_id):
     """Edit category"""
     category = get_object_or_404(Category, id=category_id)
@@ -347,7 +352,7 @@ def category_edit(request, category_id):
     return render(request, 'products/categories/form.html', {'form': form, 'category': category, 'is_edit': True})
 
 @login_required
-#@user_passes_test(lambda u: u.is_superuser or u.role == 'admin,company')
+@user_passes_test(is_admin)
 def category_delete(request, category_id):
     """Delete category"""
     category = get_object_or_404(Category, id=category_id)
@@ -359,14 +364,6 @@ def category_delete(request, category_id):
         return redirect('products:category_list')
     
     return render(request, 'products/categories/delete.html', {'category': category})
-
-
-
-
-
-
-import json
-from django.http import JsonResponse
 
 
 
