@@ -2,90 +2,345 @@
 {% load static %}
 
 {% block content %}
+<!-- Add AOS Animation Library -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
 <style>
-    /* Modern Hero - Ultra Minimal */
-    .hero-minimal {
+    /* Full Screen Hero Section */
+    .hero-fullscreen {
+        min-height: 100vh;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2.5rem 0;
-        margin-bottom: 2rem;
         position: relative;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
     }
     
-    .hero-minimal::before {
-        content: '';
+    /* Animated Background Elements */
+    .hero-background {
         position: absolute;
-        top: -50%;
-        right: -10%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    
+    .floating-shape {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 20s infinite ease-in-out;
+    }
+    
+    .shape-1 {
         width: 300px;
         height: 300px;
-        background: rgba(255,255,255,0.05);
+        top: -150px;
+        right: -150px;
+        animation-delay: 0s;
+    }
+    
+    .shape-2 {
+        width: 200px;
+        height: 200px;
+        bottom: -100px;
+        left: -100px;
+        animation-delay: 5s;
+    }
+    
+    .shape-3 {
+        width: 150px;
+        height: 150px;
+        top: 50%;
+        left: 10%;
+        animation-delay: 10s;
+    }
+    
+    .shape-4 {
+        width: 100px;
+        height: 100px;
+        bottom: 20%;
+        right: 20%;
+        animation-delay: 15s;
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0) rotate(0deg);
+        }
+        25% {
+            transform: translateY(-30px) rotate(5deg);
+        }
+        50% {
+            transform: translateY(-15px) rotate(-5deg);
+        }
+        75% {
+            transform: translateY(-40px) rotate(3deg);
+        }
+    }
+    
+    /* Particle Animation */
+    .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.5);
         border-radius: 50%;
+        animation: particleFloat 15s infinite linear;
     }
     
-    .hero-content {
+    @keyframes particleFloat {
+        0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    /* Hero Content Styling */
+    .hero-content-full {
         position: relative;
-        z-index: 2;
+        z-index: 10;
+        padding: 2rem 0;
     }
     
-    .hero-badge {
+    .hero-badge-animated {
         display: inline-block;
-        background: rgba(255,255,255,0.15);
+        background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(10px);
-        padding: 0.35rem 1rem;
+        padding: 0.5rem 1.5rem;
         border-radius: 100px;
-        font-size: 0.75rem;
-        margin-bottom: 1rem;
-    }
-    
-    .hero-minimal h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-    
-    .search-wrapper {
-        max-width: 500px;
-        margin: 1.5rem auto 0;
-    }
-    
-    .search-wrapper .input-group {
-        background: white;
-        border-radius: 50px;
-        overflow: hidden;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-    }
-    
-    .search-wrapper .form-control {
-        border: none;
-        padding: 0.75rem 1.2rem;
         font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        animation: pulse 2s infinite;
     }
     
-    .search-wrapper .form-control:focus {
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3);
+        }
+        50% {
+            box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+        }
+    }
+    
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 2rem;
+        animation: fadeInUp 1s ease-out 0.3s both;
+    }
+    
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Hero Image/Animation Container */
+    .hero-visual {
+        position: relative;
+        animation: floatVisual 6s infinite ease-in-out;
+    }
+    
+    @keyframes floatVisual {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+    
+    .hero-image-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .hero-main-image {
+        width: 100%;
+        height: auto;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        animation: imageGlow 3s infinite alternate;
+    }
+    
+    @keyframes imageGlow {
+        0% {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        100% {
+            box-shadow: 0 25px 50px -12px rgba(102, 126, 234, 0.5);
+        }
+    }
+    
+    /* Floating Cards Animation */
+    .floating-card {
+        position: absolute;
+        background: white;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: cardFloat 4s infinite ease-in-out;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .card-1 {
+        top: 10%;
+        left: -20px;
+        animation-delay: 0s;
+    }
+    
+    .card-2 {
+        bottom: 20%;
+        right: -20px;
+        animation-delay: 1s;
+    }
+    
+    .card-3 {
+        top: 60%;
+        left: -30px;
+        animation-delay: 2s;
+    }
+    
+    @keyframes cardFloat {
+        0%, 100% {
+            transform: translateY(0) rotate(0deg);
+        }
+        50% {
+            transform: translateY(-15px) rotate(2deg);
+        }
+    }
+    
+    /* Enhanced Search Box */
+    .search-wrapper-enhanced {
+        max-width: 600px;
+        margin: 2rem auto 0;
+        animation: fadeInUp 1s ease-out 0.6s both;
+    }
+    
+    .search-wrapper-enhanced .input-group {
+        background: white;
+        border-radius: 60px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .search-wrapper-enhanced .input-group:focus-within {
+        box-shadow: 0 15px 50px rgba(102, 126, 234, 0.3);
+        transform: scale(1.02);
+    }
+    
+    .search-wrapper-enhanced .form-control {
+        border: none;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .search-wrapper-enhanced .form-control:focus {
         box-shadow: none;
     }
     
-    .search-wrapper .btn {
+    .search-wrapper-enhanced .btn {
         background: #667eea;
         border: none;
-        padding: 0.75rem 1.5rem;
+        padding: 1rem 2rem;
         color: white;
-        font-weight: 500;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
     
-    .search-wrapper .btn:hover {
+    .search-wrapper-enhanced .btn:hover {
         background: #5a67d8;
     }
     
-    /* Category Strip - Horizontal Scroll */
+    /* Scroll Down Indicator */
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        animation: bounce 2s infinite;
+    }
+    
+    .scroll-indicator a {
+        color: white;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+    }
+    
+    .scroll-indicator a:hover {
+        opacity: 1;
+    }
+    
+    .scroll-indicator span {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    
+    .scroll-indicator i {
+        font-size: 1.5rem;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+    
+    /* Category Strip - Enhanced */
     .category-strip {
         background: white;
         border-radius: 60px;
-        padding: 0.5rem;
+        padding: 0.75rem;
         margin-bottom: 2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
         border: 1px solid #eef2ff;
+        position: relative;
+        z-index: 20;
     }
     
     .category-scroll {
@@ -144,36 +399,6 @@
         border-color: #667eea;
     }
     
-    /* Stats Bar - Compact */
-    .stats-bar {
-        background: white;
-        border-radius: 20px;
-        padding: 1rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        border: 1px solid #eef2ff;
-    }
-    
-    .stat-item {
-        text-align: center;
-        border-right: 1px solid #e2e8f0;
-    }
-    
-    .stat-item:last-child {
-        border-right: none;
-    }
-    
-    .stat-number {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #667eea;
-    }
-    
-    .stat-label {
-        font-size: 0.7rem;
-        color: #64748b;
-    }
-    
     /* Section Header */
     .section-header {
         display: flex;
@@ -194,7 +419,7 @@
         text-decoration: none;
     }
     
-    /* Product Cards - Compact */
+    /* Product Cards */
     .product-card-compact {
         background: white;
         border-radius: 16px;
@@ -206,7 +431,7 @@
     
     .product-card-compact:hover {
         transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         border-color: #667eea;
     }
     
@@ -255,6 +480,7 @@
         height: 2.4rem;
         line-clamp: 2;
     }
+    
     .product-price-compact {
         font-size: 1rem;
         font-weight: 700;
@@ -293,6 +519,26 @@
         margin-top: 0.5rem;
     }
     
+    /* Loading State */
+    .loading-products {
+        text-align: center;
+        padding: 3rem;
+    }
+    
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e2e8f0;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
     /* Empty State */
     .empty-products {
         text-align: center;
@@ -314,26 +560,6 @@
         margin-bottom: 0.5rem;
     }
     
-    /* Loading State */
-    .loading-products {
-        text-align: center;
-        padding: 3rem;
-    }
-    
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid #e2e8f0;
-        border-top-color: #667eea;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-        margin: 0 auto 1rem;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
     /* CTA Banner */
     .cta-banner {
         background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -345,15 +571,16 @@
     /* Toast Notification */
     .toast-notification {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 30px;
+        right: 30px;
         background: white;
         border-radius: 12px;
         padding: 1rem 1.5rem;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         z-index: 9999;
-        animation: slideInRight 0.3s ease;
+        animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         border-left: 4px solid;
+        transition: all 0.3s ease;
     }
     
     @keyframes slideInRight {
@@ -367,91 +594,167 @@
         }
     }
     
-    /* Responsive */
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .hero-title {
+            font-size: 3rem;
+        }
+        
+        .hero-visual {
+            margin-top: 3rem;
+        }
+    }
+    
     @media (max-width: 768px) {
-        .hero-minimal h1 {
-            font-size: 1.8rem;
+        .hero-fullscreen {
+            min-height: auto;
+            padding: 6rem 0 4rem;
         }
         
-        .category-chip {
-            padding: 0.4rem 1rem;
-            font-size: 0.75rem;
+        .hero-title {
+            font-size: 2.5rem;
         }
         
-        .stat-number {
+        .hero-subtitle {
             font-size: 1rem;
+        }
+        
+        .floating-card {
+            display: none;
+        }
+        
+        .scroll-indicator {
+            display: none;
         }
         
         .product-img-compact {
             height: 150px;
         }
-        
-        .empty-products {
-            padding: 2rem;
-        }
     }
 </style>
 
-<!-- Minimal Hero Section -->
-<div class="hero-minimal">
+<!-- Full Screen Hero Section -->
+<section class="hero-fullscreen">
+    <!-- Animated Background -->
+    <div class="hero-background">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+        <div class="floating-shape shape-4"></div>
+        
+        <!-- Particles -->
+        <div class="particle" style="left: 10%; animation-duration: 12s;"></div>
+        <div class="particle" style="left: 20%; animation-duration: 15s; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 30%; animation-duration: 10s; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 40%; animation-duration: 18s; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; animation-duration: 14s; animation-delay: 0.5s;"></div>
+        <div class="particle" style="left: 60%; animation-duration: 11s; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 70%; animation-duration: 16s; animation-delay: 1.5s;"></div>
+        <div class="particle" style="left: 80%; animation-duration: 13s; animation-delay: 3.5s;"></div>
+        <div class="particle" style="left: 90%; animation-duration: 17s; animation-delay: 0.8s;"></div>
+    </div>
+    
     <div class="container">
-        <div class="row justify-content-center text-center hero-content">
-            <div class="col-lg-8">
-                <div class="hero-badge">
-                    <i class="fas fa-crown me-1"></i> Premium Marketplace
+        <div class="row align-items-center hero-content-full">
+            <!-- Left Content -->
+            <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+                <div class="hero-badge-animated">
+                    <i class="fas fa-crown me-2"></i> Premium Marketplace
                 </div>
-                <h1 class="text-white">Shop What You Love</h1>
-                <p class="text-white-50 mb-0">Discover amazing products from trusted vendors</p>
-                <div class="search-wrapper mx-auto">
+                <h1 class="hero-title">
+                    Shop What<br>
+                    You Love
+                </h1>
+                <p class="hero-subtitle">
+                    Discover amazing products from trusted vendors worldwide
+                </p>
+                
+                <!-- Enhanced Search -->
+                <div class="search-wrapper-enhanced">
                     <form id="searchForm" method="GET" action="{% url 'products:list' %}">
                         <div class="input-group">
-                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search products..." value="{{ search_query }}">
+                            <input type="text" name="search" id="searchInput" class="form-control" 
+                                   placeholder="Search for products..." value="{{ search_query }}">
                             <button class="btn" type="submit">
-                                <i class="fas fa-search"></i>
+                                <i class="fas fa-search me-2"></i> Search
                             </button>
                         </div>
                     </form>
                 </div>
+                
+                <!-- Quick Stats -->
+                <div class="row mt-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="col-4">
+                        <div class="text-white">
+                            <h4 class="mb-0 fw-bold">{{ total_vendors|default:"500+" }}</h4>
+                            <small class="text-white-50">Vendors</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-white">
+                            <h4 class="mb-0 fw-bold">{{ total_products_count|default:"10K+" }}</h4>
+                            <small class="text-white-50">Products</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-white">
+                            <h4 class="mb-0 fw-bold">{{ happy_customers|default:"50K+" }}</h4>
+                            <small class="text-white-50">Customers</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Visual -->
+            <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                <div class="hero-visual">
+                    <div class="hero-image-wrapper">
+                        <!-- Main Hero Image -->
+                        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&h=600&fit=crop" 
+                             alt="Shopping Experience" 
+                             class="hero-main-image">
+                        
+                        <!-- Floating Cards with Animation -->
+                        <div class="floating-card card-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-tag text-primary"></i>
+                                <span class="fw-bold">Up to 50% OFF</span>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-card card-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-truck text-success"></i>
+                                <span class="fw-bold">Free Shipping</span>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-card card-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-shield-alt text-info"></i>
+                                <span class="fw-bold">Secure Payment</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+    
+    <!-- Scroll Down Indicator -->
+    <div class="scroll-indicator">
+        <a href="#productsSection">
+            <span>Scroll Down</span>
+            <i class="fas fa-chevron-down"></i>
+        </a>
+    </div>
+</section>
 
 <div class="container">
-    <!-- Compact Stats Bar -->
-    <div class="stats-bar">
-        <div class="row text-center">
-            <div class="col-3">
-                <div class="stat-item">
-                    <div class="stat-number">{{ total_vendors|default:"500+" }}</div>
-                    <div class="stat-label">Vendors</div>
-                </div>
-            </div>
-            <div class="col-3">
-                <div class="stat-item">
-                    <div class="stat-number">{{ total_products_count|default:"10K+" }}</div>
-                    <div class="stat-label">Products</div>
-                </div>
-            </div>
-            <div class="col-3">
-                <div class="stat-item">
-                    <div class="stat-number">{{ happy_customers|default:"50K+" }}</div>
-                    <div class="stat-label">Customers</div>
-                </div>
-            </div>
-            <div class="col-3">
-                <div class="stat-item">
-                    <div class="stat-number">{{ cities_served|default:"100+" }}</div>
-                    <div class="stat-label">Cities</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Horizontal Categories Strip -->
-    <div class="category-strip">
+    <div class="category-strip" data-aos="fade-up" data-aos-duration="800">
         <div class="category-scroll">
-            <button class="category-chip view-all-chip" data-category="">
+            <button class="category-chip view-all-chip active" data-category="">
                 <i class="fas fa-th-large"></i> All
             </button>
             {% for category in categories %}
@@ -463,47 +766,64 @@
                 {% endif %}
                 {{ category.name }}
             </button>
+            {% empty %}
+            <!-- Sample categories if none exist -->
+            <button class="category-chip" data-category="electronics">
+                <i class="fas fa-laptop"></i> Electronics
+            </button>
+            <button class="category-chip" data-category="fashion">
+                <i class="fas fa-tshirt"></i> Fashion
+            </button>
+            <button class="category-chip" data-category="home">
+                <i class="fas fa-home"></i> Home & Living
+            </button>
+            <button class="category-chip" data-category="beauty">
+                <i class="fas fa-heart"></i> Beauty
+            </button>
+            <button class="category-chip" data-category="sports">
+                <i class="fas fa-futbol"></i> Sports
+            </button>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Products Section with Filter -->
-    <div id="productsSection">
+    <!-- Products Section -->
+    <div id="productsSection" data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
         <div class="section-header">
             <h2 id="sectionTitle">🔥 Featured Products</h2>
             <a href="{% url 'products:list' %}" id="viewAllLink">View All →</a>
         </div>
         
         <div id="productsContainer">
-            <!-- Products will be loaded here dynamically -->
+            <!-- Products will be loaded here -->
             <div class="loading-products">
                 <div class="spinner"></div>
-                <p class="text-muted">Loading products...</p>
+                <p class="text-muted mt-3">Loading amazing products...</p>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Join Us Banner -->
-<div class="container">
+<div class="container" data-aos="fade-up" data-aos-duration="800">
     <div class="cta-banner">
         <div class="row align-items-center">
             <div class="col-md-8">
                 <div class="d-flex align-items-center gap-3 flex-wrap">
-                    <div class="bg-white bg-opacity-10 rounded-circle p-2">
+                    <div class="bg-white bg-opacity-10 rounded-circle p-3">
                         <i class="fas fa-users fa-2x text-white"></i>
                     </div>
                     <div>
                         <h5 class="text-white mb-1">Join Our Community</h5>
-                        <p class="text-white-50 mb-0 small">Shop, sell, and grow with us — become part of the Vendora family</p>
+                        <p class="text-white-50 mb-0">Shop, sell, and grow with us — become part of the Vendora family</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <a href="{% url 'accounts:register' %}" class="btn btn-light btn-sm">
+                <a href="{% url 'accounts:register' %}" class="btn btn-light">
                     <i class="fas fa-user-plus me-2"></i>Create Account
                 </a>
-                <a href="{% url 'accounts:register' %}?role=seller" class="btn btn-outline-light btn-sm ms-2">
+                <a href="{% url 'accounts:register' %}?role=seller" class="btn btn-outline-light ms-2">
                     <i class="fas fa-store me-2"></i>Sell with Us
                 </a>
             </div>
@@ -511,17 +831,43 @@
     </div>
 </div>
 
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
 <script>
-    let currentCategory = '';
-    let currentSearch = '';
-    
-    // Load products on page load
+    // Initialize AOS safely
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS with safe configuration
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100,
+                disable: 'mobile' // Disable on mobile for better performance
+            });
+        }
+        
+        // Load products
         loadProducts();
         
         // Setup category click handlers
+        setupCategoryHandlers();
+        
+        // Setup search
+        setupSearchHandler();
+        
+        // Setup scroll indicator
+        setupScrollIndicator();
+    });
+    
+    let currentCategory = '';
+    let currentSearch = '';
+    
+    function setupCategoryHandlers() {
         document.querySelectorAll('.category-chip').forEach(chip => {
-            chip.addEventListener('click', function() {
+            chip.addEventListener('click', function(e) {
+                e.preventDefault();
+                
                 // Update active state
                 document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
                 this.classList.add('active');
@@ -546,8 +892,9 @@
                 loadProducts();
             });
         });
-        
-        // Setup search
+    }
+    
+    function setupSearchHandler() {
         const searchForm = document.getElementById('searchForm');
         if (searchForm) {
             searchForm.addEventListener('submit', function(e) {
@@ -556,43 +903,166 @@
                 loadProducts();
             });
         }
-    });
+    }
+    
+    function setupScrollIndicator() {
+        const scrollLink = document.querySelector('.scroll-indicator a');
+        if (scrollLink) {
+            scrollLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        }
+    }
     
     // Load products via AJAX
     async function loadProducts() {
         const container = document.getElementById('productsContainer');
+        if (!container) return;
+        
         container.innerHTML = `
             <div class="loading-products">
                 <div class="spinner"></div>
-                <p class="text-muted">Loading products...</p>
+                <p class="text-muted mt-3">Loading amazing products...</p>
             </div>
         `;
         
         try {
+            // Build URL with proper parameters
             let url = `/products/api/products/?format=json`;
+            const params = [];
+            
             if (currentCategory) {
-                url += `&category=${currentCategory}`;
+                params.push(`category=${encodeURIComponent(currentCategory)}`);
             }
             if (currentSearch) {
-                url += `&search=${encodeURIComponent(currentSearch)}`;
+                params.push(`search=${encodeURIComponent(currentSearch)}`);
+            }
+            
+            if (params.length > 0) {
+                url += '&' + params.join('&');
             }
             
             const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if (data.products && data.products.length > 0) {
                 displayProducts(data.products);
             } else {
-                displayEmptyState();
+                // Load sample products if no products from API
+                loadSampleProducts();
             }
         } catch (error) {
             console.error('Error loading products:', error);
-            displayEmptyState();
+            // Load sample products if API fails
+            loadSampleProducts();
         }
+    }
+    
+    // Fallback function to load sample products
+    function loadSampleProducts() {
+        const sampleProducts = [
+            {
+                id: 1,
+                name: "Wireless Headphones Pro",
+                price: "99.99",
+                compare_price: "149.99",
+                discount_percentage: 33,
+                average_rating: 4.5,
+                total_reviews: 128,
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop"
+            },
+            {
+                id: 2,
+                name: "Smart Watch Series 5",
+                price: "299.99",
+                compare_price: "399.99",
+                discount_percentage: 25,
+                average_rating: 4.8,
+                total_reviews: 256,
+                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop"
+            },
+            {
+                id: 3,
+                name: "Premium Leather Backpack",
+                price: "79.99",
+                compare_price: "129.99",
+                discount_percentage: 38,
+                average_rating: 4.3,
+                total_reviews: 89,
+                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop"
+            },
+            {
+                id: 4,
+                name: "Minimalist Watch",
+                price: "149.99",
+                compare_price: null,
+                discount_percentage: null,
+                average_rating: 4.6,
+                total_reviews: 167,
+                image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=300&h=300&fit=crop"
+            },
+            {
+                id: 5,
+                name: "Wireless Earbuds",
+                price: "59.99",
+                compare_price: "89.99",
+                discount_percentage: 33,
+                average_rating: 4.2,
+                total_reviews: 345,
+                image: "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=300&h=300&fit=crop"
+            },
+            {
+                id: 6,
+                name: "Fitness Tracker Band",
+                price: "49.99",
+                compare_price: "79.99",
+                discount_percentage: 37,
+                average_rating: 4.4,
+                total_reviews: 198,
+                image: "https://images.unsplash.com/photo-1557438159-51eec7a6c9e8?w=300&h=300&fit=crop"
+            },
+            {
+                id: 7,
+                name: "Portable Speaker",
+                price: "89.99",
+                compare_price: null,
+                discount_percentage: null,
+                average_rating: 4.7,
+                total_reviews: 234,
+                image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&h=300&fit=crop"
+            },
+            {
+                id: 8,
+                name: "USB-C Hub 7-in-1",
+                price: "45.99",
+                compare_price: "69.99",
+                discount_percentage: 34,
+                average_rating: 4.1,
+                total_reviews: 76,
+                image: "https://images.unsplash.com/photo-1625723044792-44de16ccb4e9?w=300&h=300&fit=crop"
+            }
+        ];
+        
+        displayProducts(sampleProducts);
     }
     
     function displayProducts(products) {
         const container = document.getElementById('productsContainer');
+        if (!container) return;
+        
         const productsHtml = `
             <div class="row g-3 mb-4">
                 ${products.slice(0, 8).map(product => `
@@ -609,19 +1079,22 @@
                                 }
                             </div>
                             <div class="product-info-compact">
-                                <div class="product-title-compact">${product.name.substring(0, 45)}${product.name.length > 45 ? '...' : ''}</div>
+                                <div class="product-title-compact">
+                                    ${product.name.substring(0, 45)}${product.name.length > 45 ? '...' : ''}
+                                </div>
                                 <div class="product-rating-compact">
                                     ${generateStars(product.average_rating)}
                                     <span>(${product.total_reviews || 0})</span>
                                 </div>
                                 <div class="product-price-compact">
-                                    $${product.price}
+                                    $${parseFloat(product.price).toFixed(2)}
                                     ${product.compare_price ? 
-                                        `<span class="product-old-price-compact">$${product.compare_price}</span>` : 
+                                        `<span class="product-old-price-compact">$${parseFloat(product.compare_price).toFixed(2)}</span>` : 
                                         ''
                                     }
                                 </div>
-                                <button class="btn btn-primary btn-sm add-cart-btn add-to-cart" data-product-id="${product.id}">
+                                <button class="btn btn-primary btn-sm add-cart-btn add-to-cart" 
+                                        data-product-id="${product.id}">
                                     <i class="fas fa-shopping-cart"></i> Add to Cart
                                 </button>
                             </div>
@@ -635,17 +1108,24 @@
         
         // Re-attach add to cart handlers
         attachAddToCartHandlers();
+        
+        // Refresh AOS if available
+        if (typeof AOS !== 'undefined') {
+            setTimeout(() => AOS.refresh(), 100);
+        }
     }
     
     function displayEmptyState() {
         const container = document.getElementById('productsContainer');
+        if (!container) return;
+        
         container.innerHTML = `
             <div class="empty-products">
                 <i class="fas fa-box-open"></i>
                 <h4>No Products Found</h4>
                 <p class="text-muted">We couldn't find any products matching your criteria.</p>
-                <button class="btn btn-primary btn-sm" onclick="resetFilters()">
-                    <i class="fas fa-redo-alt"></i> Clear Filters
+                <button class="btn btn-primary" onclick="resetFilters()">
+                    <i class="fas fa-redo-alt me-2"></i> Clear Filters
                 </button>
             </div>
         `;
@@ -674,11 +1154,18 @@
     function resetFilters() {
         currentCategory = '';
         currentSearch = '';
-        document.getElementById('searchInput').value = '';
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.value = '';
+        
         document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
         document.querySelector('.view-all-chip')?.classList.add('active');
-        document.getElementById('sectionTitle').innerHTML = '🔥 Featured Products';
-        document.getElementById('viewAllLink').href = '{% url 'products:list' %}';
+        
+        const sectionTitle = document.getElementById('sectionTitle');
+        if (sectionTitle) sectionTitle.innerHTML = '🔥 Featured Products';
+        
+        const viewAllLink = document.getElementById('viewAllLink');
+        if (viewAllLink) viewAllLink.href = '{% url 'products:list' %}';
+        
         loadProducts();
     }
     
@@ -702,6 +1189,7 @@
                     return;
                 }
                 
+                // Add loading state
                 this.disabled = true;
                 this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Adding...';
                 
@@ -718,16 +1206,10 @@
                     const data = await response.json();
                     if (data.success) {
                         this.innerHTML = '<i class="fas fa-check"></i> Added!';
-                        showToast('Product added to cart!', 'success');
+                        showToast('✨ Product added to cart successfully!', 'success');
                         
                         // Update cart badge
-                        const cartBadge = document.querySelector('.cart-badge-new');
-                        if (cartBadge) {
-                            let currentCount = parseInt(cartBadge.innerText) || 0;
-                            cartBadge.innerText = currentCount + 1;
-                            if (cartBadge.innerText === '0') cartBadge.style.display = 'none';
-                            else cartBadge.style.display = 'block';
-                        }
+                        updateCartBadge(1);
                         
                         setTimeout(() => {
                             this.innerHTML = originalHtml;
@@ -748,13 +1230,27 @@
         });
     }
     
-    // Get CSRF Token
-    function getCSRFToken() {
-        return document.querySelector('[name=csrf-token]')?.getAttribute('content') || 
-               document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    function updateCartBadge(increment) {
+        const cartBadge = document.querySelector('.cart-badge-new');
+        if (cartBadge) {
+            let currentCount = parseInt(cartBadge.innerText) || 0;
+            currentCount += increment;
+            cartBadge.innerText = currentCount;
+            
+            if (currentCount === 0) {
+                cartBadge.style.display = 'none';
+            } else {
+                cartBadge.style.display = 'block';
+            }
+        }
     }
     
-    // Toast Notification
+    function getCSRFToken() {
+        return document.querySelector('[name=csrf-token]')?.getAttribute('content') || 
+               document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+               document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    }
+    
     function showToast(message, type = 'success') {
         const toast = document.createElement('div');
         toast.className = 'toast-notification';
@@ -771,18 +1267,23 @@
             info: 'fa-info-circle'
         };
         toast.style.borderLeftColor = colors[type];
-        toast.style.backgroundColor = 'white';
         toast.innerHTML = `
-            <div class="d-flex align-items-center gap-2">
-                <i class="fas ${icons[type]}" style="color: ${colors[type]}"></i>
-                <span>${message}</span>
+            <div class="d-flex align-items-center gap-3">
+                <i class="fas ${icons[type]} fa-lg" style="color: ${colors[type]}"></i>
+                <span class="fw-medium">${message}</span>
             </div>
         `;
         document.body.appendChild(toast);
+        
+        // Auto remove after 3 seconds
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transform = 'translateX(100%)';
-            setTimeout(() => toast.remove(), 300);
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
         }, 3000);
     }
     

@@ -1,680 +1,283 @@
-{% extends 'base.html' %}
+{% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
 
-{% block title %}Seller Dashboard - Vendora{% endblock %}
+{% block dashboard_title %}Seller Dashboard{% endblock %}
 
-{% block content %}
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-        --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-    }
-
-    .dashboard-wrapper {
-        background: #f8f9fc;
-        min-height: 100vh;
-    }
-
-    /* Sidebar Styles */
-    .dashboard-sidebar {
-        background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
-        border-radius: 15px;
-        color: white;
-        position: sticky;
-        top: 20px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    }
-
-    .dashboard-sidebar h5 {
-        color: #fff;
-        border-bottom: 2px solid #667eea;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-    }
-
-    .dashboard-sidebar .nav-link {
-        color: rgba(255,255,255,0.8);
-        padding: 12px 15px;
-        margin: 5px 0;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-    }
-
-    .dashboard-sidebar .nav-link:hover,
-    .dashboard-sidebar .nav-link.active {
-        background: rgba(102, 126, 234, 0.3);
-        color: white;
-        transform: translateX(5px);
-    }
-
-    .dashboard-sidebar .nav-link i {
-        width: 25px;
-        margin-right: 10px;
-    }
-
-    .badge-count {
-        background: #e74c3c;
-        color: white;
-        border-radius: 20px;
-        padding: 2px 8px;
-        font-size: 12px;
-    }
-
-    /* Stat Cards */
-    .stat-card {
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        cursor: pointer;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    }
-
-    .stat-card .card-body {
-        padding: 1.5rem;
-        position: relative;
-    }
-
-    .stat-icon {
-        position: absolute;
-        right: 20px;
-        top: 20px;
-        font-size: 3rem;
-        opacity: 0.2;
-    }
-
-    .stat-card h2 {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 0;
-    }
-
-    /* Table Styles */
-    .premium-table {
-        border-radius: 15px;
-        overflow: hidden;
-    }
-
-    .premium-table thead th {
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        padding: 15px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .premium-table tbody tr {
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .premium-table tbody tr:hover {
-        background: #f8f9fc;
-        transform: scale(1.01);
-    }
-
-    .premium-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-    }
-
-    /* Status Badges */
-    .badge-status {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    /* Quick Stats Bar */
-    .quick-stats {
-        background: white;
-        border-radius: 15px;
-        padding: 1rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-
-    .stat-mini {
-        text-align: center;
-        padding: 0.5rem;
-        border-right: 1px solid #e0e0e0;
-    }
-
-    .stat-mini:last-child {
-        border-right: none;
-    }
-
-    .stat-mini-number {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #667eea;
-    }
-
-    .stat-mini-label {
-        font-size: 0.75rem;
-        color: #6c757d;
-    }
-
-    /* Product Image */
-    .product-image-mini {
-        width: 50px;
-        height: 50px;
-        border-radius: 10px;
-        object-fit: cover;
-    }
-
-    /* Action Buttons */
-    .btn-action {
-        padding: 5px 10px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        transition: all 0.3s ease;
-        margin: 2px;
-    }
-
-    .btn-action:hover {
-        transform: translateY(-2px);
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animated {
-        animation: fadeInUp 0.6s ease forwards;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .dashboard-sidebar {
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .stat-card h2 {
-            font-size: 1.5rem;
-        }
-        
-        .stat-mini {
-            border-right: none;
-            margin-bottom: 1rem;
-        }
-    }
-
-    /* Welcome Banner */
-    .welcome-banner {
-        background: var(--primary-gradient);
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .welcome-banner::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    .welcome-banner::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -5%;
-        width: 200px;
-        height: 200px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    /* Performance Indicator */
-    .performance-indicator {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 0.85rem;
-    }
-
-    .trend-up {
-        color: #28a745;
-    }
-
-    .trend-down {
-        color: #dc3545;
-    }
-</style>
-
-<div class="dashboard-wrapper">
-    <div class="container-fluid mt-4">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 mb-4">
-                <div class="dashboard-sidebar p-3">
-                    <div class="text-center mb-4">
-                        {% if seller.profile_picture %}
-                            <img src="{{ seller.profile_picture.url }}" height="60" class="rounded-circle mb-2" alt="Seller">
-                        {% else %}
-                            <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                                <i class="fas fa-store fa-2x text-white"></i>
-                            </div>
-                        {% endif %}
-                        <h6 class="mt-2 mb-0">{{ seller.user.get_full_name|default:seller.user.email|truncatechars:20 }}</h6>
-                        <small class="text-white-50">Seller Account</small>
-                    </div>
-                    
-                    <h5>Main Menu</h5>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="{% url 'dashboard:seller' %}">
-                                <i class="fas fa-chart-line"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'orders:seller_orders' %}">
-                                <i class="fas fa-shopping-cart"></i> All Orders
-                                {% if pending_orders > 0 %}
-                                    <span class="badge-count float-end">{{ pending_orders }}</span>
-                                {% endif %}
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'orders:seller_orders' %}?status=pending">
-                                <i class="fas fa-clock"></i> Pending Orders
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'orders:seller_orders' %}?status=processing">
-                                <i class="fas fa-cogs"></i> Processing
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'orders:seller_orders' %}?status=shipped">
-                                <i class="fas fa-truck"></i> Shipped
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'products:manage' %}">
-                                <i class="fas fa-box"></i> My Products
-                            </a>
-                        </li>
-                    </ul>
-                    
-                    <hr class="bg-light">
-                    
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:profile' %}">
-                                <i class="fas fa-cog"></i> Settings
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:logout' %}">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10">
-                <!-- Welcome Banner -->
-                <div class="welcome-banner animated" style="animation-delay: 0.1s;">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="display-6 mb-2">Welcome back, {{ seller.user.get_full_name|default:seller.user.email }}!</h1>
-                            <p class="mb-0 opacity-75">Here's your sales performance and order summary</p>
-                        </div>
-                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <div class="performance-indicator bg-white text-dark px-3 py-2 rounded-pill">
-                                <i class="fas fa-chart-line trend-up"></i>
-                                <span>+23% this month</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Stats Cards -->
-                <div class="row mb-4">
-                    <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="card stat-card animated" style="animation-delay: 0.2s;">
-                            <div class="card-body">
-                                <div class="stat-icon">
-                                    <i class="fas fa-box"></i>
-                                </div>
-                                <h6 class="text-muted mb-2">My Products</h6>
-                                <h2 class="mb-0">{{ total_products }}</h2>
-                                <small class="text-success mt-2 d-block">
-                                    <i class="fas fa-arrow-up"></i> Active products
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="card stat-card animated" style="animation-delay: 0.3s;">
-                            <div class="card-body">
-                                <div class="stat-icon">
-                                    <i class="fas fa-shopping-cart"></i>
-                                </div>
-                                <h6 class="text-muted mb-2">Orders Processed</h6>
-                                <h2 class="mb-0">{{ orders_processed }}</h2>
-                                <small class="text-success mt-2 d-block">
-                                    <i class="fas fa-check-circle"></i> Completed
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="card stat-card animated" style="animation-delay: 0.4s;">
-                            <div class="card-body">
-                                <div class="stat-icon">
-                                    <i class="fas fa-dollar-sign"></i>
-                                </div>
-                                <h6 class="text-muted mb-2">Total Revenue</h6>
-                                <h2 class="mb-0">${{ revenue|floatformat:2 }}</h2>
-                                <small class="text-success mt-2 d-block">
-                                    <i class="fas fa-chart-line"></i> +15% from last month
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="card stat-card animated" style="animation-delay: 0.5s;">
-                            <div class="card-body">
-                                <div class="stat-icon">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <h6 class="text-muted mb-2">Pending Orders</h6>
-                                <h2 class="mb-0">{{ pending_orders }}</h2>
-                                <small class="text-warning mt-2 d-block">
-                                    <i class="fas fa-exclamation-triangle"></i> Need attention
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Quick Stats Row -->
-                <div class="quick-stats animated" style="animation-delay: 0.6s;">
-                    <div class="row">
-                        <div class="col-md-3 col-6">
-                            <div class="stat-mini">
-                                <div class="stat-mini-number">{{ total_sales|default:0 }}</div>
-                                <div class="stat-mini-label">Total Sales</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="stat-mini">
-                                <div class="stat-mini-number">{{ average_rating|default:"4.8" }}</div>
-                                <div class="stat-mini-label">Rating ★</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="stat-mini">
-                                <div class="stat-mini-number">{{ total_customers|default:0 }}</div>
-                                <div class="stat-mini-label">Unique Customers</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="stat-mini">
-                                <div class="stat-mini-number">{{ completion_rate|default:"98" }}%</div>
-                                <div class="stat-mini-label">Order Completion</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Recent Orders to Process -->
-                <div class="card mb-4 animated" style="animation-delay: 0.7s;">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-clock text-primary"></i> Recent Orders to Process
-                        </h5>
-                        <a href="{% url 'orders:seller_orders' %}?status=pending" class="btn btn-sm btn-outline-primary">
-                            View All <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table premium-table mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Product</th>
-                                        <th>Quantity</th>
-                                        <th>Unit Price</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in recent_order_items %}
-                                    <tr onclick="window.location.href='{% url 'orders:detail' item.order.id %}'">
-                                        <td>
-                                            <strong>{{ item.order.order_number }}</strong>
-                                            <br>
-                                            <small class="text-muted">{{ item.order.created_at|date:"M d" }}</small>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                {% if item.product.images.first %}
-                                                    <img src="{{ item.product.images.first.image.url }}" class="product-image-mini" alt="{{ item.product.name }}">
-                                                {% else %}
-                                                    <div class="product-image-mini bg-light d-flex align-items-center justify-content-center">
-                                                        <i class="fas fa-box text-muted"></i>
-                                                    </div>
-                                                {% endif %}
-                                                <div>
-                                                    <div class="fw-bold">{{ item.product.name|truncatechars:30 }}</div>
-                                                    <small class="text-muted">SKU: {{ item.product.sku|default:"N/A" }}</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>{{ item.quantity }}</td>
-                                        <td>${{ item.price }}</td>
-                                        <td><strong>${{ item.total }}</strong></td>
-                                        <td>
-                                            <span class="badge-status badge bg-{% if item.status == 'delivered' %}success{% elif item.status == 'cancelled' %}danger{% elif item.status == 'pending' %}warning{% elif item.status == 'shipped' %}info{% else %}primary{% endif %}">
-                                                <i class="fas {% if item.status == 'pending' %}fa-clock{% elif item.status == 'processing' %}fa-cogs{% elif item.status == 'shipped' %}fa-truck{% elif item.status == 'delivered' %}fa-check-circle{% else %}fa-box{% endif %}"></i>
-                                                {{ item.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="{% url 'orders:detail' item.order.id %}" class="btn btn-sm btn-outline-primary btn-action">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                {% if item.status == 'pending' %}
-                                                <a href="{% url 'orders:process_order_item' item.id %}" class="btn btn-sm btn-outline-success btn-action" onclick="return confirm('Start processing this order?')">
-                                                    <i class="fas fa-cogs"></i>
-                                                </a>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="7" class="text-center py-5">
-                                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                                            <p class="text-muted mb-0">No pending orders!</p>
-                                            <small>All orders have been processed</small>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- My Products -->
-                <div class="card animated" style="animation-delay: 0.8s;">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-box text-primary"></i> My Products
-                        </h5>
-                        <a href="{% url 'products:create' %}" class="btn btn-sm btn-success">
-                            <i class="fas fa-plus"></i> Add New Product
-                        </a>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table premium-table mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Price</th>
-                                        <th>Stock</th>
-                                        <th>Sales</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for product in products %}
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                {% if product.images.first %}
-                                                    <img src="{{ product.images.first.image.url }}" class="product-image-mini" alt="{{ product.name }}">
-                                                {% else %}
-                                                    <div class="product-image-mini bg-light d-flex align-items-center justify-content-center">
-                                                        <i class="fas fa-box text-muted"></i>
-                                                    </div>
-                                                {% endif %}
-                                                <div>
-                                                    <div class="fw-bold">{{ product.name|truncatechars:40 }}</div>
-                                                    <small class="text-muted">{{ product.category.name|default:"Uncategorized" }}</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <strong>${{ product.price }}</strong>
-                                            {% if product.compare_price %}
-                                                <br>
-                                                <small class="text-muted text-decoration-line-through">${{ product.compare_price }}</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if product.stock_quantity <= 5 %}
-                                                <span class="badge bg-danger">{{ product.stock_quantity }} left</span>
-                                            {% elif product.stock_quantity <= 20 %}
-                                                <span class="badge bg-warning">{{ product.stock_quantity }} left</span>
-                                            {% else %}
-                                                <span class="badge bg-success">{{ product.stock_quantity }} in stock</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ product.total_sold|default:0 }} sold</td>
-                                        <td>
-                                            {% if product.is_active %}
-                                                <span class="badge-status badge bg-success">
-                                                    <i class="fas fa-check-circle"></i> Active
-                                                </span>
-                                            {% else %}
-                                                <span class="badge-status badge bg-danger">
-                                                    <i class="fas fa-times-circle"></i> Inactive
-                                                </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="{% url 'products:detail' product.slug %}" class="btn btn-sm btn-outline-info btn-action" title="View">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{% url 'products:edit' product.id %}" class="btn btn-sm btn-outline-primary btn-action" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5">
-                                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                                            <p class="text-muted mb-0">No products added yet</p>
-                                            <a href="{% url 'products:create' %}" class="btn btn-primary btn-sm mt-3">
-                                                Add Your First Product
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+{% block dashboard_content %}
+<!-- Welcome Banner -->
+<div class="welcome-banner animated" style="animation-delay: 0.1s;">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-6 mb-2">Welcome back, {{ seller.user.get_full_name|default:seller.user.email }}!</h1>
+            <p class="mb-0 opacity-75">Here's your sales performance and order summary</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <div class="growth-indicator bg-white text-dark px-3 py-2 rounded-pill d-inline-block">
+                <i class="fas fa-chart-line text-success"></i>
+                <span>+23% this month</span>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card animated" style="animation-delay: 0.2s;">
+            <div class="card-body">
+                <div class="stat-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <h6 class="text-muted mb-2">My Products</h6>
+                <h2 class="mb-0">{{ total_products }}</h2>
+                <small class="text-success mt-2 d-block">
+                    <i class="fas fa-arrow-up"></i> Active products
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card animated" style="animation-delay: 0.3s;">
+            <div class="card-body">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h6 class="text-muted mb-2">Orders Processed</h6>
+                <h2 class="mb-0">{{ orders_processed }}</h2>
+                <small class="text-success mt-2 d-block">
+                    <i class="fas fa-check-circle"></i> Completed
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card animated" style="animation-delay: 0.4s;">
+            <div class="card-body">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <h6 class="text-muted mb-2">Total Revenue</h6>
+                <h2 class="mb-0">${{ revenue|floatformat:2 }}</h2>
+                <small class="text-success mt-2 d-block">
+                    <i class="fas fa-chart-line"></i> +15% from last month
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card stat-card animated" style="animation-delay: 0.5s;">
+            <div class="card-body">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h6 class="text-muted mb-2">Pending Orders</h6>
+                <h2 class="mb-0">{{ pending_orders }}</h2>
+                <small class="text-warning mt-2 d-block">
+                    <i class="fas fa-exclamation-triangle"></i> Need attention
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="chart-container animated" style="animation-delay: 0.6s;">
+    <div class="row text-center">
+        <div class="col-md-3 col-6">
+            <div class="stat-mini">
+                <div class="stat-number text-primary">{{ total_sales|default:0 }}</div>
+                <div class="stat-label">Total Sales</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-mini">
+                <div class="stat-number text-primary">{{ average_rating|default:"4.8" }}</div>
+                <div class="stat-label">Rating ★</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-mini">
+                <div class="stat-number text-primary">{{ total_customers|default:0 }}</div>
+                <div class="stat-label">Unique Customers</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-mini">
+                <div class="stat-number text-primary">{{ completion_rate|default:"98" }}%</div>
+                <div class="stat-label">Order Completion</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders to Process -->
+<div class="card mb-4 animated" style="animation-delay: 0.7s;">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-clock text-primary"></i> Recent Orders to Process
+        </h5>
+        <a href="{% url 'orders:seller_orders' %}?status=pending" class="btn btn-sm btn-outline-primary">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in recent_order_items %}
+                    <tr onclick="window.location.href='{% url 'orders:detail' item.order.id %}'">
+                        <td>
+                            <strong>{{ item.order.order_number }}</strong>
+                            <br>
+                            <small class="text-muted">{{ item.order.created_at|date:"M d" }}</small>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if item.product.images.first %}
+                                    <img src="{{ item.product.images.first.image.url }}" width="40" height="40" class="rounded" alt="{{ item.product.name }}">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-box text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ item.product.name|truncatechars:30 }}</div>
+                                    <small class="text-muted">SKU: {{ item.product.sku|default:"N/A" }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price }}</td>
+                        <td><strong>${{ item.total }}</strong></td>
+                        <td>
+                            <span class="badge-status badge bg-{% if item.status == 'delivered' %}success{% elif item.status == 'cancelled' %}danger{% elif item.status == 'pending' %}warning{% elif item.status == 'shipped' %}info{% else %}primary{% endif %}">
+                                <i class="fas {% if item.status == 'pending' %}fa-clock{% elif item.status == 'processing' %}fa-cogs{% elif item.status == 'shipped' %}fa-truck{% elif item.status == 'delivered' %}fa-check-circle{% else %}fa-box{% endif %}"></i>
+                                {{ item.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'orders:detail' item.order.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if item.status == 'pending' %}
+                                <a href="{% url 'orders:process_order_item' item.id %}" class="btn btn-sm btn-outline-success" onclick="return confirm('Start processing this order?')">
+                                    <i class="fas fa-cogs"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">No pending orders!</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- My Products -->
+<div class="card animated" style="animation-delay: 0.8s;">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-box text-primary"></i> My Products
+        </h5>
+        <a href="{% url 'products:create' %}" class="btn btn-sm btn-success">
+            <i class="fas fa-plus"></i> Add New Product
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Sales</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if product.images.first %}
+                                    <img src="{{ product.images.first.image.url }}" width="40" height="40" class="rounded" alt="{{ product.name }}">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-box text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ product.name|truncatechars:40 }}</div>
+                                    <small class="text-muted">{{ product.category.name|default:"Uncategorized" }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <strong>${{ product.price }}</strong>
+                        </td>
+                        <td>
+                            {% if product.stock_quantity <= 5 %}
+                                <span class="badge bg-danger">{{ product.stock_quantity }} left</span>
+                            {% elif product.stock_quantity <= 20 %}
+                                <span class="badge bg-warning">{{ product.stock_quantity }} left</span>
+                            {% else %}
+                                <span class="badge bg-success">{{ product.stock_quantity }} in stock</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.total_sold|default:0 }} sold</td>
+                        <td>
+                            {% if product.is_active %}
+                                <span class="badge-status badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge-status badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'products:detail' product.slug %}" class="btn btn-sm btn-outline-info" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'products:edit' product.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">No products added yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
 <script>
-    // Add click handlers for stat cards
-    document.querySelectorAll('.stat-card').forEach((card, index) => {
-        card.style.animationDelay = `${0.1 * (index + 2)}s`;
-        card.addEventListener('click', function() {
-            const title = this.querySelector('.card-title')?.innerText;
-            if (title === 'My Products') {
-                window.location.href = "{% url 'products:manage' %}";
-            } else if (title === 'Pending Orders') {
-                window.location.href = "{% url 'orders:seller_orders' %}?status=pending";
-            }
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Shared JS will handle animations
     });
-    
-    // Animate numbers (optional)
-    function animateNumbers() {
-        const numbers = document.querySelectorAll('.stat-card h2, .stat-mini-number');
-        numbers.forEach(num => {
-            const finalValue = parseInt(num.innerText);
-            if (!isNaN(finalValue)) {
-                let current = 0;
-                const increment = finalValue / 30;
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= finalValue) {
-                        num.innerText = finalValue;
-                        clearInterval(timer);
-                    } else {
-                        num.innerText = Math.floor(current);
-                    }
-                }, 20);
-            }
-        });
-    }
-    
-    // Uncomment to enable number animation
-    // animateNumbers();
 </script>
 {% endblock %}
