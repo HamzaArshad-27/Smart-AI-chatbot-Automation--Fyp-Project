@@ -1,0 +1,727 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Secure Checkout • Vendora{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Checkout Page Modern Styling */
+    .checkout-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 32px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    
+    .checkout-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .step-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .step-number {
+        width: 36px;
+        height: 36px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .step-item.active .step-number {
+        background: #10b981;
+        color: white;
+    }
+    
+    .step-item.completed .step-number {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .step-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .checkout-card {
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 8px 28px -12px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.03);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .checkout-card-header {
+        background: #f8fafc;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid #eef2ff;
+    }
+    
+    .checkout-card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .checkout-card-body {
+        padding: 1.8rem;
+    }
+    
+    .form-group-modern {
+        margin-bottom: 1.2rem;
+    }
+    
+    .form-group-modern label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #1e293b;
+        font-size: 0.9rem;
+    }
+    
+    .form-group-modern label .required-star {
+        color: #ef4444;
+        margin-left: 3px;
+    }
+    
+    .form-control-modern {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+    
+    .form-control-modern:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    
+    textarea.form-control-modern {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .payment-method-card {
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 1rem;
+        margin-bottom: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .payment-method-card:hover {
+        border-color: #3b82f6;
+        background: #f8fafc;
+    }
+    
+    .payment-method-card.selected {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+    
+    .payment-method-card input {
+        margin: 0;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .payment-icon {
+        font-size: 1.8rem;
+        width: 50px;
+        text-align: center;
+    }
+    
+    .payment-info {
+        flex: 1;
+    }
+    
+    .payment-title {
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+    }
+    
+    .payment-desc {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    
+    .order-summary-card {
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 8px 28px -12px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.03);
+        position: sticky;
+        top: 100px;
+    }
+    
+    .order-summary-header {
+        background: #0f172a;
+        padding: 1.2rem 1.5rem;
+        color: white;
+        border-radius: 28px 28px 0 0;
+    }
+    
+    .order-summary-body {
+        padding: 1.5rem;
+    }
+    
+    .cart-item {
+        display: flex;
+        gap: 12px;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .cart-item-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+    
+    .cart-item-details {
+        flex: 1;
+    }
+    
+    .cart-item-name {
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+        font-size: 0.9rem;
+    }
+    
+    .cart-item-meta {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+    
+    .cart-item-price {
+        font-weight: 700;
+        color: #0f172a;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.6rem 0;
+    }
+    
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        font-size: 1.2rem;
+        font-weight: 800;
+        border-top: 2px solid #e2e8f0;
+        margin-top: 0.5rem;
+    }
+    
+    .btn-place-order {
+        background: linear-gradient(105deg, #10b981, #059669);
+        border: none;
+        border-radius: 60px;
+        padding: 1rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: 0.2s;
+        color: white;
+    }
+    
+    .btn-place-order:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+    
+    .btn-place-order:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eef2ff;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        display: none;
+    }
+    
+    .loading-spinner {
+        background: white;
+        padding: 2rem;
+        border-radius: 60px;
+        text-align: center;
+        box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .checkout-header {
+            padding: 1.2rem;
+        }
+        .checkout-steps {
+            gap: 1rem;
+        }
+        .step-label {
+            font-size: 0.7rem;
+        }
+        .checkout-card-body {
+            padding: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Checkout Header with Steps -->
+    <div class="checkout-header" data-aos="fade-down">
+        <div class="text-center">
+            <h1 class="display-6 fw-bold mb-2"><i class="fas fa-lock me-3"></i>Secure Checkout</h1>
+            <p class="opacity-75 mb-3">Complete your purchase with confidence</p>
+        </div>
+        <div class="checkout-steps">
+            <div class="step-item completed">
+                <div class="step-number"><i class="fas fa-check"></i></div>
+                <span class="step-label">Cart</span>
+            </div>
+            <i class="fas fa-arrow-right text-white-50"></i>
+            <div class="step-item active">
+                <div class="step-number">2</div>
+                <span class="step-label">Information</span>
+            </div>
+            <i class="fas fa-arrow-right text-white-50"></i>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <span class="step-label">Confirmation</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT: Shipping & Payment Form -->
+        <div class="col-lg-7">
+            <div class="checkout-card" data-aos="fade-right">
+                <div class="checkout-card-header">
+                    <h5><i class="fas fa-truck text-primary"></i> Shipping Information</h5>
+                </div>
+                <div class="checkout-card-body">
+                    <form method="post" action="{% url 'orders:create' %}" id="checkoutForm">
+                        {% csrf_token %}
+                        
+                        <!-- Address Fields -->
+                        <div class="form-group-modern">
+                            <label>Full Address <span class="required-star">*</span></label>
+                            <textarea name="shipping_address" class="form-control-modern" rows="3" required placeholder="Street address, apartment, building, etc."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label>City <span class="required-star">*</span></label>
+                                    <input type="text" name="shipping_city" class="form-control-modern" required placeholder="e.g., Lahore">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label>State/Province <span class="required-star">*</span></label>
+                                    <input type="text" name="shipping_state" class="form-control-modern" required placeholder="e.g., Punjab">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label>Country <span class="required-star">*</span></label>
+                                    <select name="shipping_country" class="form-control-modern" required>
+                                        <option value="">Select Country</option>
+                                        <option value="Pakistan">Pakistan</option>
+                                        <option value="United States">United States</option>
+                                        <option value="United Kingdom">United Kingdom</option>
+                                        <option value="Canada">Canada</option>
+                                        <option value="Australia">Australia</option>
+                                        <option value="UAE">United Arab Emirates</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label>Postal Code <span class="required-star">*</span></label>
+                                    <input type="text" name="shipping_postal_code" class="form-control-modern" required placeholder="e.g., 54000">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group-modern">
+                            <label>Phone Number <span class="required-star">*</span></label>
+                            <input type="tel" name="shipping_phone" class="form-control-modern" required placeholder="+92 300 1234567">
+                        </div>
+                        
+                        <!-- Payment Methods -->
+                        <div class="mt-4">
+                            <label class="fw-bold mb-3"><i class="fas fa-credit-card me-2 text-primary"></i>Select Payment Method <span class="required-star">*</span></label>
+                            
+                            <div class="payment-method-card" data-method="cod">
+                                <input type="radio" name="payment_method" value="cod" id="payment_cod" checked>
+                                <div class="payment-icon"><i class="fas fa-money-bill-wave fa-2x text-success"></i></div>
+                                <div class="payment-info">
+                                    <div class="payment-title">Cash on Delivery</div>
+                                    <div class="payment-desc">Pay when you receive your order</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-method-card" data-method="card">
+                                <input type="radio" name="payment_method" value="card" id="payment_card">
+                                <div class="payment-icon">
+                                    <i class="fab fa-cc-visa fa-2x text-blue-600"></i>
+                                    <i class="fab fa-cc-mastercard fa-2x text-red-600"></i>
+                                </div>
+                                <div class="payment-info">
+                                    <div class="payment-title">Credit / Debit Card</div>
+                                    <div class="payment-desc">Visa, Mastercard, American Express</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-method-card" data-method="bank">
+                                <input type="radio" name="payment_method" value="bank" id="payment_bank">
+                                <div class="payment-icon"><i class="fas fa-university fa-2x text-primary"></i></div>
+                                <div class="payment-info">
+                                    <div class="payment-title">Bank Transfer</div>
+                                    <div class="payment-desc">Direct bank wire transfer</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-method-card" data-method="mobile">
+                                <input type="radio" name="payment_method" value="mobile" id="payment_mobile">
+                                <div class="payment-icon"><i class="fas fa-mobile-alt fa-2x text-purple-600"></i></div>
+                                <div class="payment-info">
+                                    <div class="payment-title">Mobile Payment</div>
+                                    <div class="payment-desc">JazzCash, EasyPaisa, etc.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Notes -->
+                        <div class="form-group-modern mt-4">
+                            <label><i class="fas fa-pen me-2 text-muted"></i>Order Notes (Optional)</label>
+                            <textarea name="notes" class="form-control-modern" rows="2" placeholder="Special instructions for delivery, gift message, etc."></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT: Order Summary -->
+        <div class="col-lg-5">
+            <div class="order-summary-card" data-aos="fade-left">
+                <div class="order-summary-header">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-receipt me-2"></i>Order Summary</h5>
+                </div>
+                <div class="order-summary-body">
+                    <div class="mb-3">
+                        <span class="text-muted"><i class="fas fa-box me-1"></i> {{ cart.get_total_items }} item(s) in cart</span>
+                    </div>
+                    
+                    <!-- Cart Items -->
+                    <div class="cart-items-list mb-3" style="max-height: 300px; overflow-y: auto;">
+                        {% for item in cart.items.all %}
+                            <div class="cart-item">
+                                {% if item.product.images.first %}
+                                    <img src="{{ item.product.images.first.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
+                                {% else %}
+                                    <div class="cart-item-img d-flex align-items-center justify-content-center bg-light">
+                                        <i class="fas fa-box text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="cart-item-details">
+                                    <div class="cart-item-name">{{ item.product.name|truncatechars:30 }}</div>
+                                    <div class="cart-item-meta">Quantity: {{ item.quantity }}</div>
+                                </div>
+                                <div class="cart-item-price">${{ item.get_subtotal|floatformat:2 }}</div>
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-shopping-cart fa-3x text-muted mb-2"></i>
+                                <p>Your cart is empty</p>
+                                <a href="{% url 'products:list' %}" class="btn btn-sm btn-primary">Start Shopping</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Price Summary -->
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <strong>${{ cart.get_total|floatformat:2 }}</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span class="text-muted" id="shippingEstimate">Calculated at checkout</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (Estimated)</span>
+                        <span class="text-muted" id="taxEstimate">To be calculated</span>
+                    </div>
+                    <div class="summary-total">
+                        <span class="fw-bold">Total</span>
+                        <span class="fw-bold text-primary" id="orderTotal">${{ cart.get_total|floatformat:2 }}</span>
+                    </div>
+                    
+                    <!-- Place Order Button -->
+                    <button type="submit" form="checkoutForm" class="btn-place-order mt-3" {% if not cart.items.all %}disabled{% endif %}>
+                        <i class="fas fa-check-circle me-2"></i> Place Order
+                    </button>
+                    
+                    <!-- Secure Badges -->
+                    <div class="secure-badge">
+                        <span><i class="fas fa-lock text-success"></i> Secure Payment</span>
+                        <span><i class="fas fa-shield-alt text-primary"></i> Buyer Protection</span>
+                        <span><i class="fas fa-undo-alt text-warning"></i> 30-Day Returns</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help Card -->
+            <div class="mt-3 p-3 bg-light rounded-4 text-center">
+                <i class="fas fa-headset text-primary mb-2"></i>
+                <p class="small mb-0">Need help? <a href="{% url 'core:contact' %}" class="text-decoration-none">Contact Support</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+        <p class="mt-3 mb-0 fw-semibold">Processing your order...</p>
+    </div>
+</div>
+
+<script>
+    // Payment method selection styling
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        const radio = card.querySelector('input[type="radio"]');
+        
+        card.addEventListener('click', () => {
+            radio.checked = true;
+            document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+        });
+        
+        if (radio.checked) {
+            card.classList.add('selected');
+        }
+    });
+    
+    // Calculate shipping and tax based on country selection
+    const countrySelect = document.querySelector('select[name="shipping_country"]');
+    const shippingEstimateSpan = document.getElementById('shippingEstimate');
+    const taxEstimateSpan = document.getElementById('taxEstimate');
+    const orderTotalSpan = document.getElementById('orderTotal');
+    const subtotal = {{ cart.get_total|floatformat:2 }};
+    
+    function calculateShippingAndTax() {
+        const country = countrySelect?.value || '';
+        let shipping = 0;
+        let tax = 0;
+        
+        // Simple shipping logic based on country
+        switch(country) {
+            case 'Pakistan':
+                shipping = 2.99;
+                tax = subtotal * 0.05; // 5% tax
+                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                break;
+            case 'United States':
+                shipping = 5.99;
+                tax = subtotal * 0.08;
+                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                break;
+            case 'United Kingdom':
+                shipping = 6.99;
+                tax = subtotal * 0.07;
+                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                break;
+            case 'Canada':
+                shipping = 7.99;
+                tax = subtotal * 0.09;
+                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                break;
+            default:
+                shipping = 9.99;
+                tax = subtotal * 0.1;
+                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+        }
+        
+        taxEstimateSpan.innerHTML = `$${tax.toFixed(2)}`;
+        const total = subtotal + shipping + tax;
+        orderTotalSpan.innerHTML = `$${total.toFixed(2)}`;
+        
+        // Add hidden fields to form for shipping and tax
+        let shippingInput = document.querySelector('input[name="shipping_cost"]');
+        let taxInput = document.querySelector('input[name="tax_amount"]');
+        
+        if (!shippingInput) {
+            shippingInput = document.createElement('input');
+            shippingInput.type = 'hidden';
+            shippingInput.name = 'shipping_cost';
+            document.getElementById('checkoutForm').appendChild(shippingInput);
+        }
+        if (!taxInput) {
+            taxInput = document.createElement('input');
+            taxInput.type = 'hidden';
+            taxInput.name = 'tax_amount';
+            document.getElementById('checkoutForm').appendChild(taxInput);
+        }
+        
+        shippingInput.value = shipping;
+        taxInput.value = tax;
+    }
+    
+    // Calculate on country change
+    if (countrySelect) {
+        countrySelect.addEventListener('change', calculateShippingAndTax);
+        // Initial calculation
+        calculateShippingAndTax();
+    }
+    
+    // Form submission with loading state
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-place-order');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // Validate required fields
+            const requiredFields = this.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Show loading overlay
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'flex';
+            }
+            
+            // Disable submit button
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+            }
+        });
+    }
+    
+    // Show toast function
+    function showToast(message, type = 'error') {
+        const toastHtml = `
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+                <div class="bg-${type === 'error' ? 'danger' : 'success'} text-white p-3 rounded-4 shadow-lg d-flex align-items-center gap-3">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} fa-lg"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="btn-close btn-close-white"></button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        setTimeout(() => {
+            const toast = document.querySelector('.position-fixed.bottom-0.end-0');
+            if (toast) toast.remove();
+        }, 3000);
+    }
+    
+    // Add invalid styling
+    const style = document.createElement('style');
+    style.textContent = `
+        .is-invalid {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+        .form-control-modern.is-invalid:focus {
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Initialize AOS if available
+    if (typeof AOS !== 'undefined') {
+        AOS.refresh();
+    }
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Additional validation for phone number
+    const phoneInput = document.querySelector('input[name="shipping_phone"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9+]/g, '');
+            e.target.value = value;
+        });
+    }
+    
+    // Postal code validation (simple)
+    const postalInput = document.querySelector('input[name="shipping_postal_code"]');
+    if (postalInput) {
+        postalInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^a-zA-Z0-9-]/g, '');
+            e.target.value = value;
+        });
+    }
+</script>
+{% endblock %}

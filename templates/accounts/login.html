@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Welcome Back — Sign in to Vendora{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Login Page Styles - matching Vendora aesthetic */
+    .login-wrapper {
+        min-height: calc(100vh - 350px);
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+    
+    .login-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 32px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .login-hero::before {
+        content: '';
+        position: absolute;
+        top: -40%;
+        right: -10%;
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(59,130,246,0.2) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .login-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .login-card {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(0px);
+        border-radius: 36px;
+        border: none;
+        box-shadow: 0 30px 55px -20px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.02);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .login-card:hover {
+        box-shadow: 0 35px 65px -20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card-header-modern {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        padding: 1.75rem 2rem;
+        border-bottom: none;
+        text-align: center;
+    }
+    
+    .card-header-modern h3 {
+        font-weight: 800;
+        letter-spacing: -0.3px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+    
+    .card-header-modern p {
+        margin: 0.5rem 0 0;
+        opacity: 0.85;
+        font-size: 0.9rem;
+    }
+    
+    .form-modern {
+        padding: 2rem 2rem 1.8rem;
+    }
+    
+    /* Crispy forms override */
+    .form-modern .form-group {
+        margin-bottom: 1.35rem;
+    }
+    
+    .form-modern label {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #475569;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-modern input,
+    .form-modern select {
+        border-radius: 20px !important;
+        border: 1.5px solid #e2e8f0;
+        padding: 0.8rem 1.2rem;
+        transition: all 0.25s ease;
+        background: #ffffff;
+        font-size: 0.95rem;
+    }
+    
+    .form-modern input:focus,
+    .form-modern select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+        outline: none;
+    }
+    
+    .btn-login-modern {
+        background: linear-gradient(105deg, #3b82f6, #2563eb);
+        border: none;
+        border-radius: 60px;
+        padding: 0.9rem 1.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+    }
+    
+    .btn-login-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -6px rgba(37,99,235,0.5);
+        background: linear-gradient(105deg, #2563eb, #1d4ed8);
+    }
+    
+    .divider-custom {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0 1.2rem;
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
+    
+    .divider-custom::before,
+    .divider-custom::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .divider-custom::before {
+        margin-right: 1rem;
+    }
+    
+    .divider-custom::after {
+        margin-left: 1rem;
+    }
+    
+    .register-link-card {
+        background: #f8fafc;
+        border-radius: 24px;
+        padding: 0.9rem;
+        text-align: center;
+        transition: 0.2s;
+        margin-top: 0.5rem;
+    }
+    
+    .register-link-card a {
+        font-weight: 700;
+        text-decoration: none;
+        color: #2563eb;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .register-link-card a:hover {
+        text-decoration: underline;
+        gap: 12px;
+    }
+    
+    .forgot-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        color: #64748b;
+        transition: 0.2s;
+    }
+    
+    .forgot-link:hover {
+        color: #2563eb;
+        gap: 10px;
+    }
+    
+    .feature-badge {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 1.8rem;
+        flex-wrap: wrap;
+    }
+    
+    .feature-badge span {
+        font-size: 0.8rem;
+        color: #475569;
+        background: #f1f5f9;
+        padding: 0.4rem 1rem;
+        border-radius: 60px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .login-card {
+        animation: fadeSlideUp 0.5s ease-out;
+    }
+    
+    /* Demo credentials hint (dev mode) */
+    .demo-hint {
+        background: linear-gradient(105deg, #fef9e3, #fffbeb);
+        border-radius: 20px;
+        padding: 0.75rem 1rem;
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        border-left: 3px solid #f59e0b;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-modern {
+            padding: 1.5rem;
+        }
+        .card-header-modern h3 {
+            font-size: 1.5rem;
+        }
+        .login-hero h2 {
+            font-size: 1.5rem;
+        }
+    }
+    
+    /* Password toggle eye (if needed) */
+    .password-wrapper {
+        position: relative;
+    }
+    .toggle-password {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #94a3b8;
+        background: white;
+        padding: 0;
+        z-index: 10;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Optional: add password visibility toggle if password field exists
+        const passwordField = document.querySelector('#id_password');
+        if (passwordField) {
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            passwordField.parentNode.insertBefore(wrapper, passwordField);
+            wrapper.appendChild(passwordField);
+            
+            const toggleBtn = document.createElement('i');
+            toggleBtn.className = 'fas fa-eye toggle-password';
+            toggleBtn.style.cssText = 'position: absolute; right: 18px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; background: transparent; z-index: 5;';
+            wrapper.appendChild(toggleBtn);
+            
+            toggleBtn.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                toggleBtn.classList.toggle('fa-eye');
+                toggleBtn.classList.toggle('fa-eye-slash');
+            });
+        }
+        
+        // Add floating animation on focus for inputs
+        const inputs = document.querySelectorAll('.form-modern input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                if (!this.value) this.parentElement.classList.remove('focused');
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-lg-7 col-md-9">
+                
+                <!-- Hero welcome section -->
+                <div class="login-hero text-white text-center" data-aos="fade-down">
+                    <div class="d-flex justify-content-center mb-3">
+                        <i class="fas fa-store fa-3x" style="opacity: 0.9;"></i>
+                    </div>
+                    <h2 class="display-6 fw-bold mb-2">
+                        Welcome back
+                    </h2>
+                    <p class="lead mb-0 opacity-90">Sign in to access your dashboard, manage orders, and grow your business</p>
+                </div>
+                
+                <!-- Login Card -->
+                <div class="login-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-header-modern">
+                        <h3 class="text-white">
+                            <i class="fas fa-sign-in-alt fa-fw"></i> Sign in
+                        </h3>
+                        <p class="text-white-50">Enter your credentials to continue</p>
+                    </div>
+                    
+                    <div class="form-modern">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            <!-- Render crispy form with modern styling -->
+                            {{ form.email|as_crispy_field }}
+                            {{ form.password|as_crispy_field }}
+                            
+                            <!-- Remember me? optional if you have checkbox -->
+                            {% if form.remember %}
+                                <div class="form-check mb-3">
+                                    {{ form.remember|as_crispy_field }}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-login-modern text-white">
+                                    <i class="fas fa-arrow-right-to-bracket me-2"></i> Sign in
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Forgot password link -->
+                        <div class="text-end mt-3">
+                            <a href="{% url 'accounts:forgot_password' %}" class="forgot-link text-decoration-none">
+                                <i class="fas fa-question-circle"></i> Forgot password?
+                            </a>
+                        </div>
+                        
+                        <div class="divider-custom">
+                            <span>New to {{ site_name|default:"Vendora" }}?</span>
+                        </div>
+                        
+                        <div class="register-link-card">
+                            <a href="{% url 'accounts:register' %}">
+                                <i class="fas fa-user-plus"></i> Create your free account
+                                <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                        
+                        <!-- Dev mode / demo credentials (optional) -->
+                        {% if dev_mode %}
+                        <div class="demo-hint d-flex align-items-center gap-2 mt-3">
+                            <i class="fas fa-flask text-warning"></i>
+                            <small class="text-secondary">🔧 Dev mode: Use any email + password (auto auth) or demo: vendor@example.com / demo123</small>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Trust features -->
+                        <div class="feature-badge">
+                            <span><i class="fas fa-shield-alt text-primary"></i> SSL Secure</span>
+                            <span><i class="fas fa-headset text-primary"></i> 24/7 Support</span>
+                            <span><i class="fas fa-chart-line text-primary"></i> Vendor analytics</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Extra tip: multi-vendor benefits -->
+                <div class="text-center mt-4 small text-muted" data-aos="fade-up" data-aos-delay="150">
+                    <i class="fas fa-store me-1"></i> Multi-vendor marketplace • 
+                    <i class="fas fa-truck-fast mx-1"></i> Fast delivery • 
+                    <i class="fas fa-hand-holding-usd mx-1"></i> Secure payments
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Additional crispy form fixes for modern look */
+    .form-modern .form-control, 
+    .form-modern .form-select {
+        border-radius: 20px !important;
+        border: 1.5px solid #e2edff;
+        background: #ffffff;
+        font-size: 0.95rem;
+    }
+    
+    .form-modern .form-control:focus, 
+    .form-modern .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+    }
+    
+    .form-modern .invalid-feedback {
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-top: 0.3rem;
+        color: #dc2626;
+    }
+    
+    .form-modern .alert-danger {
+        background: #fee2e2;
+        border: none;
+        border-radius: 18px;
+        color: #b91c1c;
+        padding: 0.6rem 1rem;
+    }
+    
+    .form-modern .form-check-input {
+        border-radius: 6px;
+        border: 1.5px solid #cbd5e1;
+    }
+    
+    .form-modern .form-check-input:checked {
+        background-color: #2563eb;
+        border-color: #2563eb;
+    }
+    
+    /* Remove default card border from base card if needed */
+    .card {
+        background: transparent;
+        border: none;
+    }
+    
+    /* responsive adjustment */
+    @media (max-width: 576px) {
+        .login-hero {
+            padding: 1.2rem;
+        }
+        .login-hero h2 {
+            font-size: 1.4rem;
+        }
+        .feature-badge {
+            gap: 0.8rem;
+        }
+        .feature-badge span {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.8rem;
+        }
+    }
+    
+    /* AOS override if any conflict */
+    [data-aos] {
+        pointer-events: auto !important;
+    }
+</style>
+{% endblock %}

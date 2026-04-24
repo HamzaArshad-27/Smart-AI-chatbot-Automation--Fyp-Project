@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Ship Order Item - Vendora{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Ship Item: {{ order_item.product.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Order #:</strong> {{ order_item.order.order_number }}</p>
+                    <p><strong>Quantity:</strong> {{ order_item.quantity }}</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Tracking Number</label>
+                            <input type="text" name="tracking_number" class="form-control" placeholder="Enter tracking number">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Mark as Shipped</button>
+                        <a href="{% url 'orders:seller_orders' %}" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

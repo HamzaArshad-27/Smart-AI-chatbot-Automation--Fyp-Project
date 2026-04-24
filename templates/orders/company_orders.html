@@ -1,0 +1,712 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Company Orders - Vendora{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: var(--primary-gradient);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    /* Stats Cards */
+    .stat-card-mini {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+
+    .stat-card-mini:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .stat-card-mini.active {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-box input {
+        padding-left: 40px;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 15px;
+        top: 12px;
+        color: #6c757d;
+    }
+
+    /* Orders Table */
+    .orders-table {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .orders-table thead th {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .orders-table tbody tr {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .orders-table tbody tr:hover {
+        background: #f8f9fc;
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .orders-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    /* Status Badges */
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .badge-status i {
+        font-size: 0.7rem;
+    }
+
+    .status-pending { background: #ffc107; color: #856404; }
+    .status-approved { background: #17a2b8; color: white; }
+    .status-processing { background: #007bff; color: white; }
+    .status-shipped { background: #6f42c1; color: white; }
+    .status-delivered { background: #28a745; color: white; }
+    .status-cancelled { background: #dc3545; color: white; }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Order Items Preview */
+    .items-preview {
+        max-width: 200px;
+    }
+
+    .item-tag {
+        background: #f8f9fc;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        display: inline-block;
+        margin: 2px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-action {
+            width: 100%;
+        }
+    }
+
+    /* Bulk Actions */
+    .bulk-actions {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .bulk-actions.show {
+        display: block;
+        animation: fadeInUp 0.3s ease;
+    }
+
+    /* Export Button */
+    .export-btn {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .export-btn:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="page-header animated" style="animation-delay: 0.1s;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-2">Order Management</h1>
+                <p class="mb-0 opacity-75">Manage and track all customer orders in one place</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <button class="btn export-btn" onclick="exportOrders()">
+                    <i class="fas fa-download"></i> Export Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4 animated" style="animation-delay: 0.2s;">
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="stat-card-mini {% if not status_filter %}active{% endif %}" onclick="filterStatus('')">
+                <div class="stat-number">{{ total_orders }}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'pending' %}active{% endif %}" onclick="filterStatus('pending')">
+                <div class="stat-number text-warning">{{ pending_count }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'approved' %}active{% endif %}" onclick="filterStatus('approved')">
+                <div class="stat-number text-info">{{ approved_count }}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'processing' %}active{% endif %}" onclick="filterStatus('processing')">
+                <div class="stat-number text-primary">{{ processing_count }}</div>
+                <div class="stat-label">Processing</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'shipped' %}active{% endif %}" onclick="filterStatus('shipped')">
+                <div class="stat-number text-info">{{ shipped_count }}</div>
+                <div class="stat-label">Shipped</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="stat-card-mini {% if status_filter == 'delivered' %}active{% endif %}" onclick="filterStatus('delivered')">
+                <div class="stat-number text-success">{{ delivered_count }}</div>
+                <div class="stat-label">Delivered</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section animated" style="animation-delay: 0.3s;">
+        <div class="row align-items-center">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by order #, customer, or product...">
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <select id="dateFilter" class="form-select">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year">This Year</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <select id="paymentFilter" class="form-select">
+                    <option value="">All Payment Methods</option>
+                    <option value="cod">Cash on Delivery</option>
+                    <option value="card">Credit Card</option>
+                    <option value="paypal">PayPal</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="bulk-actions" id="bulkActions">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <strong><span id="selectedCount">0</span> orders selected</strong>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button class="btn btn-success btn-sm" onclick="bulkApprove()">
+                    <i class="fas fa-check"></i> Bulk Approve
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="bulkCancel()">
+                    <i class="fas fa-times"></i> Bulk Cancel
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="clearSelection()">
+                    <i class="fas fa-close"></i> Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="orders-table animated" style="animation-delay: 0.4s;">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                        </th>
+                        <th>Order Details</th>
+                        <th>Customer Info</th>
+                        <th>Items</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    {% for order in orders %}
+                    <tr class="order-row" data-order-id="{{ order.id }}" data-status="{{ order.status }}">
+                        <td>
+                            <input type="checkbox" class="order-checkbox" value="{{ order.id }}" onchange="updateBulkActions()">
+                        </td>
+                        <td>
+                            <strong>{{ order.order_number }}</strong>
+                            <br>
+                            <small class="text-muted">#{{ order.id }}</small>
+                        </td>
+                        <td>
+                            <div>
+                                <i class="fas fa-user text-primary"></i> {{ order.user.get_full_name|default:order.user.email }}
+                            </div>
+                            <div class="mt-1">
+                                <i class="fas fa-phone text-muted"></i> 
+                                <small>{{ order.shipping_phone }}</small>
+                            </div>
+                            <div class="mt-1">
+                                <i class="fas fa-envelope text-muted"></i> 
+                                <small>{{ order.user.email|truncatechars:20 }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="items-preview">
+                                {% for item in order.items.all|slice:":2" %}
+                                    <span class="item-tag">
+                                        {{ item.product.name|truncatechars:20 }} x{{ item.quantity }}
+                                    </span>
+                                {% endfor %}
+                                {% if order.items.count > 2 %}
+                                    <span class="item-tag text-primary">
+                                        +{{ order.items.count|add:"-2" }} more
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <strong class="text-primary">${{ order.total_amount }}</strong>
+                            <br>
+                            <small class="badge bg-{% if order.payment_status == 'paid' %}success{% else %}warning{% endif %}">
+                                {{ order.get_payment_status_display }}
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge-status status-{{ order.status }}">
+                                <i class="fas {% if order.status == 'pending' %}fa-clock{% elif order.status == 'delivered' %}fa-check-circle{% elif order.status == 'shipped' %}fa-truck{% elif order.status == 'processing' %}fa-cogs{% else %}fa-box{% endif %}"></i>
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div>{{ order.created_at|date:"M d, Y" }}</div>
+                            <small class="text-muted">{{ order.created_at|time:"h:i A" }}</small>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'orders:detail' order.id %}" class="btn btn-info btn-action" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                
+                                {% if order.status == 'pending' %}
+                                    <a href="{% url 'orders:approve_order' order.id %}" 
+                                       class="btn btn-success btn-action"
+                                       onclick="return confirm('Approve this order?')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </a>
+                                {% elif order.status == 'approved' %}
+                                    <a href="{% url 'orders:process_order' order.id %}" 
+                                       class="btn btn-primary btn-action"
+                                       onclick="return confirm('Start processing this order?')">
+                                        <i class="fas fa-cogs"></i> Process
+                                    </a>
+                                {% elif order.status == 'processing' %}
+                                    <a href="{% url 'orders:ship_order' order.id %}" 
+                                       class="btn btn-info btn-action">
+                                        <i class="fas fa-truck"></i> Ship
+                                    </a>
+                                {% elif order.status == 'shipped' %}
+                                    <a href="{% url 'orders:deliver_order' order.id %}" 
+                                       class="btn btn-success btn-action"
+                                       onclick="return confirm('Mark this order as delivered?')">
+                                        <i class="fas fa-check-circle"></i> Deliver
+                                    </a>
+                                {% endif %}
+                                
+                                    
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                            <h4>No Orders Found</h4>
+                            <p class="text-muted">No orders are available in this category.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if orders.has_other_pages %}
+        <div class="p-3 bg-light">
+                            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for i in orders.paginator.page_range %}
+                        {% if orders.number == i %}
+                            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% elif i > orders.number|add:'-3' and i < orders.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Filter by status
+    function filterStatus(status) {
+        window.location.href = '?status=' + status;
+    }
+    
+    // Search functionality
+    document.getElementById('searchInput')?.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.order-row');
+        
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Date filter
+    document.getElementById('dateFilter')?.addEventListener('change', function() {
+        const filter = this.value;
+        const rows = document.querySelectorAll('.order-row');
+        const today = new Date();
+        
+        rows.forEach(row => {
+            const dateText = row.cells[6].innerText;
+            const rowDate = new Date(dateText);
+            
+            let show = true;
+            if (filter === 'today') {
+                show = rowDate.toDateString() === today.toDateString();
+            } else if (filter === 'week') {
+                const weekAgo = new Date(today.setDate(today.getDate() - 7));
+                show = rowDate >= weekAgo;
+            } else if (filter === 'month') {
+                const monthAgo = new Date(today.setMonth(today.getMonth() - 1));
+                show = rowDate >= monthAgo;
+            } else if (filter === 'year') {
+                const yearAgo = new Date(today.setFullYear(today.getFullYear() - 1));
+                show = rowDate >= yearAgo;
+            }
+            
+            row.style.display = show ? '' : 'none';
+        });
+    });
+    
+    // Payment filter
+    document.getElementById('paymentFilter')?.addEventListener('change', function() {
+        const filter = this.value;
+        const rows = document.querySelectorAll('.order-row');
+        
+        rows.forEach(row => {
+            const paymentCell = row.cells[4];
+            if (filter === '') {
+                row.style.display = '';
+            } else {
+                const paymentText = paymentCell.innerText.toLowerCase();
+                row.style.display = paymentText.includes(filter) ? '' : 'none';
+            }
+        });
+    });
+    
+    // Reset filters
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('dateFilter').value = '';
+        document.getElementById('paymentFilter').value = '';
+        location.reload();
+    }
+    
+    // Bulk actions
+    let selectedOrders = [];
+    
+    function updateBulkActions() {
+        const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+        selectedOrders = Array.from(checkboxes).map(cb => cb.value);
+        
+        const bulkActions = document.getElementById('bulkActions');
+        const selectedCount = document.getElementById('selectedCount');
+        
+        if (selectedOrders.length > 0) {
+            bulkActions.classList.add('show');
+            selectedCount.innerText = selectedOrders.length;
+        } else {
+            bulkActions.classList.remove('show');
+        }
+    }
+    
+    function toggleSelectAll() {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.order-checkbox');
+        
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+        });
+        
+        updateBulkActions();
+    }
+    
+    function clearSelection() {
+        const checkboxes = document.querySelectorAll('.order-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+        });
+        updateBulkActions();
+    }
+    
+    function bulkApprove() {
+        if (selectedOrders.length === 0) return;
+        
+        if (confirm(`Approve ${selectedOrders.length} order(s)?`)) {
+            // Implement bulk approve via AJAX
+            fetch('/orders/bulk-approve/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({order_ids: selectedOrders})
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
+    }
+    
+    function bulkCancel() {
+        if (selectedOrders.length === 0) return;
+        
+        if (confirm(`Cancel ${selectedOrders.length} order(s)?`)) {
+            // Implement bulk cancel via AJAX
+            fetch('/orders/bulk-cancel/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({order_ids: selectedOrders})
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
+    }
+    
+    // Export orders
+    function exportOrders() {
+        window.location.href = '/orders/export/?status={{ status_filter }}';
+    }
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Add row click handler
+    document.querySelectorAll('.order-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox' && !e.target.classList.contains('btn')) {
+                const orderId = this.dataset.orderId;
+                window.location.href = `/orders/${orderId}/`;
+            }
+        });
+    });
+</script>
+{% endblock %}

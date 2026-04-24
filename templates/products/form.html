@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Product - Vendora{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/products/form.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="product-form-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-card animated" style="animation-delay: 0.1s;">
+                    <div class="card-header">
+                        <h4>
+                            <i class="fas {% if is_edit %}fa-edit{% else %}fa-plus-circle{% endif %}"></i>
+                            {% if is_edit %}Edit Product{% else %}Add New Product{% endif %}
+                        </h4>
+                        <p>Fill in the product details below. All fields marked with * are required.</p>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" id="productForm">
+                            {% csrf_token %}
+                            
+                            <!-- Basic Information Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    Basic Information
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        {{ form.name|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.category|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.sku|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        {{ form.barcode|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Pricing & Inventory Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Pricing & Inventory
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="input-group-custom">
+                                            <span class="currency-symbol">$</span>
+                                            {{ form.price|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group-custom">
+                                            <span class="currency-symbol">$</span>
+                                            {{ form.compare_price|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group-custom">
+                                            <span class="currency-symbol">$</span>
+                                            {{ form.cost_per_item|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.stock_quantity|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.low_stock_threshold|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Description Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-align-left"></i>
+                                    Description
+                                </div>
+                                {{ form.short_description|as_crispy_field }}
+                                {{ form.description|as_crispy_field }}
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Support markdown formatting for product description
+                                </small>
+                            </div>
+                            
+                            <!-- Shipping Details Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-truck"></i>
+                                    Shipping Details
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.weight|as_crispy_field }}
+                                        <small class="text-muted">Weight in kg/lbs</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.dimensions|as_crispy_field }}
+                                        <small class="text-muted">Format: L x W x H (cm)</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Product Status Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-toggle-on"></i>
+                                    Product Status
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="switch-toggle">
+                                            <span class="switch-label">
+                                                <i class="fas fa-eye"></i> Active Product
+                                            </span>
+                                            <label class="switch">
+                                                {{ form.is_active }}
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="switch-toggle">
+                                            <span class="switch-label">
+                                                <i class="fas fa-star"></i> Featured Product
+                                            </span>
+                                            <label class="switch">
+                                                {{ form.is_featured }}
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="switch-toggle">
+                                            <span class="switch-label">
+                                                <i class="fas fa-download"></i> Digital Product
+                                            </span>
+                                            <label class="switch">
+                                                {{ form.is_digital }}
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Product Images Section -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <i class="fas fa-images"></i>
+                                    Product Images
+                                </div>
+                                
+                                <div class="image-upload-area" onclick="document.getElementById('imageInput').click()">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <h6>Click to upload images</h6>
+                                    <p class="text-muted small mb-0">PNG, JPG, WEBP up to 5MB each</p>
+                                </div>
+                                <input type="file" name="images" id="imageInput" multiple accept="image/*" style="display: none;">
+                                
+                                <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                                
+                                {% if is_edit and existing_images %}
+                                <div class="mt-3">
+                                    <label class="form-label">Existing Images</label>
+                                    <div class="image-preview-grid">
+                                        {% for image in existing_images %}
+                                        <div class="image-preview-item">
+                                            <img src="{{ image.image.url }}" alt="Product Image">
+                                            <div class="image-actions">
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteImage({{ image.id }})"
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% if forloop.first %}
+                                                    <span class="main-badge">Main</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle"></i> 
+                                    First image will be used as the main product image. You can upload up to 10 images.
+                                </small>
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-submit text-white" id="submitBtn">
+                                    <i class="fas fa-save"></i> 
+                                    {% if is_edit %}Update Product{% else %}Create Product{% endif %}
+                                </button>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'products:manage' %}" class="btn btn-outline-secondary flex-grow-1">
+                                        <i class="fas fa-arrow-left"></i> Back to Products
+                                    </a>
+                                    {% if not is_edit %}
+                                    <button type="button" class="btn btn-outline-primary" onclick="saveAndAddAnother()">
+                                        <i class="fas fa-plus"></i> Save & Add Another
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/products/form.js' %}"></script>
+{% endblock %}

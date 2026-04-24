@@ -1,0 +1,697 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Users - Vendora{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    }
+
+    .dashboard-wrapper {
+        background: #f8f9fc;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .dashboard-sidebar {
+        background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+        border-radius: 15px;
+        color: white;
+        position: sticky;
+        top: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-sidebar h5 {
+        color: #fff;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-sidebar .nav-link {
+        color: rgba(255,255,255,0.8);
+        padding: 12px 15px;
+        margin: 5px 0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .dashboard-sidebar .nav-link:hover,
+    .dashboard-sidebar .nav-link.active {
+        background: rgba(102, 126, 234, 0.3);
+        color: white;
+        transform: translateX(5px);
+    }
+
+    .dashboard-sidebar .nav-link i {
+        width: 25px;
+        margin-right: 10px;
+    }
+
+    /* Page Header */
+    .page-header {
+        background: var(--primary-gradient);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    /* Users Table */
+    .users-table {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    .users-table thead th {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .users-table tbody tr {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .users-table tbody tr:hover {
+        background: #f8f9fc;
+        transform: scale(1.01);
+    }
+
+    .users-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    /* Badge Styles */
+    .badge-role {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .badge-status {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* User Avatar */
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    /* Search Box */
+    .search-box {
+        position: relative;
+    }
+
+    .search-box input {
+        padding-left: 45px;
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+        height: 48px;
+    }
+
+    .search-box input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 18px;
+        top: 16px;
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    /* Pagination */
+    .pagination-custom .page-link {
+        border-radius: 10px;
+        margin: 0 3px;
+        color: #667eea;
+        border: none;
+        padding: 8px 16px;
+    }
+
+    .pagination-custom .page-item.active .page-link {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .pagination-custom .page-link:hover {
+        background: rgba(102,126,234,0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    /* Toast Notification */
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+        border-left: 4px solid;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-sidebar {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .users-table {
+            font-size: 0.85rem;
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+        }
+    }
+
+    /* Export Button */
+    .btn-export {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .btn-export:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 mb-4">
+                <div class="dashboard-sidebar p-3">
+                    <div class="text-center mb-4">
+                        <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                            <i class="fas fa-user-shield fa-2x text-white"></i>
+                        </div>
+                        <h6 class="mt-2 mb-0">{{ user.email|truncatechars:20 }}</h6>
+                        <small class="text-white-50">Administrator</small>
+                    </div>
+                    
+                    <h5>Admin Menu</h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:admin' %}">
+                                <i class="fas fa-chart-line"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:pending_users' %}">
+                                <i class="fas fa-user-check"></i> Pending Approvals
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'dashboard:all_users' %}">
+                                <i class="fas fa-users"></i> All Users
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <hr class="bg-light">
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <!-- Page Header -->
+                <div class="page-header animated" style="animation-delay: 0.1s;">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 mb-2">
+                                <i class="fas fa-users"></i> All Users
+                            </h1>
+                            <p class="mb-0 opacity-75">Manage and monitor all platform users</p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <button class="btn btn-export" onclick="exportUsers()">
+                                <i class="fas fa-download"></i> Export Users
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4 animated" style="animation-delay: 0.2s;">
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title opacity-75">Total Users</h6>
+                                        <h2 class="mb-0">{{ total_users }}</h2>
+                                    </div>
+                                    <div class="fs-1 opacity-50">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title opacity-75">Active Users</h6>
+                                        <h2 class="mb-0">{{ active_users|default:0 }}</h2>
+                                    </div>
+                                    <div class="fs-1 opacity-50">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title opacity-75">Pending Approval</h6>
+                                        <h2 class="mb-0">{{ pending_count|default:0 }}</h2>
+                                    </div>
+                                    <div class="fs-1 opacity-50">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title opacity-75">Verified Email</h6>
+                                        <h2 class="mb-0">{{ verified_users|default:0 }}</h2>
+                                    </div>
+                                    <div class="fs-1 opacity-50">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filter Section -->
+                <div class="filter-section animated" style="animation-delay: 0.3s;">
+                    <form method="get" id="filterForm">
+                        <div class="row align-items-end">
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search by email or name..." value="{{ search_query }}">
+                                </div>
+                            </div>
+                            <div class="col-md-2 mb-3 mb-md-0">
+                                <label class="form-label small text-muted">Role</label>
+                                <select name="role" class="form-select">
+                                    <option value="">All Roles</option>
+                                    <option value="admin" {% if current_role == 'admin' %}selected{% endif %}>Admin</option>
+                                    <option value="company" {% if current_role == 'company' %}selected{% endif %}>Company</option>
+                                    <option value="seller" {% if current_role == 'seller' %}selected{% endif %}>Seller</option>
+                                    <option value="retailer" {% if current_role == 'retailer' %}selected{% endif %}>Retailer</option>
+                                    <option value="customer" {% if current_role == 'customer' %}selected{% endif %}>Customer</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-3 mb-md-0">
+                                <label class="form-label small text-muted">Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="">All</option>
+                                    <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-3 mb-md-0">
+                                <label class="form-label small text-muted">Approval</label>
+                                <select name="approved" class="form-select">
+                                    <option value="">All</option>
+                                    <option value="approved" {% if current_approved == 'approved' %}selected{% endif %}>Approved</option>
+                                    <option value="pending" {% if current_approved == 'pending' %}selected{% endif %}>Pending</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary flex-grow-1">
+                                        <i class="fas fa-filter"></i> Apply Filters
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
+                                        <i class="fas fa-redo-alt"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Users Table -->
+                <div class="users-table animated" style="animation-delay: 0.4s;">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Email Verified</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if user.profile_image %}
+                                                <img src="{{ user.profile_image.url }}" class="user-avatar" alt="{{ user.email }}">
+                                            {% else %}
+                                                <div class="user-avatar bg-light d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-user text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold">{{ user.get_full_name|default:user.email|truncatechars:25 }}</div>
+                                                <small class="text-muted">{{ user.email }}</small>
+                                            </div>
+                                        </div>
+                                     </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge-role {% if user.role == 'admin' %}bg-danger{% elif user.role == 'company' %}bg-primary{% elif user.role == 'seller' %}bg-info{% elif user.role == 'retailer' %}bg-warning{% else %}bg-secondary{% endif %} text-white">
+                                            <i class="fas {% if user.role == 'admin' %}fa-crown{% elif user.role == 'company' %}fa-building{% elif user.role == 'seller' %}fa-store{% elif user.role == 'retailer' %}fa-shopping-cart{% else %}fa-user{% endif %}"></i>
+                                            {{ user.get_role_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div><i class="fas fa-phone text-muted small"></i> {{ user.phone|default:"—" }}</div>
+                                        {% if user.location %}
+                                            <div><i class="fas fa-map-marker-alt text-muted small"></i> {{ user.location|truncatechars:20 }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {% if user.is_active %}
+                                                <span class="badge-status bg-success text-white">
+                                                    <i class="fas fa-circle"></i> Active
+                                                </span>
+                                            {% else %}
+                                                <span class="badge-status bg-danger text-white">
+                                                    <i class="fas fa-circle"></i> Inactive
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mt-1">
+                                            {% if user.is_approved %}
+                                                <span class="badge-status bg-success text-white">
+                                                    <i class="fas fa-check"></i> Approved
+                                                </span>
+                                            {% else %}
+                                                <span class="badge-status bg-warning text-dark">
+                                                    <i class="fas fa-clock"></i> Pending
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if user.email_verified %}
+                                            <span class="text-success">
+                                                <i class="fas fa-check-circle"></i> Verified
+                                            </span>
+                                        {% else %}
+                                            <span class="text-danger">
+                                                <i class="fas fa-times-circle"></i> Unverified
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>{{ user.date_joined|date:"M d, Y" }}</div>
+                                        <small class="text-muted">{{ user.date_joined|date:"h:i A" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" onclick="event.stopPropagation()">
+                                            <form method="post" action="{% url 'dashboard:toggle_user_status' user.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                {% if user.is_active %}
+                                                    <button type="submit" class="btn btn-outline-warning" title="Deactivate User" onclick="return confirmAction('deactivate', '{{ user.email }}')">
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="submit" class="btn btn-outline-success" title="Activate User" onclick="return confirmAction('activate', '{{ user.email }}')">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </form>
+
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                                        <h4 class="text-muted">No Users Found</h4>
+                                        <p class="text-muted">Try adjusting your filters or search criteria</p>
+                                        <button class="btn btn-primary mt-2" onclick="resetFilters()">
+                                            <i class="fas fa-redo-alt"></i> Clear Filters
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                {% if users.has_other_pages %}
+                <div class="mt-4 animated" style="animation-delay: 0.5s;">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-custom justify-content-center">
+                            {% if users.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ users.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for i in users.paginator.page_range %}
+                                {% if users.number == i %}
+                                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                {% elif i > users.number|add:'-3' and i < users.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if users.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ users.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Confirm action
+    function confirmAction(action, userEmail) {
+        const actionText = action === 'activate' ? 'activate' : 'deactivate';
+        return confirm(`Are you sure you want to ${actionText} user "${userEmail}"?`);
+    }
+    
+    // Reset filters
+    function resetFilters() {
+        window.location.href = window.location.pathname;
+    }
+    
+    // Export users
+    function exportUsers() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('export', 'csv');
+        window.location.href = url.toString();
+    }
+    
+    // Search with debounce
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                document.getElementById('filterForm').submit();
+            }, 500);
+        });
+    }
+    
+    // Toast notification
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        const colors = { success: '#28a745', error: '#dc3545', warning: '#ffc107', info: '#17a2b8' };
+        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+        toast.style.borderLeftColor = colors[type];
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas ${icons[type]} me-2" style="color: ${colors[type]}"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    // Check for success message from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'status_changed') {
+        showToast('User status updated successfully', 'success');
+    }
+</script>
+{% endblock %}

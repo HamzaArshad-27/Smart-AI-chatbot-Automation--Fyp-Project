@@ -1,0 +1,235 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_title %}Retailer Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<!-- Welcome Banner -->
+<div class="welcome-banner animated" style="animation-delay: 0.1s;">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-6 mb-2">Welcome back, {{ user.get_full_name|default:user.email }}!</h1>
+            <p class="mb-0 opacity-75">Track your orders, discover new products, and manage your purchases</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'products:list' %}" class="btn btn-light">
+                <i class="fas fa-shopping-cart"></i> Start Shopping
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card animated" style="animation-delay: 0.2s;">
+            <div class="card-body">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h6 class="text-muted mb-2">Total Orders</h6>
+                <h2 class="mb-0">{{ total_orders }}</h2>
+                <small class="text-success mt-2 d-block">
+                    <i class="fas fa-arrow-up"></i> Lifetime orders
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card animated" style="animation-delay: 0.3s;">
+            <div class="card-body">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <h6 class="text-muted mb-2">Total Spent</h6>
+                <h2 class="mb-0">${{ total_spent|floatformat:2 }}</h2>
+                <small class="text-success mt-2 d-block">
+                    <i class="fas fa-chart-line"></i> All time
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card animated" style="animation-delay: 0.4s;">
+            <div class="card-body">
+                <div class="stat-icon">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <h6 class="text-muted mb-2">Average Order Value</h6>
+                <h2 class="mb-0">${{ average_order_value|floatformat:2 }}</h2>
+                <small class="text-info mt-2 d-block">
+                    <i class="fas fa-calculator"></i> Per order
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Orders by Status -->
+<div class="chart-container animated" style="animation-delay: 0.5s;">
+    <h5 class="mb-3">
+        <i class="fas fa-chart-pie"></i> Orders by Status
+    </h5>
+    <div class="row text-center">
+        <div class="col-md-2 col-4 mb-3">
+            <div class="stat-card-mini" onclick="filterOrders('pending')">
+                <div class="stat-number text-warning fw-bold">{{ orders_by_status.pending|default:0 }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="stat-card-mini" onclick="filterOrders('approved')">
+                <div class="stat-number text-info fw-bold">{{ orders_by_status.approved|default:0 }}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="stat-card-mini" onclick="filterOrders('processing')">
+                <div class="stat-number text-primary fw-bold">{{ orders_by_status.processing|default:0 }}</div>
+                <div class="stat-label">Processing</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="stat-card-mini" onclick="filterOrders('shipped')">
+                <div class="stat-number text-info fw-bold">{{ orders_by_status.shipped|default:0 }}</div>
+                <div class="stat-label">Shipped</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="stat-card-mini" onclick="filterOrders('delivered')">
+                <div class="stat-number text-success fw-bold">{{ orders_by_status.delivered|default:0 }}</div>
+                <div class="stat-label">Delivered</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="stat-card-mini" onclick="filterOrders('cancelled')">
+                <div class="stat-number text-danger fw-bold">{{ orders_by_status.cancelled|default:0 }}</div>
+                <div class="stat-label">Cancelled</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="card animated" style="animation-delay: 0.7s;">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-history"></i> Recent Orders
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Company</th>
+                        <th>Items</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    {% for order in recent_orders %}
+                    <tr onclick="window.location.href='{% url 'orders:detail' order.id %}'">
+                        <td>
+                            <strong>{{ order.order_number }}</strong>
+                            <br>
+                            <small class="text-muted">#{{ order.id }}</small>
+                        </td>
+                        <td>
+                            {% if order.company.logo %}
+                                <img src="{{ order.company.logo.url }}" width="30" height="30" class="rounded-circle me-2">
+                            {% else %}
+                                <i class="fas fa-building text-muted"></i>
+                            {% endif %}
+                            {{ order.company.name|default:"N/A" }}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ order.items.count }} items</span>
+                        </td>
+                        <td>
+                            <strong class="text-primary">${{ order.total_amount }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge-status {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% elif order.status == 'pending' %}bg-warning{% elif order.status == 'shipped' %}bg-info{% else %}bg-primary{% endif %}">
+                                <i class="fas {% if order.status == 'delivered' %}fa-check-circle{% elif order.status == 'pending' %}fa-clock{% elif order.status == 'shipped' %}fa-truck{% elif order.status == 'cancelled' %}fa-times-circle{% else %}fa-cogs{% endif %}"></i>
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {{ order.created_at|date:"M d, Y" }}
+                        </td>
+                        <td>
+                            <a href="{% url 'orders:detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-map-marker-alt"></i> Track
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+                            <h4>No Orders Yet</h4>
+                            <p class="text-muted">Start shopping to see your orders here</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="chart-container animated mt-4" style="animation-delay: 0.8s;">
+    <h5 class="mb-3">
+        <i class="fas fa-bolt"></i> Quick Actions
+    </h5>
+    <div class="row">
+        <div class="col-md-3 col-6 mb-3">
+            <a href="{% url 'products:list' %}" class="text-decoration-none text-center d-block">
+                <div class="stat-card-mini">
+                    <div class="action-icon mx-auto mb-2"><i class="fas fa-search"></i></div>
+                    <small class="text-dark">Browse Products</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <a href="{% url 'cart:view' %}" class="text-decoration-none text-center d-block">
+                <div class="stat-card-mini">
+                    <div class="action-icon mx-auto mb-2"><i class="fas fa-shopping-cart"></i></div>
+                    <small class="text-dark">View Cart</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <a href="{% url 'orders:checkout' %}" class="text-decoration-none text-center d-block">
+                <div class="stat-card-mini">
+                    <div class="action-icon mx-auto mb-2"><i class="fas fa-truck"></i></div>
+                    <small class="text-dark">Bulk Order</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <a href="{% url 'accounts:profile' %}" class="text-decoration-none text-center d-block">
+                <div class="stat-card-mini">
+                    <div class="action-icon mx-auto mb-2"><i class="fas fa-user-cog"></i></div>
+                    <small class="text-dark">Account Settings</small>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+    function filterOrders(status) {
+        // Implement filtering if needed, or redirect
+        window.location.href = "{% url 'orders:company_orders' %}?status=" + status;
+    }
+</script>
+{% endblock %}

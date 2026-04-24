@@ -1,0 +1,712 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}My Profile - Vendora{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    }
+
+    .profile-wrapper {
+        background: #f8f9fc;
+        min-height: calc(100vh - 56px);
+        padding: 2rem 0;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+    }
+
+    .profile-header {
+        background: var(--primary-gradient);
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 250px;
+        height: 250px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .profile-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 180px;
+        height: 180px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .profile-avatar {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+
+    .profile-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid white;
+        object-fit: cover;
+        position: relative;
+        z-index: 1;
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background: white;
+        border-radius: 50%;
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 2;
+    }
+
+    .avatar-overlay:hover {
+        transform: scale(1.1);
+        background: #667eea;
+        color: white;
+    }
+
+    .profile-name {
+        color: white;
+        margin-bottom: 0.25rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-email {
+        color: rgba(255,255,255,0.9);
+        font-size: 0.85rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-role {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-stats {
+        padding: 1.5rem;
+        background: white;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 0.5rem;
+        border-right: 1px solid #e0e0e0;
+    }
+
+    .stat-item:last-child {
+        border-right: none;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        color: #6c757d;
+    }
+
+    /* Form Card */
+    .form-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    }
+
+    .form-card .card-header {
+        background: var(--primary-gradient);
+        padding: 1.25rem 1.5rem;
+        border: none;
+    }
+
+    .form-card .card-header h4 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .form-card .card-body {
+        padding: 2rem;
+    }
+
+    /* Form Styling */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label i {
+        color: #667eea;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+
+    /* File Upload Styling */
+    .file-upload-wrapper {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .file-upload-label {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #f8f9fc;
+        border: 2px dashed #667eea;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        width: 100%;
+    }
+
+    .file-upload-label:hover {
+        background: rgba(102,126,234,0.1);
+        border-color: #764ba2;
+    }
+
+    .file-upload-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .image-preview {
+        margin-top: 1rem;
+        text-align: center;
+        display: none;
+    }
+
+    .image-preview img {
+        max-width: 150px;
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+        padding: 5px;
+    }
+
+    /* Button Styling */
+    .btn-update {
+        background: var(--primary-gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-update:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+    }
+
+    .btn-update:active {
+        transform: translateY(0);
+    }
+
+    /* Alert Styling */
+    .alert-custom {
+        border-radius: 12px;
+        border: none;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .profile-wrapper {
+            padding: 1rem;
+        }
+        
+        .form-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .stat-item {
+            border-right: none;
+            margin-bottom: 1rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    /* Password Strength Indicator */
+    .password-strength {
+        margin-top: 0.5rem;
+        height: 4px;
+        border-radius: 2px;
+        background: #e0e0e0;
+        overflow: hidden;
+    }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    .strength-weak { background: #dc3545; width: 33%; }
+    .strength-medium { background: #ffc107; width: 66%; }
+    .strength-strong { background: #28a745; width: 100%; }
+
+    /* Loading State */
+    .btn-loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .btn-loading::after {
+        content: '';
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        margin-left: 0.5rem;
+        border: 2px solid white;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="profile-wrapper">
+    <div class="container">
+        <div class="row">
+            <!-- Profile Sidebar -->
+            <div class="col-lg-4 mb-4">
+                <div class="profile-card animated" style="animation-delay: 0.1s;">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" class="profile-image" id="profileImage" alt="{{ user.email }}">
+                            {% else %}
+                                <div class="profile-image bg-white d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-user fa-3x text-primary"></i>
+                                </div>
+                            {% endif %}
+                            <div class="avatar-overlay" onclick="document.getElementById('id_profile_image').click()">
+                                <i class="fas fa-camera fa-sm"></i>
+                            </div>
+                        </div>
+                        <h5 class="profile-name">{{ user.get_full_name|default:user.email|truncatechars:25 }}</h5>
+                        <p class="profile-email">{{ user.email }}</p>
+                        <span class="profile-role">
+                            <i class="fas fa-user-tag"></i> {{ user.get_role_display }}
+                        </span>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ total_orders|default:0 }}</div>
+                                    <div class="stat-label">Orders</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ total_reviews|default:0 }}</div>
+                                    <div class="stat-label">Reviews</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ user.date_joined|date:"Y" }}</div>
+                                    <div class="stat-label">Member Since</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Info Card -->
+                <div class="card mt-4 border-0 shadow-sm animated" style="animation-delay: 0.2s;">
+                    <div class="card-body">
+                        <h6 class="mb-3">
+                            <i class="fas fa-shield-alt text-primary"></i> Account Security
+                        </h6>
+                        <div class="d-grid gap-2">
+      
+                            <a href="#" class="btn btn-outline-secondary btn-sm" onclick="enable2FA()">
+                                <i class="fas fa-mobile-alt"></i> Enable 2FA
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Edit Profile Form -->
+            <div class="col-lg-8">
+                <div class="form-card animated" style="animation-delay: 0.3s;">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-user-edit"></i> Edit Profile
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-custom alert-{{ message.tags }} bg-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}danger{% else %}info{% endif %} text-white">
+                                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <form method="post" enctype="multipart/form-data" id="profileForm">
+                            {% csrf_token %}
+                            
+                            <!-- Profile Image Field (Hidden) -->
+                            <div style="display: none;">
+                                {{ form.profile_image }}
+                            </div>
+                            
+                            <!-- First Name & Last Name -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-user"></i> First Name
+                                        </label>
+                                        {{ form.first_name|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-user"></i> Last Name
+                                        </label>
+                                        {{ form.last_name|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-envelope"></i> Email Address
+                                </label>
+                                {{ form.email|as_crispy_field }}
+                                <small class="text-muted">We'll never share your email with anyone else.</small>
+                            </div>
+                            
+                            <!-- Phone Number (if available) -->
+                            {% if form.phone %}
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-phone"></i> Phone Number
+                                </label>
+                                {{ form.phone|as_crispy_field }}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Bio / About -->
+                            {% if form.bio %}
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-info-circle"></i> About Me
+                                </label>
+                                {{ form.bio|as_crispy_field }}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Address (if available) -->
+                            {% if form.address %}
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-map-marker-alt"></i> Address
+                                </label>
+                                {{ form.address|as_crispy_field }}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Image Preview -->
+                            <div class="image-preview" id="imagePreview">
+                                <img id="previewImage" src="#" alt="Preview">
+                                <button type="button" class="btn btn-sm btn-danger mt-2" onclick="clearImage()">
+                                    <i class="fas fa-times"></i> Remove
+                                </button>
+                            </div>
+                            
+                            <!-- Submit Buttons -->
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-update text-white" id="submitBtn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity Card -->
+                <div class="card mt-4 border-0 shadow-sm animated" style="animation-delay: 0.4s;">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-history text-primary"></i> Recent Activity
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% if recent_orders %}
+                                {% for order in recent_orders|slice:":3" %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                                        <div class="mt-1">
+                                            Order #{{ order.order_number }}
+                                            <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'pending' %}warning{% else %}info{% endif %} ms-2">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <strong>${{ order.total_amount }}</strong>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="list-group-item text-center py-4">
+                                    <i class="fas fa-shopping-bag fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0 text-muted">No recent activity</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Image preview functionality
+    const imageInput = document.getElementById('id_profile_image');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImage = document.getElementById('previewImage');
+    const profileImage = document.getElementById('profileImage');
+    
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                    if (profileImage) {
+                        profileImage.src = event.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    function clearImage() {
+        imageInput.value = '';
+        imagePreview.style.display = 'none';
+        previewImage.src = '#';
+        // Reset to default image if needed
+        if (profileImage && profileImage.src.includes('blob:')) {
+           profileImage.src = `{% if user.profile_image %}
+    {{ user.profile_image.url }}
+{% else %}
+    data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236c757d"%3E%3Cpath d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/%3E%3C/svg%3E
+{% endif %}`;
+    }
+    
+    // Form submission with loading state
+    const form = document.getElementById('profileForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            submitBtn.classList.add('btn-loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Changes...';
+            submitBtn.disabled = true;
+            
+            // Allow form to submit normally
+            setTimeout(() => {
+                // This will run if form submission takes too long
+                // The actual page will reload on success
+            }, 5000);
+        });
+    }
+    
+    // Password strength meter (if password field exists)
+    const passwordField = document.getElementById('id_password');
+    if (passwordField) {
+        passwordField.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            if (password.match(/[$@#&!]+/)) strength++;
+            
+            const strengthBar = document.querySelector('.password-strength-bar');
+            if (strengthBar) {
+                if (strength <= 2) {
+                    strengthBar.className = 'password-strength-bar strength-weak';
+                } else if (strength <= 4) {
+                    strengthBar.className = 'password-strength-bar strength-medium';
+                } else {
+                    strengthBar.className = 'password-strength-bar strength-strong';
+                }
+            }
+        });
+    }
+    
+    // 2FA placeholder function
+    function enable2FA() {
+        alert('Two-factor authentication setup will be available soon!');
+    }
+    
+    // Auto-hide alerts after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert-custom');
+        alerts.forEach(alert => {
+            alert.style.opacity = '0';
+            alert.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => alert.remove(), 500);
+        });
+    }, 5000);
+    
+    // Animate stats on load
+    function animateStats() {
+        const statValues = document.querySelectorAll('.stat-value');
+        statValues.forEach(stat => {
+            const finalValue = parseInt(stat.innerText);
+            if (!isNaN(finalValue)) {
+                let current = 0;
+                const increment = finalValue / 30;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= finalValue) {
+                        stat.innerText = finalValue;
+                        clearInterval(timer);
+                    } else {
+                        stat.innerText = Math.floor(current);
+                    }
+                }, 30);
+            }
+        });
+    }
+    
+    // Uncomment to enable number animation
+    // animateStats();
+    
+    // Form validation
+    const emailField = document.getElementById('id_email');
+    if (emailField) {
+        emailField.addEventListener('blur', function() {
+            const email = this.value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+</script>
+{% endblock %}

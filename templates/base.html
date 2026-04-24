@@ -1,0 +1,476 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}Vendora • Multi-Vendor Marketplace{% endblock %}</title>
+    <!-- Google Fonts + Bootstrap 5 + Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/manage_products.css' %}">
+    <!-- AOS Library (optional smooth scroll animations) -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f9fafc;
+            color: #1e293b;
+            scroll-behavior: smooth;
+        }
+
+        /* Modern Navbar – glassmorphism with blur effect */
+        .navbar-modern {
+            background: rgba(15, 25, 35, 0.92) !important;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            padding: 0.8rem 0;
+            transition: all 0.25s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .navbar-modern .navbar-brand {
+            font-weight: 800;
+            font-size: 1.7rem;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #C0E0FF 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+        }
+        .navbar-modern .nav-link {
+            font-weight: 500;
+            color: #eef2ff !important;
+            margin: 0 0.25rem;
+            transition: 0.2s;
+            border-radius: 40px;
+        }
+        .navbar-modern .nav-link:hover {
+            background: rgba(255,255,255,0.12);
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        .btn-outline-light-custom {
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-radius: 40px;
+            padding: 0.4rem 1.2rem;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .btn-outline-light-custom:hover {
+            background: white;
+            color: #0f1922;
+            border-color: white;
+        }
+        .btn-primary-glass {
+            background: linear-gradient(105deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 40px;
+            padding: 0.4rem 1.3rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+            transition: 0.2s;
+        }
+        .btn-primary-glass:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37,99,235,0.4);
+            background: linear-gradient(105deg, #2563eb, #1d4ed8);
+        }
+        /* cart badge */
+        .cart-icon-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        .cart-badge-new {
+            position: absolute;
+            top: -10px;
+            right: -12px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.45rem;
+            border-radius: 50px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: 2px solid rgba(15,25,35,0.9);
+        }
+
+        /* Product card modern redesign */
+        .product-card-modern {
+            background: #ffffff;
+            border-radius: 28px;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.2, 0, 0, 1);
+            box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0,0,0,0.02);
+            margin-bottom: 28px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card-modern:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 28px 40px -16px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(59,130,246,0.15);
+        }
+        .product-img-modern {
+            height: 230px;
+            object-fit: cover;
+            width: 100%;
+            transition: transform 0.5s ease;
+        }
+        .product-card-modern:hover .product-img-modern {
+            transform: scale(1.02);
+        }
+        .product-badge {
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            font-size: 0.7rem;
+            border-radius: 40px;
+            padding: 0.25rem 0.9rem;
+        }
+        /* dashboard sidebar modern */
+        .dashboard-sidebar-modern {
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.05);
+            padding: 1.8rem 1rem;
+            border: 1px solid rgba(0,0,0,0.03);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1.2rem;
+            border-radius: 60px;
+            color: #334155;
+            font-weight: 500;
+            transition: 0.2s;
+            margin-bottom: 6px;
+        }
+        .sidebar-link i {
+            width: 26px;
+            font-size: 1.2rem;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background: #eef2ff;
+            color: #2563eb;
+        }
+        /* footer modern */
+        .footer-modern {
+            background: #0f172a;
+            color: #cbd5e1;
+            padding: 3rem 0 1.5rem;
+            margin-top: 70px;
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
+        }
+        .footer-modern h5 {
+            color: white;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            margin-bottom: 1.2rem;
+        }
+        .footer-modern a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .footer-modern a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        /* alert modern */
+        .alert-modern {
+            border-radius: 60px;
+            border: none;
+            backdrop-filter: blur(4px);
+            font-weight: 500;
+            padding: 0.8rem 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        /* user avatar */
+        .avatar-circle {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(145deg, #3b82f6, #1e40af);
+            border-radius: 100px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        /* dropdown enhancements */
+        .dropdown-menu-modern {
+            border-radius: 24px;
+            border: none;
+            box-shadow: 0 20px 35px -8px rgba(0,0,0,0.15);
+            padding: 0.5rem;
+            margin-top: 12px;
+        }
+        .dropdown-menu-modern .dropdown-item {
+            border-radius: 40px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        .dropdown-menu-modern .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+        /* hero section (optional but looks fresh) */
+        .hero-modern {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 42px;
+            margin: 1.5rem 0 2rem;
+            padding: 3rem 2rem;
+            color: white;
+        }
+        /* misc */
+        .section-title {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #0f172a, #2563eb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        button, a {
+            transition: all 0.2s ease;
+        }
+        .bg-soft-primary {
+            background-color: #eef2ff;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- ========== MODERN NAVBAR (Glassmorphism) ========== -->
+    <nav class="navbar navbar-expand-lg navbar-modern sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:home' %}">
+                <i class="fas fa-gem me-1" style="background: linear-gradient(145deg,#fff,#a5d8ff); -webkit-background-clip: text; background-clip: text; color: transparent;"></i> 
+                {{ site_name|default:"Vendora" }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#modernNavbar" aria-controls="modernNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="modernNavbar">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:home' %}"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'products:list' %}"><i class="fas fa-grid-2 me-1"></i>Products</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:index' %}"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:about' %}"><i class="fas fa-store me-1"></i>Marketplace</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto align-items-center gap-2 flex-row">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'cart:view' %}" style="padding: 0.4rem 0.8rem;">
+                                <div class="cart-icon-wrapper">
+                                    <i class="fas fa-bag-shopping fa-lg"></i>
+                                    {% if cart_count > 0 %}
+                                        <span class="cart-badge-new">{{ cart_count }}</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if user.profile_image %}
+                                    <img src="{{ user.profile_image.url }}" width="34" height="34" class="rounded-circle border border-2 border-white" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="avatar-circle">{{ user.email|first|upper }}</div>
+                                {% endif %}
+                                <span class="d-none d-md-inline">{{ user.email|truncatechars:18 }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fas fa-user-pen me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'dashboard:index' %}"><i class="fas fa-chart-simple me-2"></i>Analytics</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light-custom" href="{% url 'accounts:login' %}"><i class="fas fa-key me-1"></i>Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary-glass" href="{% url 'accounts:register' %}"><i class="fas fa-user-plus me-1"></i>Sign up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages (modern toast-like alerts) -->
+    {% if messages %}
+        <div class="container mt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-modern alert-dismissible fade show shadow-sm d-flex align-items-center justify-content-between" role="alert">
+                    <span><i class="fas fa-circle-info me-2"></i> {{ message }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- MAIN CONTENT (Dynamic block) -->
+    <main>
+        {% block content %}
+        <!-- Default hero / placeholder (can be overridden) -->
+        <div class="container" data-aos="fade-up">
+            <div class="hero-modern text-center">
+                <h1 class="display-5 fw-bold">Welcome to {{ site_name }}</h1>
+                <p class="lead mt-2 opacity-75">Multi‑vendor marketplace • curated quality • seamless experience</p>
+                <a href="{% url 'products:list' %}" class="btn btn-primary-glass btn-lg px-5 mt-3">Explore now <i class="fas fa-arrow-right ms-2"></i></a>
+            </div>
+        </div>
+        {% endblock %}
+    </main>
+
+    <!-- MODERN FOOTER (rounded + glassy dark) -->
+    <footer class="footer-modern">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-5">
+                    <h5><i class="fas fa-crown me-2"></i>{{ site_name|default:"Vendora" }}</h5>
+                    <p class="small opacity-75">The next‑gen multi‑vendor ecosystem. Empowering sellers, delighting buyers with premium goods and trustworthy transactions.</p>
+                    <div class="mt-3">
+                        <a href="#" class="me-3 text-white-50"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="me-3 text-white-50"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="me-3 text-white-50"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                        <a href="#" class="text-white-50"><i class="fab fa-github fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <h5>Explore</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'core:home' %}" class="text-decoration-none">Home</a></li>
+                        <li class="mb-2"><a href="{% url 'products:list' %}" class="text-decoration-none">Shop all</a></li>
+                        <li class="mb-2"><a href="{% url 'core:about' %}" class="text-decoration-none">About Vendora</a></li>
+                        <li class="mb-2"><a href="{% url 'core:contact' %}" class="text-decoration-none">Contact support</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Legal & Policies</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'core:terms' %}" class="text-decoration-none">Terms of Service</a></li>
+                        <li class="mb-2"><a href="{% url 'core:privacy' %}" class="text-decoration-none">Privacy policy</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none">Returns & refunds</a></li>
+                    </ul>
+                    <div class="mt-3 small">
+                        <i class="fas fa-envelope me-1"></i> moazjamil046@gmail.com<br>
+                        <i class="fas fa-phone-alt me-1"></i> +92 305 4246898<br>
+                        <i class="fas fa-map-pin me-1"></i> NCBAE Gulberg III, Lahore
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4 opacity-25">
+            <div class="text-center pt-2 small opacity-75">
+                &copy; {{ site_year|default:"2026" }} {{ site_name|default:"Vendora" }} — All rights reserved. Crafted for modern commerce.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AOS for scroll animation (optional) -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 20
+        });
+        // extra hover effects or cart live updates could go here
+        document.addEventListener('DOMContentLoaded', function() {
+            // Makes active nav link highlight (if needed)
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                if(link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                    link.style.background = "rgba(255,255,255,0.18)";
+                }
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- Custom modern adjustments for product cards (example if product_list block uses product-card-modern) -->
+    <style>
+        /* Additional utility classes for vendor & modern dashboard */
+        .stat-card {
+            background: white;
+            border-radius: 28px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.05);
+            transition: 0.2s;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 28px -12px rgba(0,0,0,0.08);
+        }
+        /* custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .btn-outline-modern {
+            border: 1px solid #e2e8f0;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            background: white;
+            font-weight: 500;
+        }
+        .btn-outline-modern:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+    </style>
+</body>
+</html>
+
+<!-- 
+    Notes for Django integration: 
+    - This template assumes context variables: site_name, site_year, cart_count, user, messages etc.
+    - URL namespaces: core:home, core:about, core:contact, core:terms, core:privacy, products:list, 
+      dashboard:index, accounts:profile, accounts:login, accounts:register, accounts:logout, cart:view.
+    - Profile image uses user.profile_image.url; avatar fallback uses first letter.
+    - All blocks (title, content, extra_css, extra_js) are preserved and extended.
+    - Modern card classes (product-card-modern) can be used in product listing pages.
+    - To use AOS on custom elements, add data-aos="fade-up" etc.
+-->

@@ -1,0 +1,71 @@
+
+<!-- {% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Register - Vendora{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('id_role');
+        const companyFields = document.getElementById('company-fields');
+        
+        function toggleCompanyFields() {
+            if (roleSelect.value === 'company') {
+                companyFields.style.display = 'block';
+            } else {
+                companyFields.style.display = 'none';
+            }
+        }
+        
+        roleSelect.addEventListener('change', toggleCompanyFields);
+        toggleCompanyFields();
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Create an Account</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+
+                        {{ form.email|as_crispy_field }}
+                        {{ form.phone|as_crispy_field }}
+                        {{ form.role|as_crispy_field }}
+                        {{ form.password|as_crispy_field }}
+                        {{ form.confirm_password|as_crispy_field }}
+                        {{ form.profile_image|as_crispy_field }}
+                        
+
+                        <div id="company-fields" style="display: none;">
+                            <hr>
+                            <h4>Company Information</h4>
+                            {{ form.company_name|as_crispy_field }}
+                            {{ form.company_address|as_crispy_field }}
+                            {{ form.company_phone|as_crispy_field }}
+                            {{ form.company_website|as_crispy_field }}
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                    </form>
+                    <hr>
+                    <p class="text-center mb-0">
+                        Already have an account? <a href="{% url 'accounts:login' %}">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} ... end of file -->
+

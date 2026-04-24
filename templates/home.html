@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-12">
+            <div class="p-5 text-center bg-light rounded-3">
+                <h1 class="display-4">Welcome to Vendora</h1>
+                <p class="lead">Your one-stop shop for all your needs from trusted vendors</p>
+                <a href="{% url 'products:list' %}" class="btn btn-primary btn-lg">Shop Now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Categories -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Shop by Category</h2>
+            <hr>
+        </div>
+        {% for category in categories %}
+        <div class="col-md-2 col-sm-4 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    {% if category.image %}
+                        <img src="{{ category.image.url }}" class="img-fluid mb-2" style="height: 60px;">
+                    {% else %}
+                        <i class="fas fa-tag fa-3x mb-2"></i>
+                    {% endif %}
+                    <h6>{{ category.name }}</h6>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No categories available.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Featured Products -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Featured Products</h2>
+            <hr>
+        </div>
+        {% for product in featured_products %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card product-card h-100">
+                {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200" class="card-img-top product-image" alt="{{ product.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name|truncatechars:40 }}</h5>
+                    <p class="card-text text-muted">{{ product.short_description|truncatechars:60 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="text-primary">${{ product.price }}</h6>
+                        {% if product.compare_price %}
+                            <small class="text-muted text-decoration-line-through">${{ product.compare_price }}</small>
+                        {% endif %}
+                        {% if product.discount_percentage %}
+                            <span class="badge bg-danger">{{ product.discount_percentage }}% OFF</span>
+                        {% endif %}
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-star text-warning"></i> {{ product.average_rating|default:"0" }} ({{ product.total_reviews }})
+                        </small>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'products:detail' product.slug %}" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No featured products available.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Latest Products -->
+    <div class="row">
+        <div class="col-12">
+            <h2>Latest Products</h2>
+            <hr>
+        </div>
+        {% for product in latest_products %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card product-card h-100">
+                {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200" class="card-img-top product-image" alt="{{ product.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name|truncatechars:40 }}</h5>
+                    <p class="card-text text-muted">{{ product.short_description|truncatechars:60 }}</p>
+                    <h6 class="text-primary">${{ product.price }}</h6>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'products:detail' product.slug %}" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No products available.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
