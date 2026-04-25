@@ -1,67 +1,179 @@
-function quickAddToCart(productId) {
-        // Show a subtle alert or simulate add-to-cart (you can replace with actual fetch call)
-        const btn = event.currentTarget;
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        setTimeout(() => {
-            btn.innerHTML = '<i class="fas fa-check"></i>';
-            setTimeout(() => {
-                btn.innerHTML = originalHtml;
-            }, 800);
-            // Bootstrap toast or simple alert
-            const toastHtml = `
-                <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
-                    <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                <i class="fas fa-cart-plus me-2"></i> Item added to cart!
-                            </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', toastHtml);
-            setTimeout(() => {
-                const lastToast = document.querySelector('.toast:last-child');
-                if(lastToast) lastToast.remove();
-            }, 2000);
-        }, 400);
+// Quick add to cart with smooth animation and toast notification
+function quickAddToCart(productId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
-
-    // sorting redirect
-    document.getElementById('sortSelect')?.addEventListener('change', function(e) {
-        let url = new URL(window.location.href);
-        let sortValue = e.target.value;
-        url.searchParams.set('sort', sortValue);
-        // preserve existing filters
-        const minPrice = new URLSearchParams(window.location.search).get('min_price');
-        const maxPrice = new URLSearchParams(window.location.search).get('max_price');
-        const q = new URLSearchParams(window.location.search).get('q');
-        if(minPrice) url.searchParams.set('min_price', minPrice);
-        if(maxPrice) url.searchParams.set('max_price', maxPrice);
-        if(q) url.searchParams.set('q', q);
-        // reset page when sort changes
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
+    
+    const btn = event ? event.currentTarget : document.querySelector(`button[onclick*="${productId}"]`);
+    if (!btn) return;
+    
+    const originalHtml = btn.innerHTML;
+    
+    // Add loading state
+    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+    btn.disabled = true;
+    
+    // Simulate API call - replace with your actual fetch request
+    setTimeout(() => {
+        // Success state
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        
+        // Show toast notification
+        showToast('Item added to cart!', 'success');
+        
+        // Reset button after delay
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }, 1000);
+    }, 500);
+    
+    // Example of actual API call (uncomment and modify as needed):
+    /*
+    fetch('/cart/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 })
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        showToast('Item added to cart!', 'success');
+        
+        // Update cart count if you have one
+        if (data.cart_count) {
+            updateCartCount(data.cart_count);
+        }
+    })
+    .catch(error => {
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+        showToast('Failed to add item', 'error');
+    })
+    .finally(() => {
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }, 1000);
     });
+    */
+}
 
-    // preserve sort in price filter form
+// Toast notification function
+function showToast(message, type = 'success') {
+    // Remove existing toasts
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+    
+    document.body.appendChild(toast);
+    
+    // Remove after animation
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        toast.style.transition = 'all 0.3s ease-out';
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 2500);
+}
+
+// Sort select handler with proper URL management
+document.addEventListener('DOMContentLoaded', function() {
+    const sortSelect = document.getElementById('sortSelect');
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function(e) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', e.target.value);
+            url.searchParams.set('page', '1'); // Reset to first page when sorting changes
+            window.location.href = url.toString();
+        });
+    }
+    
+    // Preserve sort parameter in price filter form
     const priceForm = document.getElementById('priceFilterForm');
-    if(priceForm) {
-        priceForm.addEventListener('submit', function() {
-            let sortSelect = document.getElementById('sortSelect');
-            if(sortSelect && sortSelect.value) {
-                let sortInput = document.createElement('input');
-                sortInput.type = 'hidden';
-                sortInput.name = 'sort';
-                sortInput.value = sortSelect.value;
-                this.appendChild(sortInput);
+    if (priceForm) {
+        priceForm.addEventListener('submit', function(e) {
+            const sortValue = document.getElementById('sortSelect')?.value;
+            if (sortValue) {
+                let sortInput = this.querySelector('input[name="sort"]');
+                if (!sortInput) {
+                    sortInput = document.createElement('input');
+                    sortInput.type = 'hidden';
+                    sortInput.name = 'sort';
+                    this.appendChild(sortInput);
+                }
+                sortInput.value = sortValue;
             }
         });
     }
-    // active nav highlight for products page
-    document.addEventListener('DOMContentLoaded', () => {
-        const productNavLink = document.querySelector('a.nav-link[href*="products"]');
-        if(productNavLink) productNavLink.classList.add('active');
-    });
+    
+    // Lazy load images for better performance
+    if ('loading' in HTMLImageElement.prototype) {
+        const images = document.querySelectorAll('img[loading="lazy"]');
+        images.forEach(img => {
+            img.src = img.dataset.src || img.src;
+        });
+    } else {
+        // Fallback for browsers that don't support lazy loading
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
+        document.body.appendChild(script);
+    }
+    
+    // Debounced scroll handler for performance
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (scrollTimeout) {
+            window.cancelAnimationFrame(scrollTimeout);
+        }
+        scrollTimeout = window.requestAnimationFrame(() => {
+            // Add any scroll-based logic here if needed
+            // Keeping this lightweight to prevent lag
+        });
+    }, { passive: true });
+    
+    // Active nav highlight
+    const productNavLink = document.querySelector('a.nav-link[href*="products"]');
+    if (productNavLink) {
+        productNavLink.classList.add('active');
+    }
+});
+
+// Helper function to get CSRF token (needed for POST requests)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Update cart count (if you have a cart counter element)
+function updateCartCount(count) {
+    const cartCountElement = document.querySelector('.cart-count');
+    if (cartCountElement) {
+        cartCountElement.textContent = count;
+        cartCountElement.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+}
