@@ -1,0 +1,194 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_title %}User Details{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="welcome-banner animated" style="animation-delay: 0.1s;">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-6 mb-2">{{ view_user.get_full_name|default:view_user.email }}</h1>
+            <p class="mb-0 opacity-75">{{ view_user.email }}</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'dashboard:all_users' %}" class="btn btn-light me-2">
+                <i class="fas fa-arrow-left"></i> All Users
+            </a>
+            <a href="{% url 'dashboard:edit_user' view_user.id %}" class="btn btn-light">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- User Info Cards -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card animated" style="animation-delay: 0.2s;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-primary"></i> User Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block">User ID</small>
+                    <strong>#{{ view_user.id }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Full Name</small>
+                    <strong>{{ view_user.get_full_name|default:"Not provided" }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Email</small>
+                    <strong>{{ view_user.email }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Phone</small>
+                    <strong>{{ view_user.phone|default:"Not provided" }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Role</small>
+                    <span class="badge {% if view_user.role == 'admin' %}bg-primary
+                                   {% elif view_user.role == 'company' %}bg-success
+                                   {% elif view_user.role == 'seller' %}bg-info
+                                   {% elif view_user.role == 'retailer' %}bg-warning
+                                   {% else %}bg-secondary{% endif %}">
+                        {{ view_user.get_role_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <div class="card animated" style="animation-delay: 0.3s;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-shield-alt text-primary"></i> Account Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block">Status</small>
+                    {% if view_user.is_active and view_user.is_approved %}
+                    <span class="badge-status bg-success">Active</span>
+                    {% elif not view_user.is_approved %}
+                    <span class="badge-status bg-warning">Pending Approval</span>
+                    {% else %}
+                    <span class="badge-status bg-danger">Inactive</span>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Email Verified</small>
+                    {% if view_user.email_verified %}
+                    <span class="text-success"><i class="fas fa-check-circle"></i> Yes</span>
+                    {% else %}
+                    <span class="text-secondary"><i class="fas fa-times-circle"></i> No</span>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Date Joined</small>
+                    <strong>{{ view_user.date_joined|date:"F j, Y H:i" }}</strong>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Last Login</small>
+                    <strong>{{ view_user.last_login|date:"F j, Y H:i"|default:"Never" }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="card animated" style="animation-delay: 0.4s;">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-shopping-cart text-primary"></i> Recent Orders
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.order_number }}</td>
+                        <td><strong>${{ order.total_amount }}</strong></td>
+                        <td>
+                            <span class="badge-status {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% elif order.status == 'pending' %}bg-warning{% else %}bg-info{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No orders found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Button -->
+{% if view_user.id != request.user.id %}
+<div class="text-end mt-4 animated" style="animation-delay: 0.5s;">
+    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ view_user.id }}', '{{ view_user.email|escapejs }}')">
+        <i class="fas fa-trash"></i> Delete User Permanently
+    </button>
+</div>
+{% endif %}
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to permanently delete <strong id="deleteUserEmail"></strong>?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Warning:</strong> This will permanently delete the user and all associated data. The email will become available for new registrations.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete Permanently
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+    function confirmDelete(userId, userEmail) {
+        document.getElementById('deleteUserEmail').textContent = userEmail;
+        document.getElementById('deleteForm').action = `/dashboard/users/${userId}/delete/`;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    }
+</script>
+{% endblock %}

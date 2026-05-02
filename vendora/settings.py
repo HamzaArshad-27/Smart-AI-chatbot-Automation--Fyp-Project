@@ -15,8 +15,9 @@ SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 # For testing, you can also add test emails that auto-verify
 TEST_EMAILS = ['test@example.com', 'demo@vendora.com', 'admin@vendora.com']
-# Development Mode - Set to True to bypass email verification
-DEV_MODE = config('DEV_MODE', default=True, cast=bool)
+# Development Mode - Set to True to bypass email verification and auto-approve users
+# ⚠️ Set to False in production to enforce approval workflow
+DEV_MODE = config('DEV_MODE', default=False, cast=bool)
 # Application definitions
 INSTALLED_APPS = [
     'django.contrib.admin',

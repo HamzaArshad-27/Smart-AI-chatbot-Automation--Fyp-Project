@@ -12,6 +12,8 @@ urlpatterns = [
     
     # OTP Verification
     path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('pending-approval/', views.pending_approval, name='pending_approval'),
+    path('pending-approval/<int:user_id>/', views.pending_approval, name='pending_approval_user'),
     
     # Password Reset
     path('forgot-password/', views.forgot_password, name='forgot_password'),

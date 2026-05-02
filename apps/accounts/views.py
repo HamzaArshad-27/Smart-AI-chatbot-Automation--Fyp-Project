@@ -348,12 +348,15 @@ def register(request):
                 # Handle company profile creation for pending approval
                 if user.role == 'company':
                     from apps.companies.models import Company
-                    Company.objects.create(
+                    # Use get_or_create to avoid duplicate key errors
+                    Company.objects.get_or_create(
                         user=user,
-                        name=form.cleaned_data.get('company_name', user.email.split('@')[0]),
-                        email=user.email,
-                        registration_number=f"REG{user.id:06d}",
-                        is_active=False
+                        defaults={
+                            'name': form.cleaned_data.get('company_name', user.email.split('@')[0]),
+                            'email': user.email,
+                            'registration_number': f"REG{user.id:06d}",
+                            'is_active': False
+                        }
                     )
                 
                 # Generate and send OTP
@@ -394,8 +397,8 @@ def verify_otp(request):
                     user.save()
                     del request.session['pending_user_id']
                     
-                    messages.success(request, 'Email verified successfully! Please wait for admin approval.')
-                    return redirect('accounts:login')
+                    messages.success(request, 'Email verified successfully! Your account is pending admin approval.')
+                    return redirect('accounts:pending_approval_user', user_id=user.id)
                 else:
                     messages.error(request, 'Please enter a valid 6-digit OTP.')
             else:
@@ -415,8 +418,8 @@ def verify_otp(request):
                     
                     del request.session['pending_user_id']
                     
-                    messages.success(request, 'Email verified successfully! Please wait for admin approval.')
-                    return redirect('accounts:login')
+                    messages.success(request, 'Email verified successfully! Your account is pending admin approval.')
+                    return redirect('accounts:pending_approval_user', user_id=user.id)
                 else:
                     messages.error(request, 'Invalid or expired OTP.')
     else:
@@ -572,3 +575,45 @@ def login_view(request):
         form = UserLoginForm()
     
     return render(request, 'accounts/login.html', {'form': form, 'dev_mode': settings.DEV_MODE})
+
+
+def pending_approval(request, user_id=None):
+    """Show pending approval status page after email verification"""
+    # Try to get user from parameter first (after OTP verification redirect)
+    if user_id:
+        try:
+            user = User.objects.get(id=user_id)
+            # If they somehow got approved, redirect to login
+            if user.is_approved:
+                messages.success(request, 'Your account has been approved! You can now log in.')
+                return redirect('accounts:login')
+            
+            context = {'user': user}
+            return render(request, 'accounts/pending_approval.html', context)
+        except User.DoesNotExist:
+            return redirect('accounts:login')
+    
+    # Try to get from session (if coming from verify_otp)
+    user_id = request.session.get('pending_user_id')
+    if user_id:
+        try:
+            user = User.objects.get(id=user_id)
+            if user.is_approved:
+                messages.success(request, 'Your account has been approved! You can now log in.')
+                del request.session['pending_user_id']
+                return redirect('accounts:login')
+            
+            context = {'user': user}
+            return render(request, 'accounts/pending_approval.html', context)
+        except User.DoesNotExist:
+            if 'pending_user_id' in request.session:
+                del request.session['pending_user_id']
+            return redirect('accounts:login')
+    
+    # Also allow logged-in users to check their status if still pending approval
+    if request.user.is_authenticated and not request.user.is_approved:
+        context = {'user': request.user}
+        return render(request, 'accounts/pending_approval.html', context)
+    
+    # If user is approved or not authenticated, redirect to login
+    return redirect('accounts:login')
