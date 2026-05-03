@@ -1,32 +1,297 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Category - Vendora{% endblock %}
 
+{% block extra_css %}
+<style>
+    .form-wrapper {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e5e5e5;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        background: linear-gradient(135deg, #5b5fe3 0%, #7b7ef0 100%);
+        padding: 1.5rem 2rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .form-card-header .header-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .form-card-header h4 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .form-card-body {
+        padding: 2rem;
+    }
+
+    .form-card-body .form-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #171717;
+        margin-bottom: 6px;
+    }
+
+    .form-card-body .form-control,
+    .form-card-body .form-select {
+        border: 2px solid #e5e5e5;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .form-card-body .form-control:focus,
+    .form-card-body .form-select:focus {
+        border-color: #5b5fe3;
+        box-shadow: 0 0 0 4px rgba(91,95,227,0.08);
+    }
+
+    .form-card-body .form-text {
+        font-size: 0.78rem;
+        color: #737373;
+    }
+
+    .form-card-body .form-check-input {
+        width: 44px;
+        height: 24px;
+        border-radius: 12px;
+        border: 2px solid #d4d4d4;
+        cursor: pointer;
+    }
+
+    .form-card-body .form-check-input:checked {
+        background-color: #5b5fe3;
+        border-color: #5b5fe3;
+    }
+
+    .form-card-body .form-check-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .form-card-footer {
+        background: #fafafa;
+        border-top: 1px solid #e5e5e5;
+        padding: 1.25rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-pill {
+        border-radius: 50px;
+        padding: 11px 28px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .btn-pill:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(91,95,227,0.25);
+    }
+
+    .current-image-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 14px;
+        object-fit: cover;
+        border: 3px solid #e5e5e5;
+    }
+
+    .image-upload-zone {
+        border: 2px dashed #d4d4d4;
+        border-radius: 14px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .image-upload-zone:hover {
+        border-color: #5b5fe3;
+        background: rgba(91,95,227,0.02);
+    }
+
+    @media (max-width: 576px) {
+        .form-card-body { padding: 1.25rem; }
+        .form-card-footer { flex-direction: column; }
+        .form-card-footer .btn { width: 100%; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">{% if is_edit %}Edit Category{% else %}Add New Category{% endif %}</h4>
+<div class="container mt-4 mb-5">
+    <div class="form-wrapper">
+        <!-- Breadcrumb -->
+        <nav class="mb-3">
+            <small>
+                <a href="{% url 'products:category_list' %}" class="text-decoration-none text-muted">Categories</a>
+                <span class="text-muted mx-2">/</span>
+                <span class="fw-semibold">{% if is_edit %}Edit{% else %}Add New{% endif %} Category</span>
+            </small>
+        </nav>
+
+        <div class="form-card">
+            <!-- Header -->
+            <div class="form-card-header">
+                <div class="header-icon">
+                    <i class="fas {% if is_edit %}fa-edit{% else %}fa-plus-circle{% endif %}"></i>
                 </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <div class="d-grid gap-2 mt-3">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> {% if is_edit %}Update{% else %}Create{% endif %} Category
-                            </button>
-                            <a href="{% url 'products:category_list' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Categories
-                            </a>
+                <div>
+                    <h4>{% if is_edit %}Edit Category{% else %}Add New Category{% endif %}</h4>
+                    <small class="opacity-75">{% if is_edit %}Update category details{% else %}Create a new product category{% endif %}</small>
+                </div>
+            </div>
+
+            <!-- Form Body -->
+            <div class="form-card-body">
+                <form method="post" enctype="multipart/form-data" id="categoryForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Name -->
+                            <div class="mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    Category Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Choose a unique, descriptive name for this category.</div>
+                            </div>
                         </div>
-                    </form>
-                </div>
+                        <div class="col-md-4">
+                            <!-- Status -->
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        Active Category
+                                    </label>
+                                </div>
+                                <div class="form-text">Inactive categories won't appear to customers.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slug -->
+                    <div class="mb-3">
+                        <label for="{{ form.slug.id_for_label }}" class="form-label">Slug</label>
+                        {{ form.slug }}
+                        <div class="form-text">Auto-generated from name. Used in URLs (e.g., /category/electronics/).</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Parent Category -->
+                            <div class="mb-3">
+                                <label for="{{ form.parent.id_for_label }}" class="form-label">Parent Category</label>
+                                {{ form.parent }}
+                                <div class="form-text">Optional. Select a parent to create a subcategory.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Description -->
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                                {{ form.description }}
+                                <div class="form-text">Brief description (optional).</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mb-3">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">Category Image</label>
+                        {% if is_edit and form.instance.image %}
+                            <div class="mb-2">
+                                <img src="{{ form.instance.image.url }}" class="current-image-preview" alt="Current image">
+                                <small class="text-muted ms-2">Current image</small>
+                            </div>
+                        {% endif %}
+                        {{ form.image }}
+                        <div class="form-text">Recommended size: 400x400px. Max 2MB.</div>
+                    </div>
+
+                    <!-- Icon (if your form has it) -->
+                    {% if form.icon %}
+                    <div class="mb-3">
+                        <label for="{{ form.icon.id_for_label }}" class="form-label">Icon Class</label>
+                        {{ form.icon }}
+                        <div class="form-text">Font Awesome class (e.g., "fas fa-laptop"). Optional.</div>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="form-card-footer">
+                <a href="{% url 'products:category_list' %}" class="btn btn-outline-secondary btn-pill">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Categories
+                </a>
+                <button type="submit" form="categoryForm" class="btn btn-primary btn-pill">
+                    <i class="fas fa-save me-2"></i>
+                    {% if is_edit %}Update Category{% else %}Create Category{% endif %}
+                </button>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-generate slug from name
+    document.addEventListener('DOMContentLoaded', function() {
+        const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+        const slugInput = document.getElementById('{{ form.slug.id_for_label }}');
+        
+        if (nameInput && slugInput) {
+            nameInput.addEventListener('input', function() {
+                // Only auto-fill slug if it's empty or was auto-generated
+                if (!slugInput.dataset.manual || slugInput.value === '') {
+                    slugInput.value = nameInput.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                }
+            });
+            
+            // Mark slug as manually edited
+            slugInput.addEventListener('input', function() {
+                slugInput.dataset.manual = 'true';
+            });
+        }
+    });
+</script>
 {% endblock %}
