@@ -143,12 +143,17 @@ LOGIN_REDIRECT_URL = 'dashboard:index'
 LOGOUT_REDIRECT_URL = 'home'
 
 # Email configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# AFTER (Fixed - uses SMTP to actually send emails)
+EMAIL_BACKEND = config(
+    'EMAIL_BACKEND',
+    default='django.core.mail.backends.smtp.EmailBackend'  # Always use SMTP for real sending
+)
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='jamilahmed20201970@gmail.com')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='kktk zutk ysxh hrih')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='ramo duby erjf lpdu')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='jamilahmed20201970@gmail.com')
 
 # Crispy Forms

@@ -5,59 +5,27 @@ from apps.products.models import Product, Category
 import json
 
 def home(request):
-    """Home page view with dynamic product sections"""
+    """Home page with all product sections"""
     
-    # Get categories from database with product count
-    categories = Category.objects.filter(
-        is_active=True
-    ).annotate(
+    categories = Category.objects.filter(is_active=True).annotate(
         product_count=Count('products', filter=Q(products__is_active=True))
-    ).filter(product_count__gt=0)[:10]
+    )[:10]
     
-    # Featured Products
-    featured_products = Product.objects.filter(
-        is_active=True,
-        is_featured=True
-    ).select_related('category', 'company').prefetch_related('images', 'reviews')[:12]
-    
-    # New Arrivals (latest)
-    new_arrivals = Product.objects.filter(
-        is_active=True
-    ).select_related('category', 'company').prefetch_related('images', 'reviews').order_by('-created_at')[:12]
-    
-    # Most Reviewed Products
-    most_reviewed = Product.objects.filter(
-        is_active=True
-    ).annotate(
-        review_count=Count('reviews')
-    ).select_related('category', 'company').prefetch_related('images', 'reviews').order_by('-review_count')[:12]
-    
-    # Best Selling (most ordered)
-    best_selling = Product.objects.filter(
-        is_active=True,
-        order_items__order__status='delivered'
-    ).annotate(
-        total_sold_count=Sum('order_items__quantity')
-    ).select_related('category', 'company').prefetch_related('images', 'reviews').order_by('-total_sold_count')[:12]
-    
-    # Top Rated Products
-    top_rated = Product.objects.filter(
-        is_active=True
-    ).annotate(
-        avg_rating=Avg('reviews__rating')
-    ).select_related('category', 'company').prefetch_related('images', 'reviews').order_by('-avg_rating')[:12]
+    featured_products = Product.objects.filter(is_active=True, is_featured=True).prefetch_related('images')[:8]
+    new_arrivals = Product.objects.filter(is_active=True).order_by('-created_at').prefetch_related('images')[:8]
+    top_rated = Product.objects.filter(is_active=True).annotate(avg=Avg('reviews__rating')).order_by('-avg').prefetch_related('images')[:8]
+    most_reviewed = Product.objects.filter(is_active=True).annotate(rc=Count('reviews')).order_by('-rc').prefetch_related('images')[:8]
+    best_selling = Product.objects.filter(is_active=True, order_items__order__status='delivered').annotate(ts=Sum('order_items__quantity')).order_by('-ts').prefetch_related('images')[:8]
     
     context = {
         'categories': categories,
         'featured_products': featured_products,
         'new_arrivals': new_arrivals,
+        'top_rated': top_rated,
         'most_reviewed': most_reviewed,
         'best_selling': best_selling,
-        'top_rated': top_rated,
     }
-    
     return render(request, 'core/home.html', context)
-
 
 def products_api(request):
     """API endpoint for product loading"""

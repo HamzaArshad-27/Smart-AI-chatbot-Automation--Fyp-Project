@@ -1,189 +1,219 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Approval Pending - Vendora{% endblock %}
 
-{% block dashboard_title %}Approval Pending{% endblock %}
-
-{% block dashboardcontent %}
-<div class="container mt-5">
+{% block content %}
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-lg border-0 rounded-4" style="animation: slideUp 0.6s ease forwards; opacity: 0;">
-                <style>
-                    @keyframes slideUp {
-                        from { opacity: 0; transform: translateY(30px); }
-                        to { opacity: 1; transform: translateY(0); }
-                    }
+        <div class="col-lg-6 col-md-8">
+            
+            <!-- Main Card -->
+            <div class="card border-0 shadow-lg" style="
+                border-radius: 20px;
+                animation: fadeInUp 0.6s ease forwards;
+                overflow: hidden;
+            ">
+                <div class="card-body p-4 p-md-5 text-center">
                     
-                    .pending-badge {
-                        width: 120px;
-                        height: 120px;
+                    <!-- Pending Icon -->
+                    <div style="
+                        width: 110px;
+                        height: 110px;
                         border-radius: 50%;
-                        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+                        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        margin: 0 auto 30px;
+                        margin: 0 auto 25px;
                         animation: pulse 2s ease-in-out infinite;
-                    }
-                    
-                    .pending-badge i {
-                        font-size: 60px;
-                        color: white;
-                    }
-                    
-                    @keyframes pulse {
-                        0%, 100% { transform: scale(1); }
-                        50% { transform: scale(1.05); }
-                    }
-                    
-                    .pending-heading {
-                        color: #ffc107;
-                        font-weight: 700;
-                        margin-bottom: 15px;
-                    }
-                    
-                    .pending-info {
-                        background: #fff8e1;
-                        border-left: 4px solid #ffc107;
-                        padding: 20px;
-                        border-radius: 8px;
-                        margin: 25px 0;
-                    }
-                    
-                    .pending-info ul {
-                        margin: 15px 0;
-                        padding-left: 20px;
-                    }
-                    
-                    .pending-info li {
-                        margin: 8px 0;
-                        color: #333;
-                    }
-                    
-                    .status-badge {
-                        display: inline-block;
-                        background: #ffc107;
-                        color: white;
-                        padding: 8px 20px;
-                        border-radius: 20px;
-                        font-weight: 600;
-                        margin: 15px 0;
-                    }
-                    
-                    .back-link {
-                        text-align: center;
-                        margin-top: 30px;
-                    }
-                </style>
-                
-                <div class="card-body p-5 text-center">
-                    <!-- Pending Icon -->
-                    <div class="pending-badge">
-                        <i class="fas fa-hourglass-half"></i>
+                        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.3);
+                    ">
+                        <i class="fas fa-hourglass-half" style="font-size: 50px; color: white;"></i>
                     </div>
                     
                     <!-- Heading -->
-                    <h2 class="pending-heading">Your Account is Pending Approval</h2>
-                    <p class="text-muted">Thank you for registering! Your account is now under review.</p>
+                    <h2 style="color: #d97706; font-weight: 700; margin-bottom: 12px;">
+                        Account Pending Approval
+                    </h2>
+                    <p style="color: #737373; font-size: 0.95rem; margin-bottom: 20px;">
+                        Thank you for registering! Your account is now under review by our admin team.
+                    </p>
                     
                     <!-- Status Badge -->
-                    <div>
-                        <span class="status-badge">
-                            <i class="fas fa-clock me-2"></i>Waiting for Admin Approval
-                        </span>
-                    </div>
+                    <span style="
+                        display: inline-block;
+                        background: #fef3c7;
+                        color: #92400e;
+                        padding: 8px 22px;
+                        border-radius: 50px;
+                        font-weight: 600;
+                        font-size: 0.85rem;
+                        border: 2px solid #fcd34d;
+                    ">
+                        <i class="fas fa-clock me-2"></i>Waiting for Admin Approval
+                    </span>
                     
-                    <!-- Details -->
-                    <div class="pending-info">
-                        <h5 style="text-align: left; color: #333; margin-bottom: 15px;">
-                            <i class="fas fa-info-circle"></i> What happens next?
+                    <!-- Info Box -->
+                    <div style="
+                        background: #fffbeb;
+                        border-left: 4px solid #f59e0b;
+                        padding: 20px;
+                        border-radius: 0 12px 12px 0;
+                        margin: 25px 0;
+                        text-align: left;
+                    ">
+                        <h5 style="color: #171717; font-weight: 700; margin-bottom: 14px;">
+                            <i class="fas fa-info-circle text-warning me-2"></i>What happens next?
                         </h5>
-                        <ul style="text-align: left;">
-                            <li><strong>Email Verified:</strong> ✅ Your email has been verified successfully</li>
-                            <li><strong>Under Review:</strong> Our admin team is reviewing your account details</li>
-                            <li><strong>Approval Email:</strong> You'll receive an email once your account is approved</li>
-                            <li><strong>Access Dashboard:</strong> After approval, you can log in and start using the platform</li>
+                        <ul style="margin: 0; padding-left: 20px; color: #404040; font-size: 0.9rem; line-height: 2;">
+                            <li><strong>✅ Email Verified:</strong> Your email has been verified successfully</li>
+                            <li><strong>🔍 Under Review:</strong> Our admin team is reviewing your account details</li>
+                            <li><strong>📧 Approval Email:</strong> You'll receive an email once your account is approved</li>
+                            <li><strong>🚀 Access Dashboard:</strong> After approval, you can log in and start using the platform</li>
                         </ul>
                     </div>
                     
-                    <!-- Key Info -->
-                    <div class="alert alert-info border-0 rounded-3">
+                    <!-- Registered Email -->
+                    <div style="
+                        background: #f8f9fc;
+                        padding: 18px;
+                        border-radius: 14px;
+                        margin: 20px 0;
+                    ">
+                        <p style="color: #737373; font-size: 0.8rem; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                            <i class="fas fa-envelope me-2" style="color: #5b5fe3;"></i>Registered Email
+                        </p>
+                        <p style="font-size: 1rem; font-weight: 600; color: #171717; margin: 0;">
+                            {{ pending_user.email }}
+                        </p>
+                    </div>
+                    
+                    <!-- Alert -->
+                    <div style="
+                        background: #eff6ff;
+                        border: 1px solid #bfdbfe;
+                        color: #1e40af;
+                        padding: 14px 18px;
+                        border-radius: 12px;
+                        font-size: 0.85rem;
+                        margin-bottom: 20px;
+                    ">
                         <i class="fas fa-lightbulb me-2"></i>
-                        <strong>Typically:</strong> Most accounts are approved within 24 hours. We'll send you an email notification as soon as it's ready!
+                        <strong>Typically:</strong> Most accounts are approved within 24 hours. We'll notify you via email!
                     </div>
                     
-                    <!-- Email Info -->
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <p class="mb-2" style="color: #666;">
-                            <i class="fas fa-envelope me-2" style="color: #667eea;"></i>
-                            <strong>Registered Email:</strong>
-                        </p>
-                        <p style="font-size: 16px; font-weight: 600; color: #333;">{{ user.email }}</p>
-                    </div>
+                    <!-- Back to Login Button -->
+                    <a href="{% url 'accounts:login' %}" style="
+                        display: block;
+                        width: 100%;
+                        padding: 14px;
+                        background: #5b5fe3;
+                        color: white;
+                        border-radius: 50px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        font-size: 1rem;
+                        transition: all 0.2s;
+                    " onmouseover="this.style.background='#484bc9'; this.style.transform='translateY(-1px)';" 
+                       onmouseout="this.style.background='#5b5fe3'; this.style.transform='translateY(0)';">
+                        <i class="fas fa-sign-in-alt me-2"></i>Back to Login
+                    </a>
                     
-                    <!-- Actions -->
-                    <div class="mt-4">
-                        <p class="text-muted mb-3">You can close this window and check your email for updates.</p>
-                        <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg rounded-3" style="width: 100%;">
-                            <i class="fas fa-sign-in-alt me-2"></i>Back to Login
-                        </a>
-                    </div>
-                    
-                    <!-- Contact Support -->
-                    <div class="back-link">
-                        <p class="text-muted small mt-4">
-                            Have questions? <a href="{% url 'core:contact' %}">Contact our support team</a>
-                        </p>
-                    </div>
+                    <!-- Contact Link -->
+                    <p style="margin-top: 20px; font-size: 0.82rem; color: #a3a3a3;">
+                        Have questions? <a href="{% url 'core:contact' %}" style="color: #5b5fe3; text-decoration: none; font-weight: 600;">Contact Support</a>
+                    </p>
                 </div>
             </div>
             
             <!-- FAQ Section -->
-            <div class="mt-5">
-                <h4 class="mb-4" style="color: #333;">Frequently Asked Questions</h4>
+            <div class="mt-4">
+                <h5 style="color: #171717; font-weight: 700; margin-bottom: 16px;">
+                    <i class="fas fa-question-circle text-primary me-2"></i>Frequently Asked Questions
+                </h5>
+                
                 <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item border-0 mb-2 rounded-3" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <!-- FAQ 1 -->
+                    <div class="accordion-item border-0 mb-2" style="border-radius: 14px !important; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" style="font-weight: 600;">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" 
+                                    style="font-weight: 600; font-size: 0.9rem; background: white;">
                                 How long does approval take?
                             </button>
                         </h2>
                         <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body" style="color: #666;">
+                            <div class="accordion-body" style="color: #737373; font-size: 0.85rem;">
                                 Most accounts are approved within 24 hours. In some cases, it may take up to 48 hours. We'll notify you via email as soon as your account is approved.
                             </div>
                         </div>
                     </div>
                     
-                    <div class="accordion-item border-0 mb-2 rounded-3" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <!-- FAQ 2 -->
+                    <div class="accordion-item border-0 mb-2" style="border-radius: 14px !important; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" style="font-weight: 600;">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2"
+                                    style="font-weight: 600; font-size: 0.9rem; background: white;">
                                 Why do I need admin approval?
                             </button>
                         </h2>
                         <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body" style="color: #666;">
+                            <div class="accordion-body" style="color: #737373; font-size: 0.85rem;">
                                 We verify all new accounts to ensure platform security and maintain a trusted community. This helps protect both sellers and buyers.
                             </div>
                         </div>
                     </div>
                     
-                    <div class="accordion-item border-0 rounded-3" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <!-- FAQ 3 -->
+                    <div class="accordion-item border-0" style="border-radius: 14px !important; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" style="font-weight: 600;">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3"
+                                    style="font-weight: 600; font-size: 0.9rem; background: white;">
                                 What if my account is rejected?
                             </button>
                         </h2>
                         <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body" style="color: #666;">
-                                If your account is rejected, you'll receive an email with the reason. You can contact our support team to appeal or register with a different account.
+                            <div class="accordion-body" style="color: #737373; font-size: 0.85rem;">
+                                If your account is rejected, you'll receive an email with the reason. You can contact our support team to appeal or register with different credentials.
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
         </div>
     </div>
 </div>
+
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background: #f8f9fc !important;
+        color: #5b5fe3 !important;
+    }
+    
+    .accordion-button:focus {
+        box-shadow: 0 0 0 3px rgba(91, 95, 227, 0.15) !important;
+        border-color: #5b5fe3 !important;
+    }
+</style>
 {% endblock %}

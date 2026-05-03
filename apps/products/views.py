@@ -2,14 +2,30 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q, Avg
-from django.utils.text import slugify
+from django.db.models import Q, Avg, F
+from django.utils import timezone
 from .models import Product, Category, ProductReview, ProductImage
 from .forms import ProductForm, ProductReviewForm, ProductImageForm
 
 def product_list(request, category_slug=None):
     """Display list of products with filtering and search"""
     products = Product.objects.filter(is_active=True)
+    
+    # Product type filter
+    product_type = request.GET.get('type')
+    if product_type == 'featured':
+        products = products.filter(is_featured=True)
+    elif product_type == 'new':
+        # Products from last 30 days
+        from django.utils import timezone
+        thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+        products = products.filter(created_at__gte=thirty_days_ago)
+    elif product_type == 'discount':
+        products = products.filter(compare_price__gt=F('price'))
+    elif product_type == 'most_reviewed':
+        products = products.filter(total_reviews__gt=0)
+    elif product_type == 'most_bought':
+        products = products.filter(total_sold__gt=0)
     
     # Category filter
     if category_slug:
@@ -35,8 +51,14 @@ def product_list(request, category_slug=None):
     if max_price:
         products = products.filter(price__lte=max_price)
     
-    # Sorting
-    sort_by = request.GET.get('sort', '-created_at')
+    # Sorting - adjust default based on type
+    default_sort = '-created_at'
+    if product_type == 'most_reviewed':
+        default_sort = '-total_reviews'
+    elif product_type == 'most_bought':
+        default_sort = '-total_sold'
+    
+    sort_by = request.GET.get('sort', default_sort)
     sort_options = {
         '-created_at': 'Latest',
         'price': 'Price: Low to High',
@@ -371,6 +393,22 @@ def api_products(request):
     """API endpoint for products with filtering"""
     products = Product.objects.filter(is_active=True)
     
+    # Product type filter
+    product_type = request.GET.get('type')
+    if product_type == 'featured':
+        products = products.filter(is_featured=True)
+    elif product_type == 'new':
+        # Products from last 30 days
+        from django.utils import timezone
+        thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+        products = products.filter(created_at__gte=thirty_days_ago)
+    elif product_type == 'discount':
+        products = products.filter(compare_price__gt=models.F('price'))
+    elif product_type == 'most_reviewed':
+        products = products.filter(total_reviews__gt=0).order_by('-total_reviews')
+    elif product_type == 'most_bought':
+        products = products.filter(total_sold__gt=0).order_by('-total_sold')
+    
     # Category filter
     category_slug = request.GET.get('category')
     if category_slug:
@@ -385,8 +423,13 @@ def api_products(request):
             Q(short_description__icontains=search_query)
         )
     
-    # Order by
-    products = products.order_by('-created_at')[:12]
+    # Default ordering based on type
+    if product_type == 'most_reviewed':
+        products = products.order_by('-total_reviews')[:12]
+    elif product_type == 'most_bought':
+        products = products.order_by('-total_sold')[:12]
+    else:
+        products = products.order_by('-created_at')[:12]
     
     # Prepare data
     products_data = []

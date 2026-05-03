@@ -35,7 +35,8 @@ function quickAddToCart(productId, event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ product_id: productId, quantity: 1 })
     })
