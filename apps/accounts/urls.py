@@ -15,8 +15,7 @@ urlpatterns = [
     path('resend-otp/', views.resend_otp, name='resend_otp'),
     
     # Pending Approval
-    path('pending-approval/', views.pending_approval, name='pending_approval'),
-    path('pending-approval/<int:user_id>/', views.pending_approval, name='pending_approval'),
+
     
     # Password Management
     path('forgot-password/', views.forgot_password, name='forgot_password'),
