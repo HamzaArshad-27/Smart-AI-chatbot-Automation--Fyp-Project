@@ -1,75 +1,87 @@
-import csv
+import pandas as pd
+import requests
 import os
+import random
 from django.core.management.base import BaseCommand
-from django.utils.text import slugify
-from apps.products.models import Product, Category
+from django.core.files.base import ContentFile
+from django.contrib.auth import get_user_model
+from apps.products.models import Product, ProductImage, Category
 from apps.companies.models import Company
 
 class Command(BaseCommand):
-    help = 'Imports 100 products and links them to Company: Farhan'
+    help = 'Products ko fast aur unique images ke saath import karein'
 
     def add_arguments(self, parser):
-        parser.add_argument('csv_file', type=str)
+        parser.add_argument('file_path', type=str)
 
     def handle(self, *args, **options):
-        file_path = options['csv_file']
+        User = get_user_model()
+        file_path = options['file_path']
         
-        if not os.path.exists(file_path):
-            self.stdout.write(self.style.ERROR(f"File not found: {file_path}"))
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if not admin_user:
+            self.stdout.write(self.style.ERROR("× Error: Superadmin nahi mila!"))
             return
 
-        # Fetch your existing company "Farhan"
-        company = Company.objects.filter(name="Farhan").first()
+        try:
+            ext = os.path.splitext(file_path)[1].lower()
+            df = pd.read_csv(file_path) if ext == '.csv' else pd.read_excel(file_path)
+            
+            total = len(df)
+            self.stdout.write(self.style.SUCCESS(f'Total: {total}. Starting Fast Import...'))
 
-        if not company:
-            # Fallback if name changed: just get the first available company
-            company = Company.objects.first()
+            target_company, _ = Company.objects.get_or_create(
+                name='c', 
+                defaults={'user': admin_user}
+            )
 
-        if not company:
-            self.stdout.write(self.style.ERROR("❌ Error: No Company found in database."))
-            return
-
-        self.stdout.write(self.style.SUCCESS(f"Linking products to Company: {company.name} (ID: {company.id})"))
-
-        with open(file_path, encoding='utf-8-sig') as f:
-            reader = csv.DictReader(f)
-            count = 0
-            for row in reader:
+            for index, row in df.iterrows():
                 try:
-                    # 1. Handle Category (Create if it doesn't exist)
-                    category_name = row['category'].strip()
-                    category_obj, _ = Category.objects.get_or_create(
-                        name=category_name,
-                        defaults={'slug': slugify(category_name)}
-                    )
+                    # 1. Category Setup
+                    cat_name = str(row['category']).strip()
+                    category, _ = Category.objects.get_or_create(name=cat_name)
 
-                    # 2. Create or Update Product based on SKU
+                    # 2. Product Create/Update
                     product, created = Product.objects.update_or_create(
-                        sku=row['sku'].strip(),
+                        sku=row['sku'],
                         defaults={
                             'name': row['name'],
-                            'category': category_obj,
-                            'company': company,
+                            'category': category,
+                            'company': target_company,
                             'description': row['description'],
-                            'short_description': row['short_description'],
                             'price': row['price'],
-                            'compare_price': row['compare_price'] if row['compare_price'] else None,
-                            'cost_per_item': row['cost_per_item'] if row['cost_per_item'] else 0,
                             'stock_quantity': row['stock_quantity'],
-                            'barcode': row['barcode'],
-                            'weight': row['weight'] if row['weight'] and row['weight'] != '' else 0,
-                            'dimensions': row['dimensions'],
-                            'is_active': str(row['is_active']).upper() == 'TRUE',
-                            'is_featured': str(row['is_featured']).upper() == 'TRUE',
-                            'is_digital': str(row['is_digital']).upper() == 'TRUE',
-                            'slug': slugify(f"{row['name']}-{row['sku']}")
+                            'is_active': True,
                         }
                     )
-                    
-                    self.stdout.write(self.style.SUCCESS(f"✅ {'Created' if created else 'Updated'}: {product.name}"))
-                    count += 1
 
-                except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"❌ Error with {row.get('name')}: {str(e)}"))
+                    # 3. FAST Image Logic (Unsplash Fix)
+                    status_msg = "No Image"
+                    if not product.images.exists():
+                        # Agar Unsplash 503 de raha hai, toh Picsum use karein (Bohat Fast hai)
+                        # SKU use karne se har product ki image unique rahegi
+                        fast_url = f"https://picsum.photos/seed/{product.sku}/600/600"
+                        
+                        try:
+                            headers = {'User-Agent': 'Mozilla/5.0'}
+                            res = requests.get(fast_url, headers=headers, timeout=5)
+                            
+                            if res.status_code == 200:
+                                img_obj = ProductImage(product=product, is_main=True)
+                                img_obj.image.save(f"{product.slug}.jpg", ContentFile(res.content), save=True)
+                                status_msg = "Image Saved ✔"
+                            else:
+                                status_msg = f"Failed (Status: {res.status_code})"
+                        except Exception:
+                            status_msg = "Timeout ⚠"
 
-        self.stdout.write(self.style.SUCCESS(f"\nDone! Successfully processed {count} products."))
+                    # Live Progress Update
+                    self.stdout.write(f"[{index+1}/{total}] {product.name} ... {status_msg}")
+
+                except Exception as row_err:
+                    self.stdout.write(self.style.ERROR(f"Row {index} skipped: {row_err}"))
+
+            self.stdout.write(self.style.SUCCESS('\n--- IMPORT SUCCESSFUL! ---'))
+
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Critical Error: {e}'))

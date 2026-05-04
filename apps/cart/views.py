@@ -1,11 +1,12 @@
 # cart/views.py
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse
-from .models import Cart, CartItem
-from .models import Product
+from .models import Cart, CartItem, Product
 
 @login_required
 def cart_view(request):
@@ -20,64 +21,83 @@ def cart_view(request):
 
 
 @login_required
-def add_to_cart(request, product_id):
+def add_to_cart(request, product_id=None):
     """Add product to cart"""
+    if request.method != 'POST':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': 'POST request required.'}, status=400)
+        return redirect('products:list')
+
+    payload = {}
+    if request.content_type == 'application/json':
+        try:
+            payload = json.loads(request.body.decode('utf-8') or '{}')
+        except json.JSONDecodeError:
+            payload = {}
+
+    product_id = product_id or payload.get('product_id') or request.POST.get('product_id')
+    try:
+        quantity = int(payload.get('quantity') or request.POST.get('quantity') or 1)
+    except (TypeError, ValueError):
+        quantity = 1
+    next_url = payload.get('next') or request.POST.get('next')
+
+    if not product_id:
+        error_msg = 'Product ID is required to add to cart.'
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'success': False, 'error': error_msg}, status=400)
+        messages.error(request, error_msg)
+        return redirect('products:list')
+
     product = get_object_or_404(Product, id=product_id, is_active=True)
-    quantity = int(request.POST.get('quantity', 1))
-    
+
     # Check stock availability
     if quantity > product.stock_quantity:
         error_msg = f'Sorry, only {product.stock_quantity} items available.'
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
             return JsonResponse({'success': False, 'error': error_msg})
         messages.error(request, error_msg)
-        return redirect(request.POST.get('next', 'products:detail', product.slug))
-    
-    # Get or create cart
+        return redirect(next_url or 'products:detail', slug=product.slug)
+
     cart, created = Cart.objects.get_or_create(user=request.user)
-    
-    # Get or create cart item
+
     cart_item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
         defaults={'quantity': quantity}
     )
-    
+
     if not created:
-        # Check if adding more would exceed stock
         new_quantity = cart_item.quantity + quantity
         if new_quantity > product.stock_quantity:
             error_msg = f'Sorry, only {product.stock_quantity} items available in stock.'
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
                 return JsonResponse({'success': False, 'error': error_msg})
             messages.error(request, error_msg)
         else:
             cart_item.quantity = new_quantity
             cart_item.save()
             success_msg = f'{product.name} quantity updated in cart!'
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
                 return JsonResponse({
-                    'success': True, 
+                    'success': True,
                     'message': success_msg,
                     'cart_count': cart.get_total_items()
                 })
             messages.success(request, success_msg)
     else:
         success_msg = f'{product.name} added to cart!'
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
             return JsonResponse({
-                'success': True, 
+                'success': True,
                 'message': success_msg,
                 'cart_count': cart.get_total_items()
             })
         messages.success(request, success_msg)
-    
-    # Check if there's a next parameter (redirect after add)
-    next_url = request.POST.get('next')
+
     if next_url:
         return redirect(next_url)
-    
-    # Default: redirect back to product detail
+
     return redirect('products:detail', slug=product.slug)
 @login_required
 def update_cart_item(request, item_id):

@@ -5,19 +5,81 @@
 
 {% block extra_css %}
 <link href="{% static 'css/products/list.css' %}" rel="stylesheet">
+<style>
+    /* Performance optimizations - lightweight additions */
+    .product-card-modern {
+        content-visibility: auto;
+        contain-intrinsic-size: 0 500px;
+    }
+    
+    .product-img-modern {
+        loading: lazy;
+        decoding: async;
+    }
+    
+    .filter-sidebar-modern {
+        will-change: transform;
+    }
+    
+    /* Smooth scrolling for the whole page */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Prevent layout shifts */
+    .product-grid-wrapper {
+        min-height: 400px;
+    }
+    
+    /* Toast notification styles */
+    .toast-notification {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #0f172a;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-weight: 500;
+        z-index: 9999;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        animation: slideInUp 0.3s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    @keyframes slideInUp {
+        from {
+            transform: translateY(100px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4 pt-2">
-
-
     <div class="row g-4">
         <!-- FILTER SIDEBAR - Modern glass card -->
         <div class="col-lg-3">
-            <div class="filter-sidebar-modern" data-aos="fade-right" data-aos-duration="600">
+            <div class="filter-sidebar-modern" data-aos="fade-right" data-aos-duration="400" data-aos-once="true">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h5 class="filter-header mb-0"><i class="fas fa-sliders-h me-2"></i>Filters</h5>
-                    {% if request.GET.min_price or request.GET.max_price or current_category %}
+                    {% if request.GET.min_price or request.GET.max_price or current_category or request.GET.q %}
                         <a href="{% url 'products:list' %}" class="text-decoration-none small" style="color:#3b82f6;">Clear all</a>
                     {% endif %}
                 </div>
@@ -26,9 +88,10 @@
                 <div class="mb-4">
                     <div class="fw-semibold mb-2 small text-uppercase text-secondary">Categories</div>
                     <div>
-                        <a href="{% url 'products:list' %}" class="category-pill {% if not current_category %}active{% endif %}">All</a>
+                        <a href="{% url 'products:list' %}" class="category-pill {% if not current_category and not request.GET.category %}active{% endif %}">All</a>
                         {% for category in categories %}
-                            <a href="{% url 'products:category_list' category.slug %}" class="category-pill {% if current_category and current_category.id == category.id %}active{% endif %}">
+                            <a href="{% url 'products:category_list' category.slug %}" 
+                               class="category-pill {% if current_category and current_category.id == category.id %}active{% endif %}">
                                 {{ category.name }}
                             </a>
                         {% endfor %}
@@ -40,7 +103,7 @@
                 <!-- Price range filter modern -->
                 <div class="mb-4">
                     <div class="fw-semibold mb-2 small text-uppercase text-secondary">Price range</div>
-                    <form method="get" id="priceFilterForm">
+                    <form method="get" id="priceFilterForm" action="{% url 'products:list' %}">
                         {% if search_query %}
                             <input type="hidden" name="q" value="{{ search_query }}">
                         {% endif %}
@@ -91,67 +154,67 @@
             </div>
 
             <!-- Products Grid with modern cards -->
-            <div class="row g-4">
-                {% for product in products %}
-                    <div class="col-sm-6 col-xl-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'50' }}">
-                        <div class="product-card-modern">
-                            <div class="position-relative">
-                                {% if product.images.first %}
-                                    <img src="{{ product.images.first.image.url }}" class="product-img-modern" alt="{{ product.name }}" loading="lazy">
-                                {% else %}
-                                    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop" class="product-img-modern" alt="Product placeholder">
-                                {% endif %}
-                                <!-- optional discount badge (static for demo) -->
-                                <span class="product-badge-custom">
-                                    <i class="fas fa-tag me-1"></i> Trending
-                                </span>
-                            </div>
-                            <div class="p-3 pb-0">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="fw-bold fs-6 mb-0" style="letter-spacing: -0.2px;">{{ product.name|truncatechars:30 }}</h5>
+            <div class="product-grid-wrapper">
+                <div class="row g-4">
+                    {% for product in products %}
+                        <div class="col-sm-6 col-xl-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'50' }}" data-aos-once="true">
+                            <div class="product-card-modern">
+                                <div class="position-relative">
+                                    {% if product.images.first %}
+                                        <img src="{{ product.images.first.image.url }}" class="product-img-modern" alt="{{ product.name }}" loading="lazy" decoding="async">
+                                    {% else %}
+                                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop" class="product-img-modern" alt="Product placeholder" loading="lazy" decoding="async">
+                                    {% endif %}
+                                    <span class="product-badge-custom">
+                                        <i class="fas fa-tag me-1"></i> Trending
+                                    </span>
                                 </div>
-                                <p class="text-muted small mb-2">{{ product.short_description|truncatechars:55|default:"Premium quality product from trusted vendor." }}</p>
-                                <div class="d-flex align-items-center justify-content-between mt-1">
-                                    <span class="price-text">${{ product.price }}</span>
-                                    <div class="company-badge">
-                                        <i class="fas fa-store"></i> {{ product.company.name|truncatechars:12 }}
+                                <div class="p-3 pb-0">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="fw-bold fs-6 mb-0" style="letter-spacing: -0.2px;">{{ product.name|truncatechars:30 }}</h5>
+                                    </div>
+                                    <p class="text-muted small mb-2">{{ product.short_description|truncatechars:55|default:"Premium quality product from trusted vendor." }}</p>
+                                    <div class="d-flex align-items-center justify-content-between mt-1">
+                                        <span class="price-text">${{ product.price }}</span>
+                                        <div class="company-badge">
+                                            <i class="fas fa-store"></i> {{ product.company.name|truncatechars:12 }}
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="card-footer-transparent d-flex justify-content-between align-items-center gap-2">
+                                    <a href="{% url 'products:detail' product.slug %}" class="btn btn-outline-modern w-100">
+                                        <i class="fas fa-eye me-1"></i> Details
+                                    </a>
+                                    <button class="quick-add-btn border-0" onclick="quickAddToCart({{ product.id }}, event)" aria-label="Add to cart">
+                                        <i class="fas fa-bag-shopping"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="card-footer-transparent d-flex justify-content-between align-items-center gap-2">
-                                <a href="{% url 'products:detail' product.slug %}" class="btn btn-outline-modern w-100">
-                                    <i class="fas fa-eye me-1"></i> Details
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="empty-state-modern">
+                                <div class="mb-4">
+                                    <i class="fas fa-store-slash fa-4x text-muted opacity-50"></i>
+                                </div>
+                                <h4 class="fw-bold">No products found</h4>
+                                <p class="text-muted">We couldn't find any products matching your criteria.</p>
+                                <a href="{% url 'products:list' %}" class="btn btn-primary-glass mt-2">
+                                    <i class="fas fa-arrow-left me-1"></i> Browse all products
                                 </a>
-                                <!-- quick cart add (optional frontend simulation) -->
-                                <button class="quick-add-btn border-0" onclick="quickAddToCart({{ product.id }})">
-                                    <i class="fas fa-bag-shopping"></i>
-                                </button>
                             </div>
                         </div>
-                    </div>
-                {% empty %}
-                    <div class="col-12">
-                        <div class="empty-state-modern">
-                            <div class="mb-4">
-                                <i class="fas fa-store-slash fa-4x text-muted opacity-50"></i>
-                            </div>
-                            <h4 class="fw-bold">No products found</h4>
-                            <p class="text-muted">We couldn't find any products matching your criteria.</p>
-                            <a href="{% url 'products:list' %}" class="btn btn-primary-glass mt-2">
-                                <i class="fas fa-arrow-left me-1"></i> Browse all products
-                            </a>
-                        </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
 
             <!-- Modern Pagination -->
             {% if products.has_other_pages %}
-                <nav class="mt-5 d-flex justify-content-center">
+                <nav class="mt-5 d-flex justify-content-center" aria-label="Product pagination">
                     <ul class="pagination pagination-modern flex-wrap justify-content-center gap-1">
                         {% if products.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ products.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}">
+                                <a class="page-link" href="?page={{ products.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" aria-label="Previous page">
                                     <i class="fas fa-chevron-left me-1"></i> Prev
                                 </a>
                             </li>
@@ -159,17 +222,17 @@
                         
                         {% for i in products.paginator.page_range %}
                             {% if products.number == i %}
-                                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
                             {% elif i > products.number|add:'-3' and i < products.number|add:'3' %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ i }}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}">{{ i }}</a>
+                                    <a class="page-link" href="?page={{ i }}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">{{ i }}</a>
                                 </li>
                             {% endif %}
                         {% endfor %}
                         
                         {% if products.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ products.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}">
+                                <a class="page-link" href="?page={{ products.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" aria-label="Next page">
                                     Next <i class="fas fa-chevron-right ms-1"></i>
                                 </a>
                             </li>
@@ -180,7 +243,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Quick add to cart toast notification simulation (just frontend flair) -->
+{% block extra_js %}
 <script src="{% static 'js/products/list.js' %}"></script>
 {% endblock %}
