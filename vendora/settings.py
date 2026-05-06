@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.cart',
     'apps.reports',
     'apps.core',
+    'apps.ai_assistant',
     
 ]
 
@@ -167,6 +168,10 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# AI assistant (Ollama)
+OLLAMA_BASE_URL = config('OLLAMA_BASE_URL', default='http://localhost:11434')
+OLLAMA_MODEL = config('OLLAMA_MODEL', default='phi3:mini')
 
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'

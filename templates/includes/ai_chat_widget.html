@@ -1,0 +1,134 @@
+{% if user.is_authenticated %}
+{% if user.role == 'customer' or user.role == 'retailer' %}
+<div id="ai-chat-widget" class="position-fixed bottom-0 end-0 m-3" style="z-index: 1080;">
+    <div id="ai-chat-card" class="card shadow-lg d-none" style="width: 360px; max-height: 520px;">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-robot me-2"></i>Vendora AI Assistant</span>
+            <button type="button" class="btn btn-sm btn-light" id="ai-chat-close">&times;</button>
+        </div>
+        <div id="ai-chat-messages" class="card-body bg-light" style="overflow-y: auto; height: 320px;"></div>
+        <div class="card-footer">
+            <div class="input-group">
+                <input type="text" id="ai-chat-input" class="form-control" placeholder="Ask for products..." />
+                <button class="btn btn-outline-secondary" type="button" id="ai-chat-mic" title="Voice input">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="btn btn-primary" type="button" id="ai-chat-send">Send</button>
+            </div>
+        </div>
+    </div>
+    <button id="ai-chat-toggle" class="btn btn-primary rounded-circle shadow" style="width: 56px; height: 56px;">
+        <i class="fas fa-comments"></i>
+    </button>
+</div>
+
+<script>
+(() => {
+    const card = document.getElementById("ai-chat-card");
+    const toggle = document.getElementById("ai-chat-toggle");
+    const closeBtn = document.getElementById("ai-chat-close");
+    const sendBtn = document.getElementById("ai-chat-send");
+    const micBtn = document.getElementById("ai-chat-mic");
+    const input = document.getElementById("ai-chat-input");
+    const messages = document.getElementById("ai-chat-messages");
+
+    const getCookie = (name) => {
+        const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+        return match ? decodeURIComponent(match[2]) : "";
+    };
+
+    const append = (html) => {
+        const div = document.createElement("div");
+        div.className = "mb-2";
+        div.innerHTML = html;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    };
+
+    const renderSuggestions = (items) => {
+        if (!items || !items.length) return "";
+        const list = items.map((p) => `
+            <li class="mb-1">
+                <a href="${p.url}" data-product-id="${p.id}" class="ai-suggestion-link">${p.name}</a>
+                <small class="text-muted d-block">$${Number(p.price).toFixed(2)}</small>
+            </li>`).join("");
+        return `<ul class="ps-3 mt-2 mb-0">${list}</ul>`;
+    };
+
+    const trackInterest = async (productId, interestType) => {
+        try {
+            await fetch("{% url 'ai_assistant:track_interest' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({ product_id: productId, interest_type: interestType })
+            });
+        } catch (err) {
+            console.warn("Interest tracking failed", err);
+        }
+    };
+
+    const sendMessage = async () => {
+        const message = input.value.trim();
+        if (!message) return;
+        input.value = "";
+        append(`<div class="text-end"><span class="badge bg-secondary">${message}</span></div>`);
+
+        try {
+            const response = await fetch("{% url 'ai_assistant:chat' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                append(`<div><span class="badge bg-danger">${data.error || "Request failed"}</span></div>`);
+                return;
+            }
+
+            append(`<div><span class="badge bg-primary text-wrap">${data.response || "No response"}</span>${renderSuggestions(data.suggestions)}</div>`);
+        } catch (err) {
+            append(`<div><span class="badge bg-danger">AI service unavailable right now.</span></div>`);
+        }
+    };
+
+    messages.addEventListener("click", (event) => {
+        const link = event.target.closest(".ai-suggestion-link");
+        if (!link) return;
+        const productId = link.getAttribute("data-product-id");
+        if (productId) {
+            trackInterest(productId, "like");
+        }
+    });
+
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        micBtn.addEventListener("click", () => recognition.start());
+        recognition.onresult = (event) => {
+            input.value = event.results[0][0].transcript || "";
+            sendMessage();
+        };
+    } else {
+        micBtn.classList.add("disabled");
+        micBtn.title = "Speech recognition not supported in this browser";
+    }
+
+    toggle.addEventListener("click", () => card.classList.toggle("d-none"));
+    closeBtn.addEventListener("click", () => card.classList.add("d-none"));
+    sendBtn.addEventListener("click", sendMessage);
+    input.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") sendMessage();
+    });
+})();
+</script>
+{% endif %}
+{% endif %}

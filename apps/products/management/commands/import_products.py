@@ -19,7 +19,7 @@ class Command(BaseCommand):
         file_path = options['file_path']
         
         # Target user based on email
-        target_email = "2231046@ncbae.edu.pk"
+        target_email = "moazjamil046@gmail.com"
         owner_user = User.objects.filter(email=target_email).first()
         
         if not owner_user:

@@ -6,6 +6,7 @@ from django.db.models import Q, Avg, F
 from django.utils import timezone
 from .models import Product, Category, ProductReview, ProductImage
 from .forms import ProductForm, ProductReviewForm, ProductImageForm
+from apps.ai_assistant.models import UserProductInterest
 
 def product_list(request, category_slug=None):
     """Display list of products with filtering and search"""
@@ -92,6 +93,14 @@ def product_list(request, category_slug=None):
 def product_detail(request, slug):
     """Display product details"""
     product = get_object_or_404(Product, slug=slug, is_active=True)
+    if request.user.is_authenticated and request.user.role in {"customer", "retailer"}:
+        UserProductInterest.objects.create(
+            user=request.user,
+            product=product,
+            interest_type="view",
+            weight=1.0,
+            metadata={"source": "product_detail"},
+        )
     reviews = product.reviews.filter(is_approved=True)[:10]
     
     # Get average rating
