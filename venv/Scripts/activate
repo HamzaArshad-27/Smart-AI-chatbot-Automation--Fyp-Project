@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="M:\Fyp-project\Smart-AI-chatbot-Automation--Fyp-Project\venv"
+VIRTUAL_ENV="D:\FYP\vendora\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
