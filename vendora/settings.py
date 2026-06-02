@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'apps.reports',
     'apps.core',
     'apps.ai_assistant',
-    
+    'apps.dashboard',
 ]
 
 MIDDLEWARE = [
