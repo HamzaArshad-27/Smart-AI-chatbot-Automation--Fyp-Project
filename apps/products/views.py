@@ -32,6 +32,9 @@ def product_list(request, category_slug=None):
     if category_slug:
         category = get_object_or_404(Category, slug=category_slug)
         products = products.filter(category=category)
+    elif request.GET.get('category'):
+        category = get_object_or_404(Category, slug=request.GET.get('category'))
+        products = products.filter(category=category)
     else:
         category = None
     
@@ -161,9 +164,15 @@ def product_manage(request):
         messages.error(request, 'You do not have permission to manage products')
         return redirect('dashboard:index')
     
+    categories = Category.objects.filter(is_active=True)
+    
     context = {
         'products': products.order_by('-created_at'),
         'total_products': products.count(),
+        'active_products': products.filter(is_active=True).count(),
+        'low_stock_count': products.filter(stock_quantity__lte=F('low_stock_threshold')).count(),
+        'featured_count': products.filter(is_featured=True).count(),
+        'categories': categories,
     }
     return render(request, 'products/manage.html', context)
 

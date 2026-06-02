@@ -12,9 +12,8 @@
             <p class="mb-0 opacity-75">Here's your sales performance and order summary</p>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <div class="growth-indicator bg-white text-dark px-3 py-2 rounded-pill d-inline-block">
-                <i class="fas fa-chart-line text-success"></i>
-                <span>+23% this month</span>
+            <div class="d-inline-block bg-white bg-opacity-25 rounded px-3 py-2 text-white">
+                <i class="fas fa-calendar-alt"></i> {% now "F j, Y" %}
             </div>
         </div>
     </div>
@@ -24,64 +23,64 @@
 <div class="row mb-4">
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card stat-card animated" style="animation-delay: 0.2s;">
-            <div class="card-body">
+            <div class="card-body bg-primary text-white position-relative">
                 <div class="stat-icon">
                     <i class="fas fa-box"></i>
                 </div>
-                <h6 class="text-muted mb-2">My Products</h6>
+                <h6 class="card-title opacity-75 mb-2">My Products</h6>
                 <h2 class="mb-0">{{ total_products }}</h2>
-                <small class="text-success mt-2 d-block">
+                <div class="growth-indicator growth-up mt-2">
                     <i class="fas fa-arrow-up"></i> Active products
-                </small>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card stat-card animated" style="animation-delay: 0.3s;">
-            <div class="card-body">
+            <div class="card-body bg-info text-white position-relative">
                 <div class="stat-icon">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
-                <h6 class="text-muted mb-2">Orders Processed</h6>
+                <h6 class="card-title opacity-75 mb-2">Orders Processed</h6>
                 <h2 class="mb-0">{{ orders_processed }}</h2>
-                <small class="text-success mt-2 d-block">
+                <div class="growth-indicator growth-up mt-2">
                     <i class="fas fa-check-circle"></i> Completed
-                </small>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card stat-card animated" style="animation-delay: 0.4s;">
-            <div class="card-body">
+            <div class="card-body bg-success text-white position-relative">
                 <div class="stat-icon">
                     <i class="fas fa-dollar-sign"></i>
                 </div>
-                <h6 class="text-muted mb-2">Total Revenue</h6>
+                <h6 class="card-title opacity-75 mb-2">Total Revenue</h6>
                 <h2 class="mb-0">${{ revenue|floatformat:2 }}</h2>
-                <small class="text-success mt-2 d-block">
-                    <i class="fas fa-chart-line"></i> +15% from last month
-                </small>
+                <div class="growth-indicator growth-up mt-2">
+                    <i class="fas fa-chart-line"></i> +15% this month
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card stat-card animated" style="animation-delay: 0.5s;">
-            <div class="card-body">
+            <div class="card-body bg-warning text-white position-relative">
                 <div class="stat-icon">
                     <i class="fas fa-clock"></i>
                 </div>
-                <h6 class="text-muted mb-2">Pending Orders</h6>
+                <h6 class="card-title opacity-75 mb-2">Pending Orders</h6>
                 <h2 class="mb-0">{{ pending_orders }}</h2>
-                <small class="text-warning mt-2 d-block">
+                <div class="growth-indicator mt-2">
                     <i class="fas fa-exclamation-triangle"></i> Need attention
-                </small>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Quick Stats Row -->
-<div class="chart-container animated" style="animation-delay: 0.6s;">
+<div class="chart-container animated mb-4" style="animation-delay: 0.6s;">
     <div class="row text-center">
         <div class="col-md-3 col-6">
             <div class="stat-mini">
@@ -136,7 +135,7 @@
                 </thead>
                 <tbody>
                     {% for item in recent_order_items %}
-                    <tr onclick="window.location.href='{% url 'orders:detail' item.order.id %}'">
+                    <tr onclick="window.location.href='{% url 'orders:detail' item.order.id %}'" style="cursor: pointer;">
                         <td>
                             <strong>{{ item.order.order_number }}</strong>
                             <br>
@@ -152,22 +151,22 @@
                                     </div>
                                 {% endif %}
                                 <div>
-                                    <div class="fw-bold">{{ item.product.name|truncatechars:30 }}</div>
+                                    <div class="fw-bold text-dark">{{ item.product.name|truncatechars:30 }}</div>
                                     <small class="text-muted">SKU: {{ item.product.sku|default:"N/A" }}</small>
                                 </div>
                             </div>
                         </td>
                         <td>{{ item.quantity }}</td>
                         <td>${{ item.price }}</td>
-                        <td><strong>${{ item.total }}</strong></td>
+                        <td><strong class="text-primary">${{ item.total }}</strong></td>
                         <td>
-                            <span class="badge-status badge bg-{% if item.status == 'delivered' %}success{% elif item.status == 'cancelled' %}danger{% elif item.status == 'pending' %}warning{% elif item.status == 'shipped' %}info{% else %}primary{% endif %}">
+                            <span class="badge-status {% if item.status == 'delivered' %}bg-success{% elif item.status == 'cancelled' %}bg-danger{% elif item.status == 'pending' %}bg-warning{% elif item.status == 'shipped' %}bg-info{% else %}bg-primary{% endif %}">
                                 <i class="fas {% if item.status == 'pending' %}fa-clock{% elif item.status == 'processing' %}fa-cogs{% elif item.status == 'shipped' %}fa-truck{% elif item.status == 'delivered' %}fa-check-circle{% else %}fa-box{% endif %}"></i>
                                 {{ item.get_status_display }}
                             </span>
                         </td>
                         <td>
-                            <div class="btn-group" role="group">
+                            <div class="btn-group" role="group" onclick="event.stopPropagation();">
                                 <a href="{% url 'orders:detail' item.order.id %}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i>
                                 </a>
@@ -226,7 +225,7 @@
                                     </div>
                                 {% endif %}
                                 <div>
-                                    <div class="fw-bold">{{ product.name|truncatechars:40 }}</div>
+                                    <div class="fw-bold text-dark">{{ product.name|truncatechars:40 }}</div>
                                     <small class="text-muted">{{ product.category.name|default:"Uncategorized" }}</small>
                                 </div>
                             </div>
@@ -246,9 +245,9 @@
                         <td>{{ product.total_sold|default:0 }} sold</td>
                         <td>
                             {% if product.is_active %}
-                                <span class="badge-status badge bg-success">Active</span>
+                                <span class="badge-status bg-success">Active</span>
                             {% else %}
-                                <span class="badge-status badge bg-danger">Inactive</span>
+                                <span class="badge-status bg-danger">Inactive</span>
                             {% endif %}
                         </td>
                         <td>

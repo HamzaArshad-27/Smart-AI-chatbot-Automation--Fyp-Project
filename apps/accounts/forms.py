@@ -51,6 +51,13 @@ class UserRegistrationForm(forms.ModelForm):
         # Make company fields required if role is company
         self.fields['company_name'].required = False
         self.fields['company_address'].required = False
+        
+        # Filter role choices: hide 'admin' and 'seller'
+        self.fields['role'].choices = [
+            ('company', 'Company / Seller'),
+            ('retailer', 'Retailer'),
+            ('customer', 'Customer'),
+        ]
     
     def clean(self):
         cleaned_data = super().clean()

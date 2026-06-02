@@ -139,7 +139,7 @@
             <!-- Grid View -->
             <div id="gridView" class="products-grid">
                 {% for product in products %}
-                <div class="product-card" data-product-id="{{ product.id }}" data-product-name="{{ product.name|lower }}" data-category="{{ product.category.id }}" data-status="{% if product.is_active %}active{% else %}inactive{% endif %}" data-stock="{{ product.stock_quantity }}">
+                <div class="product-card" data-product-id="{{ product.id }}" data-product-name="{{ product.name|lower }}" data-category="{{ product.category.id }}" data-status="{% if product.is_active %}active{% else %}inactive{% endif %}" data-stock="{{ product.stock_quantity }}" data-featured="{% if product.is_featured %}true{% else %}false{% endif %}">
                     <div class="product-image">
                         {% if product.images.first %}
                             <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
@@ -230,7 +230,7 @@
                                 </thead>
                                 <tbody>
                                     {% for product in products %}
-                                    <tr data-product-id="{{ product.id }}">
+                                    <tr class="product-row" data-product-id="{{ product.id }}" data-product-name="{{ product.name|lower }}" data-category="{{ product.category.id }}" data-status="{% if product.is_active %}active{% else %}inactive{% endif %}" data-stock="{{ product.stock_quantity }}" data-featured="{% if product.is_featured %}true{% else %}false{% endif %}">
                                         <td>
                                             <input type="checkbox" class="product-checkbox-list" value="{{ product.id }}" onchange="updateBulkActionsList()">
                                         </td>

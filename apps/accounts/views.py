@@ -66,7 +66,7 @@ Vendora Team
 """
     
     print(f"\n{'='*60}")
-    print(f"📧 OTP for {user.email}")
+    print(f"OTP for {user.email}")
     print(f"   Purpose: {purpose}")
     print(f"   Code: {otp_code}")
     print(f"   DEV_MODE: {settings.DEV_MODE}")
@@ -105,7 +105,7 @@ Vendora Team
         
     except Exception as e:
         logger.error(f"Failed to send email to {user.email}: {str(e)}")
-        print(f"❌ Email sending failed: {str(e)}")
+        print(f"Email sending failed: {str(e)}")
         return False
 
 
@@ -386,7 +386,7 @@ def forgot_password(request):
                 if settings.DEV_MODE:
                     request.session['reset_user_id'] = user.id
                     request.session['reset_otp'] = otp_code
-                    print(f"\n🔑 DEV MODE: Password reset OTP for {email}: {otp_code}\n")
+                    print(f"\nDEV MODE: Password reset OTP for {email}: {otp_code}\n")
                     messages.success(request, f'🔧 Dev Mode: Your OTP is {otp_code}')
                     return redirect('accounts:reset_password')
                 else:
