@@ -1,0 +1,137 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_title %}User Reports{% endblock %}
+{% block mobile_dashboard_title %}User Reports{% endblock %}
+
+{% block dashboard_content %}
+<!-- Reports Banner -->
+<div class="welcome-banner animated mb-4" style="animation-delay: 0.1s;">
+    <div class="row align-items-center">
+        <div class="col-md-7">
+            <h1 class="display-6 mb-2">
+                <i class="fas fa-chart-bar"></i> Reports & Analytics
+            </h1>
+            <p class="mb-0 opacity-75">Track sales revenue, product performance, and user accounts in real time.</p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+            <div class="d-inline-flex gap-2">
+                <button class="btn btn-light btn-sm d-flex align-items-center gap-2" onclick="exportReport('csv')">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+                <button class="btn btn-light btn-sm d-flex align-items-center gap-2" onclick="exportReport('excel')">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reports Sub-Navigation -->
+<div class="row mb-4 animated" style="animation-delay: 0.15s;">
+    <div class="col-12">
+        <div class="card p-2 border-0 shadow-sm" style="background: var(--bg-card); border-radius: var(--radius-md);">
+            <ul class="nav nav-pills gap-2 border-0">
+                <li class="nav-item">
+                    <a class="nav-link px-4 py-2 rounded-3 text-secondary" href="{% url 'reports:sales' %}">
+                        <i class="fas fa-chart-line me-2"></i> Sales Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-4 py-2 rounded-3 text-secondary" href="{% url 'reports:products' %}">
+                        <i class="fas fa-box me-2"></i> Product Performance
+                    </a>
+                </li>
+                {% if user.role == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link active px-4 py-2 rounded-3" href="{% url 'reports:users' %}">
+                        <i class="fas fa-users me-2"></i> User Accounts
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- User Performance Table Card -->
+<div class="card mb-4 border-0 shadow-sm animated" style="animation-delay: 0.2s; background: var(--bg-card); border-radius: var(--radius-md);">
+    <div class="card-header bg-transparent border-0 pt-3 pb-0">
+        <h5 class="mb-0 text-dark">
+            <i class="fas fa-users text-primary me-2"></i> User Spend & Engagement (Top Customers)
+        </h5>
+    </div>
+    <div class="card-body p-0 mt-3">
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>User Details</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Joined Date</th>
+                        <th>Total Orders</th>
+                        <th>Total Spent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>
+                            <div>
+                                <strong class="text-dark">{{ u.get_full_name|default:u.email }}</strong>
+                                <br>
+                                <small class="text-muted">{{ u.email }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border border-secondary border-opacity-10 px-3 py-1">
+                                {{ u.get_role_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {{ u.phone|default:"N/A" }}
+                        </td>
+                        <td>
+                            {% if u.is_active %}
+                                <span class="badge bg-success-subtle text-success px-3 py-1"><i class="fas fa-check-circle me-1"></i>Active</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger px-3 py-1"><i class="fas fa-times-circle me-1"></i>Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ u.date_joined|date:"M d, Y" }}
+                        </td>
+                        <td>
+                            <span class="badge bg-primary rounded-pill px-3">{{ u.total_orders }} orders</span>
+                        </td>
+                        <td>
+                            <strong class="text-success">${{ u.total_spent|default:"0"|floatformat:2 }}</strong>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fas fa-users fa-3x mb-3 text-muted opacity-50"></i>
+                            <p class="mb-0">No user accounts found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+    function exportReport(format) {
+        const params = new URLSearchParams();
+        params.set('type', 'users');
+        params.set('format', format);
+        window.location.href = `{% url 'reports:download' %}?${params.toString()}`;
+    }
+</script>
+{% endblock %}

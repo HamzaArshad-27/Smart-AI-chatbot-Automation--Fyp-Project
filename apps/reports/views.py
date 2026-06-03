@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
+from django.utils import timezone
 from django.http import HttpResponse
 from apps.orders.models import Order, OrderItem
-from apps.products.models import Product
+from apps.products.models import Product, Category
 from apps.accounts.models import User
 import csv
 import openpyxl
@@ -63,7 +64,7 @@ def products_report(request):
     
     # Product performance
     product_performance = products.annotate(
-        total_sold=Sum('order_items__quantity'),
+        sales_count=Sum('order_items__quantity'),
         total_revenue=Sum('order_items__total')
     ).order_by('-total_revenue')[:50]
     
@@ -89,32 +90,7 @@ def users_report(request):
     
     return render(request, 'reports/users.html', context)
 
-@login_required
-def download_report(request):
-    """Download report as CSV/Excel"""
-    report_type = request.GET.get('type', 'sales')
-    format_type = request.GET.get('format', 'csv')
-    
-    # Create response
-    if format_type == 'csv':
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{report_type}_report.csv"'
-        writer = csv.writer(response)
-        
-        # Write headers and data based on report type
-        if report_type == 'sales':
-            writer.writerow(['Date', 'Order Count', 'Revenue'])
-            # Add data rows...
-    else:
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename="{report_type}_report.xlsx"'
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = f"{report_type.capitalize()} Report"
-        # Add data...
-        wb.save(response)
-    
-    return response
+
 
 
 # Additional helper functions for data processing can be added here
@@ -235,6 +211,7 @@ def inventory_report(request):
     
     return render(request, 'reports/inventory.html', context)
 
+@login_required
 def download_report(request):
     """Enhanced download report with multiple formats"""
     report_type = request.GET.get('type', 'sales')
@@ -306,7 +283,7 @@ def get_sales_data(date_from=None, date_to=None):
     
     return data
 
-def get_products_data(request):
+def get_products_data():
     """Helper function to get products data for export"""
     products = Product.objects.filter(is_active=True)
     
@@ -326,7 +303,7 @@ def get_products_data(request):
     
     return data
 
-def get_users_data(request):
+def get_users_data():
     """Helper function to get users data for export"""
     users = User.objects.all()
     
