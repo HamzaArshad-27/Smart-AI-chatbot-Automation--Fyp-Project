@@ -473,19 +473,33 @@ def reset_password(request):
 @login_required
 def profile(request):
     """User profile view"""
+    company = getattr(request.user, 'company_profile', None)
+    
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
+        company_form = None
+        if company:
+            from apps.companies.forms import CompanyForm
+            company_form = CompanyForm(request.POST, request.FILES, instance=company)
+            
+        if form.is_valid() and (not company_form or company_form.is_valid()):
             form.save()
+            if company_form:
+                company_form.save()
             messages.success(request, '✅ Profile updated successfully!')
             return redirect('accounts:profile')
     else:
         form = UserProfileForm(instance=request.user)
+        company_form = None
+        if company:
+            from apps.companies.forms import CompanyForm
+            company_form = CompanyForm(instance=company)
     
     context = {
         'form': form,
+        'company_form': company_form,
         'profile_user': request.user,
-        'company': getattr(request.user, 'company_profile', None),
+        'company': company,
         'seller': getattr(request.user, 'seller_profile', None),
     }
     

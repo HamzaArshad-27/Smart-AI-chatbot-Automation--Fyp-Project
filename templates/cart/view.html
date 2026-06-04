@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block title %}Shopping Cart • Vendora{% endblock %}
 
@@ -444,7 +445,18 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td data-label="Price" class="price-text">${{ item.product.price|floatformat:2 }}</td>
+                                    <td data-label="Price" class="price-text">
+                                        {{ item.product.price|currency_format:request }}
+                                        {% if item.product.compare_price %}
+                                            <br>
+                                            <small class="text-muted text-decoration-line-through" style="font-size: 0.85rem; font-weight: normal;">
+                                                {{ item.product.compare_price|currency_format:request }}
+                                            </small>
+                                            <span class="badge bg-danger ms-1" style="font-size: 0.7rem; font-weight: 600;">
+                                                {{ item.product.discount_percentage }}% OFF
+                                            </span>
+                                        {% endif %}
+                                    </td>
                                     <td data-label="Quantity">
                                         <div class="quantity-control">
                                             <button class="quantity-btn-cart" onclick="updateQuantityAjax({{ item.id }}, -1, {{ item.product.stock_quantity }})">−</button>
@@ -453,7 +465,7 @@
                                         </div>
                                     </td>
                                     <td data-label="Subtotal" class="subtotal-text" id="subtotal-{{ item.id }}">
-                                        ${{ item.get_subtotal|floatformat:2 }}
+                                        {{ item.get_subtotal|currency_format:request }}
                                     </td>
                                     <td data-label="Remove">
                                         <button class="remove-item-btn" onclick="removeCartItemAjax({{ item.id }})" title="Remove item">
@@ -485,7 +497,7 @@
                         <!-- Subtotal -->
                         <div class="summary-row">
                             <span>Subtotal (<span id="summaryItemCount">{{ cart.get_total_items }}</span> items)</span>
-                            <span class="fw-bold text-dark" id="summarySubtotal">${{ cart.get_total|floatformat:2 }}</span>
+                            <span class="fw-bold text-dark" id="summarySubtotal" data-usd-val="{{ cart.get_total }}">{{ cart.get_total|currency_format:request }}</span>
                         </div>
                         
                         <!-- Shipping dynamic -->
@@ -503,7 +515,7 @@
                         <!-- Total amount -->
                         <div class="summary-total">
                             <span>Estimated Total</span>
-                            <span class="text-primary" id="summaryTotal">${{ cart.get_total|floatformat:2 }}</span>
+                            <span class="text-primary" id="summaryTotal">{{ cart.get_total|currency_format:request }}</span>
                         </div>
 
                         <!-- Promo Code section -->
@@ -615,11 +627,14 @@
         }
     }
 
+    const activeRate = parseFloat("{{ active_currency_rate }}");
+    const activeSymbol = "{{ active_currency_symbol }}";
+
     // Initialize calculations on DOM ready
     document.addEventListener("DOMContentLoaded", () => {
         {% if cart.items.all %}
-            const subtotalText = document.getElementById('summarySubtotal').innerText;
-            rawSubtotal = parseFloat(subtotalText.replace('$', ''));
+            const subtotalAttr = document.getElementById('summarySubtotal').getAttribute('data-usd-val') || '0';
+            rawSubtotal = parseFloat(subtotalAttr);
             recalculateSummary();
         {% endif %}
     });
@@ -639,10 +654,10 @@
             
             if (rawSubtotal < SHIPPING_THRESHOLD) {
                 shipping = SHIPPING_COST_FLAT;
-                const remaining = (SHIPPING_THRESHOLD - rawSubtotal).toFixed(2);
-                shippingGoalText.innerHTML = `<i class="fas fa-shipping-fast text-primary me-2"></i>Add <strong class="text-primary">$${remaining}</strong> more for <strong class="text-success">FREE shipping</strong>!`;
+                const remaining = ((SHIPPING_THRESHOLD - rawSubtotal) * activeRate).toFixed(2);
+                shippingGoalText.innerHTML = `<i class="fas fa-shipping-fast text-primary me-2"></i>Add <strong class="text-primary">${activeSymbol}${remaining}</strong> more for <strong class="text-success">FREE shipping</strong>!`;
                 progressBar.className = "free-shipping-bar";
-                document.getElementById('summaryShipping').innerText = `$${SHIPPING_COST_FLAT.toFixed(2)}`;
+                document.getElementById('summaryShipping').innerText = `${activeSymbol}${(SHIPPING_COST_FLAT * activeRate).toFixed(2)}`;
                 document.getElementById('summaryShipping').className = 'fw-bold text-dark';
             } else {
                 shipping = 0.0;
@@ -658,14 +673,16 @@
         if (appliedDiscountPercent > 0.0) {
             discount = rawSubtotal * appliedDiscountPercent;
             document.getElementById('summaryDiscountRow').classList.remove('d-none');
-            document.getElementById('summaryDiscount').innerText = `-$${discount.toFixed(2)}`;
+            document.getElementById('summaryDiscount').innerText = `-${activeSymbol}${(discount * activeRate).toFixed(2)}`;
         } else {
             document.getElementById('summaryDiscountRow').classList.add('d-none');
         }
 
         // Final total calculation
         const finalTotal = rawSubtotal + shipping - discount;
-        document.getElementById('summaryTotal').innerText = `$${finalTotal.toFixed(2)}`;
+        
+        document.getElementById('summarySubtotal').innerText = `${activeSymbol}${(rawSubtotal * activeRate).toFixed(2)}`;
+        document.getElementById('summaryTotal').innerText = `${activeSymbol}${(finalTotal * activeRate).toFixed(2)}`;
     }
 
     // AJAX quantity updates (without page reload)
@@ -709,12 +726,14 @@
                 // Update item subtotal in row
                 const itemSubtotalEl = document.getElementById(`subtotal-${itemId}`);
                 if (itemSubtotalEl) {
-                    itemSubtotalEl.innerText = `$${parseFloat(data.item_subtotal).toFixed(2)}`;
+                    const subVal = parseFloat(data.item_subtotal);
+                    itemSubtotalEl.innerText = `${activeSymbol}${(subVal * activeRate).toFixed(2)}`;
                 }
 
                 // Update summary calculations
                 rawSubtotal = parseFloat(data.cart_total);
-                document.getElementById('summarySubtotal').innerText = `$${rawSubtotal.toFixed(2)}`;
+                document.getElementById('summarySubtotal').setAttribute('data-usd-val', rawSubtotal);
+                document.getElementById('summarySubtotal').innerText = `${activeSymbol}${(rawSubtotal * activeRate).toFixed(2)}`;
                 document.getElementById('summaryItemCount').innerText = data.item_count;
 
                 // Sync Navbar badge

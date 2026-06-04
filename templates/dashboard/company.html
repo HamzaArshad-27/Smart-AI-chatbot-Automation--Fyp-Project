@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}Company Dashboard{% endblock %}
 
@@ -80,7 +81,7 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Total Revenue</span>
-                    <h3 class="stat-value">${{ total_revenue|floatformat:2 }}</h3>
+                    <h3 class="stat-value">{{ total_revenue|currency_format:request }}</h3>
                 </div>
             </div>
         </div>
@@ -151,7 +152,7 @@
                         </td>
                         <td>{{ order.items.count }} items</td>
                         <td>
-                            <strong class="text-primary">${{ order.total_amount }}</strong>
+                            <strong class="text-primary">{{ order.total_amount|order_currency_format:order }}</strong>
                             <br>
                             <small>{{ order.get_payment_method_display }}</small>
                         </td>

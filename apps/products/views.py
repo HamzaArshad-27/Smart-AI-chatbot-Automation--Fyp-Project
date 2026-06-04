@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -199,6 +200,10 @@ def product_create(request):
         messages.error(request, 'You do not have permission to add products')
         return redirect('dashboard:index')
     
+    company_currency = company.currency if company else 'USD'
+    from apps.core.currency import CURRENCY_SYMBOLS, convert_currency
+    company_currency_symbol = CURRENCY_SYMBOLS.get(company_currency, '$')
+    
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
@@ -207,6 +212,15 @@ def product_create(request):
                 product.company = company
                 product.seller = seller
                 product.slug = slugify(product.name)
+                
+                # Convert price fields from Company currency to USD!
+                if company_currency != 'USD':
+                    if product.price:
+                        product.price = convert_currency(product.price, 'USD', company_currency)
+                    if product.compare_price:
+                        product.compare_price = convert_currency(product.compare_price, 'USD', company_currency)
+                    if product.cost_per_item:
+                        product.cost_per_item = convert_currency(product.cost_per_item, 'USD', company_currency)
                 
                 # Ensure unique slug
                 original_slug = product.slug
@@ -243,6 +257,8 @@ def product_create(request):
         'form': form,
         'categories': categories,
         'is_edit': False,
+        'company_currency': company_currency,
+        'company_currency_symbol': company_currency_symbol,
     }
     return render(request, 'products/form.html', context)
 
@@ -258,20 +274,46 @@ def product_edit(request, product_id):
     elif request.user.role == 'seller' and product.seller != request.user.seller_profile:
         messages.error(request, 'You do not have permission to edit this product')
         return redirect('products:manage')
+        
+    company = product.company
+    company_currency = company.currency if company else 'USD'
+    from apps.core.currency import CURRENCY_SYMBOLS, convert_currency
+    company_currency_symbol = CURRENCY_SYMBOLS.get(company_currency, '$')
     
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product)
         if form.is_valid():
-            product = form.save()
+            product = form.save(commit=False)
+            
+            # Convert price fields from Company currency to USD!
+            if company_currency != 'USD':
+                if product.price:
+                    product.price = convert_currency(product.price, 'USD', company_currency)
+                if product.compare_price:
+                    product.compare_price = convert_currency(product.compare_price, 'USD', company_currency)
+                if product.cost_per_item:
+                    product.cost_per_item = convert_currency(product.cost_per_item, 'USD', company_currency)
+            
+            product.save()
             messages.success(request, f'Product "{product.name}" updated successfully!')
             return redirect('products:manage')
     else:
+        # Pre-convert prices from USD to company currency for editing form
+        if company_currency != 'USD':
+            if product.price:
+                product.price = convert_currency(product.price, company_currency, 'USD')
+            if product.compare_price:
+                product.compare_price = convert_currency(product.compare_price, company_currency, 'USD')
+            if product.cost_per_item:
+                product.cost_per_item = convert_currency(product.cost_per_item, company_currency, 'USD')
         form = ProductForm(instance=product)
     
     context = {
         'form': form,
         'product': product,
         'is_edit': True,
+        'company_currency': company_currency,
+        'company_currency_symbol': company_currency_symbol,
     }
     return render(request, 'products/form.html', context)
 

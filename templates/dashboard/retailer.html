@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}Retailer Dashboard{% endblock %}
 
@@ -42,7 +43,7 @@
                     <i class="fas fa-dollar-sign"></i>
                 </div>
                 <h6 class="card-title opacity-75 mb-2">Total Spent</h6>
-                <h2 class="mb-0">${{ total_spent|floatformat:2 }}</h2>
+                <h2 class="mb-0">{{ total_spent|currency_format:request }}</h2>
                 <div class="growth-indicator growth-up mt-2">
                     <i class="fas fa-chart-line"></i> All time
                 </div>
@@ -56,7 +57,7 @@
                     <i class="fas fa-receipt"></i>
                 </div>
                 <h6 class="card-title opacity-75 mb-2">Average Order Value</h6>
-                <h2 class="mb-0">${{ average_order_value|floatformat:2 }}</h2>
+                <h2 class="mb-0">{{ average_order_value|currency_format:request }}</h2>
                 <div class="growth-indicator mt-2">
                     <i class="fas fa-calculator"></i> Per order
                 </div>
@@ -151,7 +152,7 @@
                             <span class="badge bg-secondary">{{ order.items.count }} items</span>
                         </td>
                         <td>
-                            <strong class="text-primary">${{ order.total_amount }}</strong>
+                            <strong class="text-primary">{{ order.total_amount|order_currency_format:order }}</strong>
                         </td>
                         <td>
                             <span class="badge-status {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% elif order.status == 'pending' %}bg-warning{% elif order.status == 'shipped' %}bg-info{% else %}bg-primary{% endif %}">

@@ -1,11 +1,23 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}Sales Report{% endblock %}
 {% block mobile_dashboard_title %}Sales Report{% endblock %}
 
 {% block dashboard_content %}
 <!-- Reports Banner -->
+<style>
+    @keyframes livePulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .live-pulse-active {
+        background-color: #10b981 !important;
+        animation: livePulse 2s infinite;
+    }
+</style>
 <div class="welcome-banner animated mb-4" style="animation-delay: 0.1s;">
     <div class="row align-items-center">
         <div class="col-md-7">
@@ -15,7 +27,16 @@
             <p class="mb-0 opacity-75">Track sales revenue, product performance, and user accounts in real time.</p>
         </div>
         <div class="col-md-5 text-md-end mt-3 mt-md-0">
-            <div class="d-inline-flex gap-2">
+            <div class="d-inline-flex align-items-center gap-2 flex-wrap justify-content-md-end">
+                <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2" id="syncBtn" onclick="syncData()">
+                    <i class="fas fa-sync" id="syncIcon"></i> Sync
+                </button>
+                <div class="form-check form-switch text-white bg-dark bg-opacity-25 py-1.5 px-3 rounded-pill d-inline-flex align-items-center gap-2 border border-light border-opacity-10" style="margin-bottom: 0;">
+                    <input class="form-check-input ms-0 mt-0" type="checkbox" id="liveModeToggle" onchange="toggleLiveMode()">
+                    <label class="form-check-label text-white small fw-bold" for="liveModeToggle" style="cursor: pointer; user-select: none;">
+                        <span class="live-dot d-inline-block me-1 rounded-circle bg-secondary" style="width: 8px; height: 8px; transition: 0.3s; vertical-align: middle;"></span>Live
+                    </label>
+                </div>
                 <button class="btn btn-light btn-sm d-flex align-items-center gap-2" onclick="exportReport('csv')">
                     <i class="fas fa-file-csv"></i> Export CSV
                 </button>
@@ -74,11 +95,11 @@
         <div class="stat-card-compact h-100">
             <div class="stat-card-inner">
                 <div class="stat-icon-wrapper bg-success-subtle">
-                    <i class="fas fa-dollar-sign text-success"></i>
+                    <i class="fas fa-coins text-success"></i>
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Total Revenue</span>
-                    <h3 class="stat-value text-dark">${{ total_revenue|floatformat:2 }}</h3>
+                    <h3 class="stat-value text-dark">{{ total_revenue|currency_format:request }}</h3>
                     <small class="text-muted">Gross sales revenue</small>
                 </div>
             </div>
@@ -88,11 +109,11 @@
         <div class="stat-card-compact h-100">
             <div class="stat-card-inner">
                 <div class="stat-icon-wrapper bg-info-subtle">
-                    <i class="fas fa-receipt text-info"></i>
+                    <i class="fas fa-wallet text-info"></i>
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Average Order Value</span>
-                    <h3 class="stat-value text-dark">${{ average_order_value|floatformat:2 }}</h3>
+                    <h3 class="stat-value text-dark">{{ average_order_value|currency_format:request }}</h3>
                     <small class="text-muted">Value per purchase</small>
                 </div>
             </div>
@@ -179,10 +200,10 @@
                             <span class="badge bg-primary rounded-pill px-3">{{ day.count }} orders</span>
                         </td>
                         <td>
-                            <strong class="text-success">${{ day.total|floatformat:2 }}</strong>
+                            <strong class="text-success">{{ day.total|currency_format:request }}</strong>
                         </td>
                         <td>
-                            ${{ day.total|floatformat:2|default:"0" }}
+                            {{ day.average|currency_format:request }}
                         </td>
                     </tr>
                     {% empty %}
@@ -233,20 +254,22 @@
     let reportChart;
     let paymentChart;
     let statusChart;
+    let liveInterval = null;
+    window.activeCurrencySymbol = "{{ active_currency_symbol|default:'$' }}";
 
     document.addEventListener('DOMContentLoaded', function() {
         initRevenueChart();
         initPaymentChart();
         initStatusChart();
         setupQuickSelect();
+        
+        // Populate initial charts and stats from API
+        syncData(false);
     });
 
     function initRevenueChart() {
         const ctx = document.getElementById('revenueReportChart')?.getContext('2d');
         if (!ctx) return;
-
-        const dates = [{% for day in daily_sales %}'{{ day.day|date:"M d" }}',{% endfor %}];
-        const revenues = [{% for day in daily_sales %}{{ day.total|default:0 }},{% endfor %}];
 
         // Is dark mode?
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -260,10 +283,10 @@
         reportChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: dates,
+                labels: [],
                 datasets: [{
                     label: 'Revenue',
-                    data: revenues,
+                    data: [],
                     borderColor: '#4f46e5',
                     backgroundColor: gradient,
                     borderWidth: 3,
@@ -286,7 +309,7 @@
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return '$' + context.raw.toLocaleString(undefined, {minimumFractionDigits: 2});
+                                return (window.activeCurrencySymbol || '$') + ' ' + context.raw.toLocaleString(undefined, {minimumFractionDigits: 2});
                             }
                         }
                     }
@@ -297,7 +320,7 @@
                         grid: { color: gridColor },
                         ticks: {
                             color: labelColor,
-                            callback: value => '$' + value.toLocaleString()
+                            callback: value => (window.activeCurrencySymbol || '$') + ' ' + value.toLocaleString()
                         }
                     },
                     x: {
@@ -319,10 +342,10 @@
         paymentChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Credit Card', 'PayPal', 'Cash on Delivery', 'Bank Transfer'],
+                labels: ['Cash on Delivery', 'Credit/Debit Card', 'Bank Transfer', 'Mobile Payment'],
                 datasets: [{
-                    data: [45, 25, 20, 10],
-                    backgroundColor: ['#4f46e5', '#06b6d4', '#f59e0b', '#10b981'],
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#f59e0b', '#4f46e5', '#10b981', '#06b6d4'],
                     borderWidth: 0
                 }]
             },
@@ -357,7 +380,7 @@
                 labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
                 datasets: [{
                     label: 'Orders',
-                    data: [12, 8, 15, 45, 5],
+                    data: [0, 0, 0, 0, 0],
                     backgroundColor: 'rgba(79, 70, 229, 0.85)',
                     borderRadius: 6
                 }]
@@ -374,7 +397,7 @@
                         grid: { color: gridColor },
                         ticks: {
                             color: labelColor,
-                            stepSize: 10
+                            stepSize: 5
                         }
                     },
                     x: {
@@ -384,6 +407,144 @@
                 }
             }
         });
+    }
+
+    function syncData(showToastMsg = true) {
+        const syncIcon = document.getElementById('syncIcon');
+        if (syncIcon) syncIcon.classList.add('fa-spin');
+
+        const fromDate = document.querySelector('input[name="from"]')?.value || '';
+        const toDate = document.querySelector('input[name="to"]')?.value || '';
+        
+        fetch(`/reports/api/sales/?from=${fromDate}&to=${toDate}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    updateDashboardUI(data);
+                    if (showToastMsg) {
+                        showNotification('Data synced successfully', 'success');
+                    }
+                } else {
+                    if (showToastMsg) showNotification('Failed to sync data', 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (showToastMsg) showNotification('Network error during sync', 'danger');
+            })
+            .finally(() => {
+                if (syncIcon) syncIcon.classList.remove('fa-spin');
+            });
+    }
+
+    function updateDashboardUI(data) {
+        // 0. Update global currency symbol
+        window.activeCurrencySymbol = data.currency_symbol || '$';
+
+        // 1. Update stats elements
+        const statsVals = document.querySelectorAll('.stat-value');
+        if (statsVals.length >= 3) {
+            animateElementText(statsVals[0], data.summary.total_orders.toLocaleString());
+            animateElementText(statsVals[1], (data.currency_symbol || '$') + ' ' + data.summary.total_revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            animateElementText(statsVals[2], (data.currency_symbol || '$') + ' ' + data.summary.average_order_value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        }
+
+        // 2. Update Daily Revenue Chart
+        if (reportChart) {
+            const labels = data.daily_sales.map(d => {
+                const parts = d.day.split('-');
+                if (parts.length === 3) {
+                    const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
+                    return dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+                }
+                return d.day;
+            });
+            const values = data.daily_sales.map(d => d.total);
+            reportChart.data.labels = labels;
+            reportChart.data.datasets[0].data = values;
+            reportChart.update();
+        }
+
+        // 3. Update Payment Method Chart
+        if (paymentChart) {
+            const cod = data.method_distribution.cod || 0;
+            const card = data.method_distribution.card || 0;
+            const bank = data.method_distribution.bank || 0;
+            const mobile = data.method_distribution.mobile || 0;
+            paymentChart.data.datasets[0].data = [cod, card, bank, mobile];
+            paymentChart.update();
+        }
+
+        // 4. Update Status Distribution Chart
+        if (statusChart) {
+            const pending = data.status_distribution.pending || 0;
+            const approved = data.status_distribution.approved || 0;
+            const processing = data.status_distribution.processing || 0;
+            const shipped = data.status_distribution.shipped || 0;
+            const delivered = data.status_distribution.delivered || 0;
+            const cancelled = data.status_distribution.cancelled || 0;
+            
+            // Group approved/processing together or keep separate, let's keep separate: pending, approved+processing, shipped, delivered, cancelled
+            statusChart.data.datasets[0].data = [pending, approved + processing, shipped, delivered, cancelled];
+            statusChart.update();
+        }
+
+        // 5. Update Daily Sales Details Table
+        const tbody = document.querySelector('.premium-table tbody');
+        if (tbody) {
+            if (data.daily_sales.length > 0) {
+                let html = '';
+                data.daily_sales.forEach(day => {
+                    const parts = day.day.split('-');
+                    let formattedDate = day.day;
+                    let dayName = '';
+                    if (parts.length === 3) {
+                        const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
+                        formattedDate = dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+                        dayName = dateObj.toLocaleDateString('en-US', {weekday: 'long'});
+                    }
+                    const aov = day.count > 0 ? (day.total / day.count) : 0;
+                    html += `
+                        <tr>
+                            <td>
+                                <strong>${formattedDate}</strong>
+                                <br>
+                                <small class="text-muted">${dayName}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary rounded-pill px-3">${day.count} orders</span>
+                            </td>
+                            <td>
+                                <strong class="text-success">${data.currency_symbol || '$'} ${day.total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+                            </td>
+                            <td>
+                                ${data.currency_symbol || '$'} ${aov.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="fas fa-chart-line fa-3x mb-3 text-muted opacity-50"></i>
+                            <p class="mb-0">No sales data available for the selected period</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    }
+
+    function animateElementText(el, newText) {
+        if (el.innerText === newText) return;
+        el.style.transition = 'opacity 0.2s';
+        el.style.opacity = 0;
+        setTimeout(() => {
+            el.innerText = newText;
+            el.style.opacity = 1;
+        }, 200);
     }
 
     function changeChartType(type) {
@@ -458,6 +619,49 @@
 
     function formatDate(date) {
         return date.toISOString().split('T')[0];
+    }
+
+    function toggleLiveMode() {
+        const toggle = document.getElementById('liveModeToggle');
+        const dot = document.querySelector('.live-dot');
+        
+        if (toggle.checked) {
+            dot.classList.add('live-pulse-active');
+            dot.classList.remove('bg-secondary');
+            
+            // Poll every 5 seconds
+            liveInterval = setInterval(() => {
+                syncData(false);
+            }, 5000);
+            
+            showNotification('Live Mode enabled. Syncing in background.', 'success');
+        } else {
+            dot.classList.remove('live-pulse-active');
+            dot.classList.add('bg-secondary');
+            
+            if (liveInterval) {
+                clearInterval(liveInterval);
+                liveInterval = null;
+            }
+            showNotification('Live Mode disabled.', 'info');
+        }
+    }
+
+    function showNotification(message, type = 'success') {
+        const toastHtml = `
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+                <div class="bg-${type === 'success' ? 'success' : type === 'danger' ? 'danger' : 'info'} text-white p-3 rounded-4 shadow-lg d-flex align-items-center gap-3">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} fa-lg"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="btn-close btn-close-white"></button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        setTimeout(() => {
+            const toast = document.querySelector('.position-fixed.bottom-0.end-0');
+            if (toast) toast.remove();
+        }, 3000);
     }
 
     function exportReport(format) {

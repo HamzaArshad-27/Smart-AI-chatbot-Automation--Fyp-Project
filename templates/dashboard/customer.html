@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}Customer Dashboard{% endblock %}
 
@@ -41,11 +42,11 @@
                 <div class="stat-icon">
                     <i class="fas fa-dollar-sign"></i>
                 </div>
-                <h6 class="card-title opacity-75 mb-2">Total Spent</h6>
-                <h2 class="mb-0">${{ total_spent|floatformat:2 }}</h2>
-                <div class="growth-indicator growth-up mt-2">
-                    <i class="fas fa-trending-up"></i> Lifetime value
-                </div>
+                 <h6 class="card-title opacity-75 mb-2">Total Spent</h6>
+                 <h2 class="mb-0">{{ total_spent|currency_format:request }}</h2>
+                 <div class="growth-indicator growth-up mt-2">
+                     <i class="fas fa-trending-up"></i> Lifetime value
+                 </div>
             </div>
         </div>
     </div>
@@ -128,7 +129,7 @@
                                 <span class="badge bg-secondary">{{ order.items.count }} item(s)</span>
                             </td>
                             <td>
-                                <strong class="text-primary">${{ order.total_amount }}</strong>
+                                 <strong class="text-primary">{{ order.total_amount|order_currency_format:order }}</strong>
                             </td>
                             <td>
                                 <span class="badge-status {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% elif order.status == 'pending' %}bg-warning{% elif order.status == 'shipped' %}bg-info{% else %}bg-primary{% endif %}">
@@ -182,7 +183,7 @@
                                 </div>
                             {% endif %}
                             <small class="d-block text-dark fw-bold mb-1" style="height: 38px; overflow: hidden;">{{ product.name|truncatechars:35 }}</small>
-                            <small class="text-primary fw-bold fs-6">${{ product.price }}</small>
+                             <small class="text-primary fw-bold fs-6">{{ product.price|currency_format:request }}</small>
                         </div>
                     </a>
                 </div>

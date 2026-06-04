@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 from .models import Order, OrderItem
 from apps.cart.models import Cart
+from apps.core.currency import convert_currency, format_currency
 import uuid
 import csv
 import json
@@ -33,7 +34,7 @@ def checkout(request):
 @login_required
 @transaction.atomic
 def create_order(request):
-    """Create order from cart"""
+    """Create order from cart, splitting by product company if needed"""
     if request.method != 'POST':
         return redirect('cart:view')
     
@@ -43,82 +44,139 @@ def create_order(request):
         messages.warning(request, 'Your cart is empty!')
         return redirect('cart:view')
     
-    if cart.get_total_items() == 0:
+    cart_items = list(cart.items.all())
+    if not cart_items:
         messages.warning(request, 'Your cart is empty!')
         return redirect('cart:view')
     
-    # Create order
-    order_number = str(uuid.uuid4()).replace('-', '')[:12].upper()
-    
-    # Get the first product's company (for multi-vendor, you might need to split orders)
-    first_item = cart.items.first()
-    company = first_item.product.company if first_item else None
-    
-    subtotal = cart.get_total()
-    try:
-        shipping_cost = float(request.POST.get('shipping_cost', 0) or 0)
-    except (ValueError, TypeError):
-        shipping_cost = 0.0
-    try:
-        tax_amount = float(request.POST.get('tax_amount', 0) or 0)
-    except (ValueError, TypeError):
-        tax_amount = 0.0
-    try:
-        discount_amount = float(request.POST.get('discount_amount', 0) or 0)
-    except (ValueError, TypeError):
-        discount_amount = 0.0
-
-    total_amount = float(subtotal) + shipping_cost + tax_amount - discount_amount
-
-    order = Order.objects.create(
-        user=request.user,
-        company=company,
-        order_number=order_number,
-        subtotal=subtotal,
-        shipping_cost=shipping_cost,
-        tax_amount=tax_amount,
-        discount_amount=discount_amount,
-        total_amount=total_amount,
-        shipping_address=request.POST.get('shipping_address'),
-        shipping_city=request.POST.get('shipping_city'),
-        shipping_state=request.POST.get('shipping_state'),
-        shipping_country=request.POST.get('shipping_country'),
-        shipping_postal_code=request.POST.get('shipping_postal_code'),
-        shipping_phone=request.POST.get('shipping_phone'),
-        payment_method=request.POST.get('payment_method', 'cod'),
-        notes=request.POST.get('notes', '')
-    )
-    
-    # Create order items and update stock
-    for cart_item in cart.items.all():
-        # Check stock availability
+    # 1. Validate stock for all items upfront to ensure atomic success/failure
+    for cart_item in cart_items:
         if cart_item.quantity > cart_item.product.stock_quantity:
             messages.error(request, f'Insufficient stock for {cart_item.product.name}')
             return redirect('cart:view')
+            
+    # 2. Group items by product company
+    from collections import defaultdict
+    company_items = defaultdict(list)
+    for cart_item in cart_items:
+        company_items[cart_item.product.company].append(cart_item)
         
-        # Create order item
-        OrderItem.objects.create(
-            order=order,
-            product=cart_item.product,
-            seller=cart_item.product.seller,
-            quantity=cart_item.quantity,
-            price=cart_item.product.price
+    # Get total subtotal and total additional charges
+    total_subtotal = sum(item.get_subtotal() for item in cart_items)
+    
+    try:
+        shipping_cost_total = float(request.POST.get('shipping_cost', 0) or 0)
+    except (ValueError, TypeError):
+        shipping_cost_total = 0.0
+    try:
+        tax_amount_total = float(request.POST.get('tax_amount', 0) or 0)
+    except (ValueError, TypeError):
+        tax_amount_total = 0.0
+    try:
+        discount_amount_total = float(request.POST.get('discount_amount', 0) or 0)
+    except (ValueError, TypeError):
+        discount_amount_total = 0.0
+
+    payment_method = request.POST.get('payment_method', 'cod')
+    payment_status = 'pending'
+    payment_id = ''
+    payment_receipt = request.FILES.get('payment_receipt')
+    payment_receipt_uploaded_at = None
+
+    if payment_method in ['card', 'mobile']:
+        payment_status = 'paid'
+        payment_id = f"PAY-{uuid.uuid4().hex[:12].upper()}"
+        
+    if payment_receipt:
+        payment_receipt_uploaded_at = timezone.now()
+
+    created_orders = []
+    
+    # 3. Create a separate Order for each company
+    for company, items in company_items.items():
+        company_subtotal = sum(item.get_subtotal() for item in items)
+        
+        # Calculate prorated additional costs
+        if total_subtotal > 0:
+            ratio = float(company_subtotal) / float(total_subtotal)
+        else:
+            ratio = 1.0 / len(company_items)
+            
+        company_shipping = shipping_cost_total * ratio
+        company_tax = tax_amount_total * ratio
+        company_discount = discount_amount_total * ratio
+        company_total = float(company_subtotal) + company_shipping + company_tax - company_discount
+        
+        order_number = str(uuid.uuid4()).replace('-', '')[:12].upper()
+        
+        order = Order.objects.create(
+            user=request.user,
+            company=company,
+            order_number=order_number,
+            subtotal=company_subtotal,
+            shipping_cost=company_shipping,
+            tax_amount=company_tax,
+            discount_amount=company_discount,
+            total_amount=company_total,
+            shipping_address=request.POST.get('shipping_address'),
+            shipping_city=request.POST.get('shipping_city'),
+            shipping_state=request.POST.get('shipping_state'),
+            shipping_country=request.POST.get('shipping_country'),
+            shipping_postal_code=request.POST.get('shipping_postal_code'),
+            shipping_phone=request.POST.get('shipping_phone'),
+            payment_method=payment_method,
+            payment_status=payment_status,
+            payment_id=payment_id,
+            payment_receipt=payment_receipt,
+            payment_receipt_uploaded_at=payment_receipt_uploaded_at,
+            notes=request.POST.get('notes', ''),
+            currency=request.session.get('currency', 'USD')
         )
         
-        # Update stock
-        cart_item.product.update_stock(cart_item.quantity)
+        # Create order items and update stock
+        for cart_item in items:
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                seller=cart_item.product.seller,
+                quantity=cart_item.quantity,
+                price=cart_item.product.price
+            )
+            cart_item.product.update_stock(cart_item.quantity)
+            
+        created_orders.append(order)
     
     # Clear cart
     cart.clear()
     
-    messages.success(request, f'Order #{order_number} created successfully!')
-    return redirect('orders:success', order_id=order.id)
+    # Store placed order IDs in session to display them on the success page
+    request.session['placed_order_ids'] = [o.id for o in created_orders]
+    
+    if len(created_orders) > 1:
+        messages.success(request, f'Successfully placed {len(created_orders)} separate orders for each company!')
+    else:
+        messages.success(request, f'Order #{created_orders[0].order_number} created successfully!')
+        
+    return redirect('orders:success', order_id=created_orders[0].id)
 
 @login_required
 def order_success(request, order_id):
     """Order success page"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'orders/success.html', {'order': order})
+    placed_order_ids = request.session.pop('placed_order_ids', None)
+    if placed_order_ids:
+        orders = Order.objects.filter(id__in=placed_order_ids, user=request.user)
+    else:
+        orders = Order.objects.filter(id=order_id, user=request.user)
+        
+    if not orders.exists():
+        messages.warning(request, 'Order not found.')
+        return redirect('products:list')
+        
+    context = {
+        'orders': orders,
+        'order': orders.first()  # Keep for template backward compatibility
+    }
+    return render(request, 'orders/success.html', context)
 
 @login_required
 def order_detail(request, order_id):
@@ -390,16 +448,24 @@ def order_detail_api(request, order_id):
     """API returning order details for dynamic offcanvas drawer"""
     order = get_object_or_404(Order, id=order_id, company=request.user.company_profile)
     
+    currency_code = order.currency or 'USD'
+    
     items = []
     for item in order.items.all():
         image_url = ""
         if item.product.images.first():
             image_url = item.product.images.first().image.url
+            
+        converted_price = convert_currency(item.price, currency_code, 'USD')
+        formatted_price = format_currency(converted_price, currency_code)
+        converted_total = convert_currency(item.total, currency_code, 'USD')
+        formatted_total = format_currency(converted_total, currency_code)
+        
         items.append({
             'name': item.product.name,
             'quantity': item.quantity,
-            'price': str(item.price),
-            'total': str(item.total),
+            'price': formatted_price,
+            'total': formatted_total,
             'image_url': image_url
         })
         
@@ -413,11 +479,11 @@ def order_detail_api(request, order_id):
         'payment_status_display': order.get_payment_status_display(),
         'payment_method': order.payment_method,
         'payment_method_display': order.get_payment_method_display(),
-        'subtotal': str(order.subtotal),
-        'shipping_cost': str(order.shipping_cost),
-        'tax_amount': str(order.tax_amount),
-        'discount_amount': str(order.discount_amount),
-        'total_amount': str(order.total_amount),
+        'subtotal': format_currency(convert_currency(order.subtotal, currency_code, 'USD'), currency_code),
+        'shipping_cost': format_currency(convert_currency(order.shipping_cost, currency_code, 'USD'), currency_code),
+        'tax_amount': format_currency(convert_currency(order.tax_amount, currency_code, 'USD'), currency_code),
+        'discount_amount': format_currency(convert_currency(order.discount_amount, currency_code, 'USD'), currency_code),
+        'total_amount': format_currency(convert_currency(order.total_amount, currency_code, 'USD'), currency_code),
         'shipping_address': order.shipping_address,
         'shipping_city': order.shipping_city,
         'shipping_state': order.shipping_state,
@@ -428,6 +494,8 @@ def order_detail_api(request, order_id):
         'customer_email': order.user.email,
         'notes': order.notes,
         'tracking_number': order.tracking_number,
+        'payment_receipt_url': order.payment_receipt.url if order.payment_receipt else "",
+        'payment_receipt_uploaded_at': order.payment_receipt_uploaded_at.strftime('%Y-%m-%d %I:%M %p') if order.payment_receipt_uploaded_at else "",
         'items': items
     }
     return JsonResponse(data)
@@ -581,3 +649,57 @@ def export_orders_csv(request):
         ])
         
     return response
+
+@login_required
+def upload_receipt(request, order_id):
+    """Customer uploads a payment receipt for Bank/Mobile transfers"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    if request.method == 'POST' and 'payment_receipt' in request.FILES:
+        order.payment_receipt = request.FILES['payment_receipt']
+        order.payment_receipt_uploaded_at = timezone.now()
+        # Reset payment status to pending if it was failed
+        if order.payment_status == 'failed':
+            order.payment_status = 'pending'
+        order.save()
+        messages.success(request, 'Payment receipt uploaded successfully! We will review and verify your payment shortly.')
+    else:
+        messages.error(request, 'Failed to upload receipt. Please select a valid image file.')
+        
+    return redirect('orders:detail', order_id=order.id)
+
+@login_required
+def verify_payment(request, order_id):
+    """Merchant/Admin verifies a customer's payment status and receipt"""
+    # Verify authorization (Company profile user associated with order or Admin user)
+    if request.user.role == 'company':
+        order = get_object_or_404(Order, id=order_id, company=request.user.company_profile)
+    elif request.user.is_admin:
+        order = get_object_or_404(Order, id=order_id)
+    else:
+        messages.error(request, 'You do not have permission to verify payments.')
+        return redirect('dashboard:index')
+
+    if request.method == 'POST':
+        payment_status = request.POST.get('payment_status')
+        if payment_status in dict(Order.PAYMENT_STATUS):
+            order.payment_status = payment_status
+            
+            # If payment is cleared (paid) and order is pending, auto approve it
+            if payment_status == 'paid':
+                if not order.payment_id:
+                    order.payment_id = f"VERIFIED-{uuid.uuid4().hex[:12].upper()}"
+                if order.status == 'pending':
+                    order.status = 'approved'
+                    order.approved_at = timezone.now()
+                    
+            order.save()
+            messages.success(request, f'Payment status for Order #{order.order_number} has been updated to "{order.get_payment_status_display()}".')
+        else:
+            messages.error(request, 'Invalid payment status selected.')
+            
+    # Redirect back to referring page or company dashboard
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    return redirect('orders:company_orders')

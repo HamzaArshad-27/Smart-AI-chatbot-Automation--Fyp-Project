@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}Admin Dashboard{% endblock %}
 
@@ -83,7 +84,7 @@
 <div class="row mb-4 animated" style="animation-delay: 0.6s;">
     <div class="col-md-4 mb-3">
         <div class="stat-card-mini">
-            <div class="stat-number text-primary">${{ total_revenue|floatformat:2 }}</div>
+            <div class="stat-number text-primary">{{ total_revenue|currency_format:request }}</div>
             <div class="stat-label">Total Revenue</div>
             <div class="growth-indicator growth-up mt-2">
                 <i class="fas fa-chart-line"></i> +15.3% growth
@@ -156,7 +157,7 @@
                             {{ order.company.name|default:"N/A"|truncatechars:20 }}
                         </td>
                         <td>
-                            <strong class="text-primary">${{ order.total_amount }}</strong>
+                            <strong class="text-primary">{{ order.total_amount|order_currency_format:order }}</strong>
                             <br>
                             <small>{{ order.get_payment_method_display }}</small>
                         </td>
@@ -232,12 +233,12 @@
                                     </div>
                                 </td>
                                 <td>{{ product.company.name|default:"N/A"|truncatechars:20 }}</td>
-                                <td><strong>${{ product.price }}</strong></td>
+                                <td><strong>{{ product.price|currency_format:request }}</strong></td>
                                 <td>
                                     <span class="badge bg-primary">{{ product.items_sold|default:"0" }} units</span>
                                 </td>
                                 <td class="text-success">
-                                    <strong>${{ product.revenue|default:"0"|floatformat:2 }}</strong>
+                                    <strong>{{ product.revenue|currency_format:request }}</strong>
                                 </td>
                             </tr>
                             {% empty %}

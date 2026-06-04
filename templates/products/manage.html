@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block title %}Manage Products - Vendora{% endblock %}
 
@@ -186,9 +187,9 @@
                             <small class="text-muted">SKU: {{ product.sku|default:"N/A" }}</small>
                         </div>
                         <div class="product-price">
-                            ${{ product.price }}
+                            {{ product.price|currency_format:request }}
                             {% if product.compare_price %}
-                                <small class="text-muted text-decoration-line-through">${{ product.compare_price }}</small>
+                                <small class="text-muted text-decoration-line-through">{{ product.compare_price|currency_format:request }}</small>
                             {% endif %}
                         </div>
                         <div class="product-stats">
@@ -247,9 +248,9 @@
                                         </td>
                                         <td>{{ product.sku|default:"N/A" }}</td>
                                         <td>
-                                            <strong>${{ product.price }}</strong>
+                                            <strong>{{ product.price|currency_format:request }}</strong>
                                             {% if product.compare_price %}
-                                                <br><small class="text-muted text-decoration-line-through">${{ product.compare_price }}</small>
+                                                <br><small class="text-muted text-decoration-line-through">{{ product.compare_price|currency_format:request }}</small>
                                             {% endif %}
                                         </td>
                                         <td>

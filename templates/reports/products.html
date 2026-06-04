@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}Product Performance Report{% endblock %}
 {% block mobile_dashboard_title %}Product Performance{% endblock %}
@@ -99,7 +100,7 @@
                             </span>
                         </td>
                         <td>
-                            <strong>${{ product.price|floatformat:2 }}</strong>
+                            <strong>{{ product.price|currency_format:request }}</strong>
                         </td>
                         <td>
                             {% if product.stock_quantity <= 10 %}
@@ -112,7 +113,7 @@
                             <span class="badge bg-primary rounded-pill px-3">{{ product.sales_count|default:product.total_sold|default:"0" }} sold</span>
                         </td>
                         <td>
-                            <strong class="text-success">${{ product.total_revenue|default:"0"|floatformat:2 }}</strong>
+                            <strong class="text-success">{{ product.total_revenue|default:0|currency_format:request }}</strong>
                         </td>
                     </tr>
                     {% empty %}

@@ -11,6 +11,8 @@ urlpatterns = [
     path('cancel/<int:order_id>/', views.cancel_order, name='cancel'),
     path('<int:order_id>/', views.order_detail, name='detail'),
     path('track/<int:order_id>/', views.track_order, name='track'),
+    path('receipt/<int:order_id>/', views.upload_receipt, name='upload_receipt'),
+    path('verify-payment/<int:order_id>/', views.verify_payment, name='verify_payment'),
     
     # Company URLs
     path('company/orders/', views.company_orders, name='company_orders'),

@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}User Reports{% endblock %}
 {% block mobile_dashboard_title %}User Reports{% endblock %}
@@ -107,7 +108,7 @@
                             <span class="badge bg-primary rounded-pill px-3">{{ u.total_orders }} orders</span>
                         </td>
                         <td>
-                            <strong class="text-success">${{ u.total_spent|default:"0"|floatformat:2 }}</strong>
+                            <strong class="text-success">{{ u.total_spent|default:0|currency_format:request }}</strong>
                         </td>
                     </tr>
                     {% empty %}

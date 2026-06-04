@@ -60,19 +60,19 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="input-group-custom">
-                                            <span class="currency-symbol">$</span>
+                                            <span class="currency-symbol">{{ company_currency_symbol|default:"$" }}</span>
                                             {{ form.price|as_crispy_field }}
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="input-group-custom">
-                                            <span class="currency-symbol">$</span>
+                                            <span class="currency-symbol">{{ company_currency_symbol|default:"$" }}</span>
                                             {{ form.compare_price|as_crispy_field }}
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="input-group-custom">
-                                            <span class="currency-symbol">$</span>
+                                            <span class="currency-symbol">{{ company_currency_symbol|default:"$" }}</span>
                                             {{ form.cost_per_item|as_crispy_field }}
                                         </div>
                                     </div>

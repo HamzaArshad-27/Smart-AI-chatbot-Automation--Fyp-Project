@@ -99,3 +99,15 @@ def terms(request):
 
 def privacy(request):
     return render(request, 'core/privacy.html')
+
+def set_currency(request):
+    """Set active currency in user session"""
+    from django.shortcuts import redirect
+    currency = request.GET.get('currency', 'USD')
+    from apps.core.currency import CURRENCY_RATES
+    if currency in CURRENCY_RATES:
+        request.session['currency'] = currency
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    return redirect('core:home')

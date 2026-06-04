@@ -29,6 +29,16 @@ class ProductForm(forms.ModelForm):
             'is_digital': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        price = cleaned_data.get('price')
+        compare_price = cleaned_data.get('compare_price')
+        
+        if compare_price and price and compare_price <= price:
+            self.add_error('compare_price', 'Compare price (original price) must be greater than the sale price to apply a valid discount.')
+            
+        return cleaned_data
+
 class ProductImageForm(forms.ModelForm):
     class Meta:
         model = ProductImage

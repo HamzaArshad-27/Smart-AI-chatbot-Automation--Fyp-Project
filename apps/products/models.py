@@ -87,6 +87,12 @@ class Product(models.Model):
             return round(((self.compare_price - self.price) / self.compare_price) * 100)
         return 0
     
+    @property
+    def discount_savings(self):
+        if self.compare_price and self.compare_price > self.price:
+            return self.compare_price - self.price
+        return 0
+    
     def update_stock(self, quantity):
         self.stock_quantity -= quantity
         self.total_sold += quantity

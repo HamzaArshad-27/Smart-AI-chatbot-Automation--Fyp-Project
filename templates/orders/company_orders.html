@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}Order Management - Vendora{% endblock %}
 {% block breadcrumb_active %}Order Management{% endblock %}
@@ -249,7 +250,7 @@
                             </div>
                         </td>
                         <td onclick="openOrderDrawer({{ order.id }})">
-                            <strong class="text-primary">${{ order.total_amount }}</strong>
+                            <strong class="text-primary">{{ order.total_amount|order_currency_format:order }}</strong>
                             <div style="font-size: 0.72rem;">
                                 <span class="badge bg-{% if order.payment_status == 'paid' %}success{% else %}warning{% endif %}" id="payment-badge-{{ order.id }}">
                                     {{ order.get_payment_status_display }}
@@ -668,9 +669,9 @@
                         <img src="${item.image_url || '/static/images/placeholder.png'}" style="width: 45px; height: 45px; object-fit: cover; border-radius: var(--radius-xs); border: 1px solid var(--border-light);" onerror="this.src='/static/images/placeholder.png'">
                         <div class="flex-grow-1">
                             <div class="fw-bold text-dark" style="font-size: 0.88rem;">${item.name}</div>
-                            <small class="text-muted">$${item.price} x ${item.quantity}</small>
+                            <small class="text-muted">${item.price} x ${item.quantity}</small>
                         </div>
-                        <div class="fw-bold text-dark">$${item.total}</div>
+                        <div class="fw-bold text-dark">${item.total}</div>
                     </div>
                 `;
             });
@@ -685,6 +686,50 @@
                 actionBtnHtml = `<button onclick="promptShipOrder(${order.id})" class="btn btn-info text-white w-100 mb-2"><i class="fas fa-truck me-2"></i>Mark Shipped</button>`;
             } else if (order.status === 'shipped') {
                 actionBtnHtml = `<button onclick="triggerQuickAction(${order.id}, 'deliver')" class="btn btn-success w-100 mb-2"><i class="fas fa-check-circle me-2"></i>Complete Delivery</button>`;
+            }
+
+            // Payment Receipt/Verification HTML
+            let receiptHtml = '';
+            if (order.payment_method === 'bank' || order.payment_method === 'mobile') {
+                receiptHtml = `
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">Payment Verification</h6>
+                    <div class="card border-0 bg-light p-3 rounded-4">
+                        ${order.payment_receipt_url ? `
+                        <div class="text-center mb-3">
+                            <label class="d-block text-start text-dark fw-bold mb-2" style="font-size: 0.8rem;">Uploaded Receipt Image</label>
+                            <a href="${order.payment_receipt_url}" target="_blank" class="d-inline-block position-relative rounded overflow-hidden border border-secondary border-opacity-10" style="max-width: 100%; height: 150px;">
+                                <img src="${order.payment_receipt_url}" style="max-height: 100%; object-fit: contain;" alt="Payment Receipt">
+                                <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-70 text-white text-center py-1" style="font-size: 0.7rem;">
+                                    <i class="fas fa-search-plus me-1"></i> View Full Image
+                                </div>
+                            </a>
+                            <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">Uploaded: ${order.payment_receipt_uploaded_at}</small>
+                        </div>
+                        ` : `
+                        <div class="alert alert-warning py-2 px-3 rounded-3 small mb-3">
+                            <i class="fas fa-exclamation-triangle me-1"></i> No payment receipt uploaded yet.
+                        </div>
+                        `}
+                        
+                        <form method="post" action="/orders/verify-payment/${order.id}/" class="mt-2">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+                            <div class="mb-3">
+                                <label class="small text-muted mb-1">Verify Clearance Status</label>
+                                <select name="payment_status" class="form-select form-select-sm">
+                                    <option value="pending" ${order.payment_status === 'pending' ? 'selected' : ''}>Pending Verification</option>
+                                    <option value="partial" ${order.payment_status === 'partial' ? 'selected' : ''}>Partially Paid</option>
+                                    <option value="paid" ${order.payment_status === 'paid' ? 'selected' : ''}>Fully Paid</option>
+                                    <option value="failed" ${order.payment_status === 'failed' ? 'selected' : ''}>Failed / Invalid Receipt</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill py-2 fw-semibold">
+                                <i class="fas fa-check-double me-1"></i> Apply Status
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                `;
             }
 
             drawerBody.innerHTML = `
@@ -717,6 +762,8 @@
                     </div>
                 </div>
 
+                ${receiptHtml}
+
                 <div class="mb-4">
                     <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">Shipping Address</h6>
                     <p class="text-dark bg-light p-3 rounded-4" style="font-size: 0.85rem; line-height: 1.5;">
@@ -736,29 +783,29 @@
                     <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">Billing Summary</h6>
                     <div class="d-flex justify-content-between mb-2 text-muted" style="font-size: 0.85rem;">
                         <span>Subtotal</span>
-                        <span>$${order.subtotal}</span>
+                        <span>${order.subtotal}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2 text-muted" style="font-size: 0.85rem;">
                         <span>Shipping Cost</span>
-                        <span>$${order.shipping_cost}</span>
+                        <span>${order.shipping_cost}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2 text-muted" style="font-size: 0.85rem;">
                         <span>Tax</span>
-                        <span>$${order.tax_amount}</span>
+                        <span>${order.tax_amount}</span>
                     </div>
                     ${parseFloat(order.discount_amount) > 0 ? `
                     <div class="d-flex justify-content-between mb-2 text-success" style="font-size: 0.85rem;">
                         <span>Discount</span>
-                        <span>-$${order.discount_amount}</span>
+                        <span>-${order.discount_amount}</span>
                     </div>` : ''}
                     <hr class="my-2" style="border-style: dashed;">
                     <div class="d-flex justify-content-between fw-bold text-dark">
                         <span>Total Amount</span>
-                        <span class="text-primary">$${order.total_amount}</span>
+                        <span class="text-primary">${order.total_amount}</span>
                     </div>
                     <div class="d-flex justify-content-between mt-3 text-muted align-items-center" style="font-size: 0.82rem;">
                         <span>Payment Method: <strong class="text-dark">${order.payment_method_display}</strong></span>
-                        <span class="badge bg-${order.payment_status === 'paid' ? 'success' : 'warning'}">${order.payment_status_display}</span>
+                        <span class="badge bg-${order.payment_status === 'paid' ? 'success' : order.payment_status === 'partial' ? 'info' : 'warning'}">${order.payment_status_display}</span>
                     </div>
                 </div>
 

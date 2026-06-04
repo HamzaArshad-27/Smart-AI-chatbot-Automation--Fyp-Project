@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block title %}Seller Orders - Vendora{% endblock %}
 
@@ -469,8 +470,8 @@
                             <span class="badge bg-secondary px-3 py-2">{{ item.quantity }}</span>
                         </td>
                         <td>
-                            <div class="fw-bold text-primary">${{ item.total }}</div>
-                            <small class="text-muted">${{ item.price }} each</small>
+                            <div class="fw-bold text-primary">{{ item.total|order_currency_format:item.order }}</div>
+                            <small class="text-muted">{{ item.price|order_currency_format:item.order }} each</small>
                         </td>
                         <td>
                             <span class="badge-status status-{{ item.status }}">
