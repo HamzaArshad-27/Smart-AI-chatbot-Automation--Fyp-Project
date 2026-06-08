@@ -144,13 +144,15 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                {% if item.product.images.first %}
-                                    <img src="{{ item.product.images.first.image.url }}" width="40" height="40" class="rounded" alt="{{ item.product.name }}">
+                                {% with first_image=item.product.images.all.0 %}
+                                {% if first_image %}
+                                    <img src="{{ first_image.image.url }}" width="40" height="40" class="rounded" alt="{{ item.product.name }}">
                                 {% else %}
                                     <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                         <i class="fas fa-box text-muted"></i>
                                     </div>
                                 {% endif %}
+                                {% endwith %}
                                 <div>
                                     <div class="fw-bold text-dark">{{ item.product.name|truncatechars:30 }}</div>
                                     <small class="text-muted">SKU: {{ item.product.sku|default:"N/A" }}</small>
@@ -218,13 +220,15 @@
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                {% if product.images.first %}
-                                    <img src="{{ product.images.first.image.url }}" width="40" height="40" class="rounded" alt="{{ product.name }}">
+                                {% with first_image=product.images.all.0 %}
+                                {% if first_image %}
+                                    <img src="{{ first_image.image.url }}" width="40" height="40" class="rounded" alt="{{ product.name }}">
                                 {% else %}
                                     <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                         <i class="fas fa-box text-muted"></i>
                                     </div>
                                 {% endif %}
+                                {% endwith %}
                                 <div>
                                     <div class="fw-bold text-dark">{{ product.name|truncatechars:40 }}</div>
                                     <small class="text-muted">{{ product.category.name|default:"Uncategorized" }}</small>

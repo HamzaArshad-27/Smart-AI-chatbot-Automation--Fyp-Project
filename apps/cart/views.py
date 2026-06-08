@@ -11,7 +11,10 @@ from .models import Cart, CartItem, Product
 @login_required
 def cart_view(request):
     """Display shopping cart"""
-    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart, created = Cart.objects.prefetch_related(
+        'items__product__images',
+        'items__product__company'
+    ).get_or_create(user=request.user)
     context = {
         'cart': cart,
     }

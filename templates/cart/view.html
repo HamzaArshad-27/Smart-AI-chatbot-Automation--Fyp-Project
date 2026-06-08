@@ -426,13 +426,15 @@
                                 <tr id="cart-item-{{ item.id }}" data-item-id="{{ item.id }}" data-price="{{ item.product.price }}">
                                     <td data-label="Product" class="product-info-cell">
                                         <div class="d-flex align-items-center gap-3">
-                                            {% if item.product.images.first %}
-                                                <img src="{{ item.product.images.first.image.url }}" class="product-img-cart" alt="{{ item.product.name }}">
+                                            {% with first_image=item.product.images.all.0 %}
+                                            {% if first_image %}
+                                                <img src="{{ first_image.image.url }}" class="product-img-cart" alt="{{ item.product.name }}">
                                             {% else %}
                                                 <div class="product-img-cart d-flex align-items-center justify-content-center bg-light">
                                                     <i class="fas fa-box fa-lg text-muted"></i>
                                                 </div>
                                             {% endif %}
+                                            {% endwith %}
                                             <div>
                                                 <a href="{% url 'products:detail' item.product.slug %}" class="product-name-cart fw-bold">
                                                     {{ item.product.name|truncatechars:40 }}

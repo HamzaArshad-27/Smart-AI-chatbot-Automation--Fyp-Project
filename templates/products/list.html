@@ -161,11 +161,13 @@
                         <div class="col-sm-6 col-xl-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'50' }}" data-aos-once="true">
                             <div class="product-card-modern">
                                 <div class="position-relative">
-                                    {% if product.images.first %}
-                                        <img src="{{ product.images.first.image.url }}" class="product-img-modern" alt="{{ product.name }}" loading="lazy" decoding="async">
+                                    {% with first_image=product.images.all.0 %}
+                                    {% if first_image %}
+                                        <img src="{{ first_image.image.url }}" class="product-img-modern" alt="{{ product.name }}" loading="lazy" decoding="async">
                                     {% else %}
                                         <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop" class="product-img-modern" alt="Product placeholder" loading="lazy" decoding="async">
                                     {% endif %}
+                                    {% endwith %}
                                     {% if product.compare_price %}
                                         <span class="product-badge-custom bg-danger" style="background: linear-gradient(135deg, #ef4444, #dc2626) !important;">
                                             <i class="fas fa-percentage me-1"></i> {{ product.discount_percentage }}% OFF

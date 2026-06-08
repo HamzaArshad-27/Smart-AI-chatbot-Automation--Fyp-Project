@@ -6,7 +6,7 @@
         <div class="product-card-compact">
             <a href="{% url 'products:detail' product.slug %}" class="text-decoration-none text-dark d-block">
                 <div class="product-img-compact">
-                    {% with first_image=product.images.first %}
+                    {% with first_image=product.images.all.0 %}
                         {% if first_image %}
                             <img src="{{ first_image.image.url }}" alt="{{ product.name }}" loading="lazy">
                         {% else %}

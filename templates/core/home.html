@@ -461,20 +461,40 @@
         </div>
 
         <!-- Tab Panels -->
-        <div class="tab-panel active" id="panel-featured">
+        <div class="tab-panel active" id="panel-featured" data-loaded="true">
             {% include 'core/includes/product_grid.html' with products=featured_products %}
         </div>
-        <div class="tab-panel" id="panel-new" style="display:none;">
-            {% include 'core/includes/product_grid.html' with products=new_arrivals %}
+        <div class="tab-panel" id="panel-new" style="display:none;" data-loaded="false">
+            <div class="d-flex justify-content-center py-5 loading-spinner-tab">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="row g-3 products-container"></div>
         </div>
-        <div class="tab-panel" id="panel-rated" style="display:none;">
-            {% include 'core/includes/product_grid.html' with products=top_rated %}
+        <div class="tab-panel" id="panel-rated" style="display:none;" data-loaded="false">
+            <div class="d-flex justify-content-center py-5 loading-spinner-tab">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="row g-3 products-container"></div>
         </div>
-        <div class="tab-panel" id="panel-reviewed" style="display:none;">
-            {% include 'core/includes/product_grid.html' with products=most_reviewed %}
+        <div class="tab-panel" id="panel-reviewed" style="display:none;" data-loaded="false">
+            <div class="d-flex justify-content-center py-5 loading-spinner-tab">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="row g-3 products-container"></div>
         </div>
-        <div class="tab-panel" id="panel-selling" style="display:none;">
-            {% include 'core/includes/product_grid.html' with products=best_selling %}
+        <div class="tab-panel" id="panel-selling" style="display:none;" data-loaded="false">
+            <div class="d-flex justify-content-center py-5 loading-spinner-tab">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="row g-3 products-container"></div>
         </div>
     </div>
 
@@ -505,50 +525,177 @@
     // Init AOS
     AOS.init({ duration: 800, once: true, offset: 60 });
 
+    const detailUrlPattern = "{% url 'products:detail' 'SLUG_PLACEHOLDER' %}";
+    const activeCurrencySymbol = "{{ active_currency_symbol|default:'$' }}";
+    const activeCurrencyRate = {{ active_currency_rate|default:1.0 }};
+
+    function renderStars(rating) {
+        let starsHtml = '';
+        const floorRating = Math.floor(rating);
+        for (let i = 1; i <= 5; i++) {
+            if (i <= floorRating) {
+                starsHtml += '<i class="fas fa-star text-warning"></i>';
+            } else if (i - 0.5 <= rating) {
+                starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+            } else {
+                starsHtml += '<i class="far fa-star text-muted"></i>';
+            }
+        }
+        return starsHtml;
+    }
+
+    function formatCurrency(price) {
+        return activeCurrencySymbol + (price * activeCurrencyRate).toFixed(2);
+    }
+
+    function renderProductCard(product) {
+        const detailUrl = detailUrlPattern.replace('SLUG_PLACEHOLDER', product.slug);
+        const imageUrl = product.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop';
+        const discountBadge = product.discount_percentage ? `<span class="discount-badge">-${product.discount_percentage}%</span>` : '';
+        const comparePriceHtml = product.compare_price ? `<span class="product-old-price-compact">${formatCurrency(product.compare_price)}</span>` : '';
+        
+        return `
+            <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up">
+                <div class="product-card-compact">
+                    <a href="${detailUrl}" class="text-decoration-none text-dark d-block">
+                        <div class="product-img-compact">
+                            <img src="${imageUrl}" alt="${product.name}" loading="lazy">
+                            ${discountBadge}
+                        </div>
+                    </a>
+                    <div class="product-info-compact">
+                        <a href="${detailUrl}" class="text-decoration-none text-dark d-block">
+                            <div class="product-title-compact" title="${product.name}">${product.name}</div>
+                        </a>
+                        <div class="product-rating-compact">
+                            ${renderStars(product.average_rating)}
+                            <span>(${product.total_reviews})</span>
+                        </div>
+                        <div class="product-price-compact">
+                            ${formatCurrency(product.price)}
+                            ${comparePriceHtml}
+                        </div>
+                        <button class="btn btn-primary btn-sm add-cart-btn add-to-cart" data-product-id="${product.id}">
+                            <i class="fas fa-shopping-cart me-1"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    async function loadTabProducts(tabName, panelEl) {
+        const spinner = panelEl.querySelector('.loading-spinner-tab');
+        const container = panelEl.querySelector('.products-container');
+        
+        try {
+            const response = await fetch(`/api/product/?tab=${tabName}`);
+            if (!response.ok) throw new Error('Failed to fetch');
+            const data = await response.json();
+            
+            if (data.products && data.products.length > 0) {
+                let html = '';
+                data.products.slice(0, 8).forEach(product => {
+                    html += renderProductCard(product);
+                });
+                container.innerHTML = html;
+                // Re-init AOS for newly added elements
+                if (typeof AOS !== 'undefined') {
+                    AOS.refresh();
+                }
+            } else {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-4">
+                        <p class="text-muted mb-0">No products found in this category.</p>
+                    </div>
+                `;
+            }
+            panelEl.dataset.loaded = 'true';
+        } catch (error) {
+            console.error('Error loading tab products:', error);
+            container.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <p class="text-danger mb-0">Error loading products. Please try again.</p>
+                </div>
+            `;
+        } finally {
+            if (spinner) spinner.style.display = 'none';
+        }
+    }
+
     // Tab Switching
     document.querySelectorAll('#sectionTabs .section-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('#sectionTabs .section-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+            
             this.classList.add('active');
-            document.getElementById('panel-' + this.dataset.target).style.display = 'block';
+            const targetId = 'panel-' + this.dataset.target;
+            const targetPanel = document.getElementById(targetId);
+            
+            if (targetPanel) {
+                targetPanel.style.display = 'block';
+                if (targetPanel.dataset.loaded === 'false') {
+                    loadTabProducts(this.dataset.target, targetPanel);
+                }
+            }
         });
     });
 
-    // Add to Cart
-    document.querySelectorAll('.add-to-cart').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const isAuth = {{ user.is_authenticated|yesno:"true,false" }};
-            if (!isAuth) {
-                showToast('Please login to add items to cart', 'warning');
-                setTimeout(() => window.location.href = "{% url 'accounts:login' %}?next={{ request.path }}", 1500);
-                return;
-            }
-            const productId = this.dataset.productId;
-            const orig = this.innerHTML;
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
-            try {
-                const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1];
-                const res = await fetch('/cart/add/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-                    body: JSON.stringify({ product_id: productId, quantity: 1 })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    this.innerHTML = '<i class="fas fa-check"></i> Added!';
-                    this.classList.add('btn-success');
-                    showToast('Added to cart!', 'success');
-                } else {
-                    throw new Error(data.error);
+    // Add to Cart with Event Delegation
+    document.addEventListener('click', async function(e) {
+        const btn = e.target.closest('.add-to-cart');
+        if (!btn) return;
+        
+        const isAuth = {{ user.is_authenticated|yesno:"true,false" }};
+        if (!isAuth) {
+            showToast('Please login to add items to cart', 'warning');
+            setTimeout(() => window.location.href = "{% url 'accounts:login' %}?next={{ request.path }}", 1500);
+            return;
+        }
+        
+        const productId = btn.dataset.productId;
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
+        
+        try {
+            const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1];
+            const res = await fetch('/cart/add/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({ product_id: productId, quantity: 1 })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                btn.innerHTML = '<i class="fas fa-check"></i> Added!';
+                btn.classList.add('btn-success');
+                showToast('Added to cart!', 'success');
+                
+                // Update cart count badge
+                let badge = document.querySelector('.cart-badge-new');
+                if (data.cart_count > 0) {
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'cart-badge-new';
+                        document.querySelector('.cart-icon-wrapper')?.appendChild(badge);
+                    }
+                    badge.textContent = data.cart_count;
                 }
-            } catch(e) {
-                this.innerHTML = '<i class="fas fa-times"></i> Error';
-                showToast(e.message, 'error');
+            } else {
+                throw new Error(data.error);
             }
-            setTimeout(() => { this.innerHTML = orig; this.classList.remove('btn-success'); this.disabled = false; }, 2000);
-        });
+        } catch(e) {
+            btn.innerHTML = '<i class="fas fa-times"></i> Error';
+            showToast(e.message || 'Error adding to cart', 'error');
+        }
+        
+        setTimeout(() => { 
+            btn.innerHTML = orig; 
+            btn.classList.remove('btn-success'); 
+            btn.disabled = false; 
+        }, 2000);
     });
 
     function showToast(msg, type) {
@@ -559,7 +706,12 @@
         toast.style.borderLeftColor = colors[type];
         toast.innerHTML = `<i class="fas ${icons[type]} me-2" style="color:${colors[type]}"></i>${msg}`;
         document.getElementById('toastContainer').appendChild(toast);
-        setTimeout(() => { toast.style.opacity='0'; toast.style.transform='translateX(100%)'; toast.style.transition='all 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+        setTimeout(() => { 
+            toast.style.opacity='0'; 
+            toast.style.transform='translateX(100%)'; 
+            toast.style.transition='all 0.3s'; 
+            setTimeout(() => toast.remove(), 300); 
+        }, 3000);
     }
 </script>
 {% endblock %}

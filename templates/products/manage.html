@@ -142,11 +142,13 @@
                 {% for product in products %}
                 <div class="product-card" data-product-id="{{ product.id }}" data-product-name="{{ product.name|lower }}" data-category="{{ product.category.id }}" data-status="{% if product.is_active %}active{% else %}inactive{% endif %}" data-stock="{{ product.stock_quantity }}" data-featured="{% if product.is_featured %}true{% else %}false{% endif %}">
                     <div class="product-image">
-                        {% if product.images.first %}
-                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                        {% with first_image=product.images.all.0 %}
+                        {% if first_image %}
+                            <img src="{{ first_image.image.url }}" alt="{{ product.name }}">
                         {% else %}
                             <img src="https://via.placeholder.com/300x200?text=No+Image" alt="{{ product.name }}">
                         {% endif %}
+                        {% endwith %}
                         <div class="product-badges">
                             {% if not product.is_active %}
                                 <span class="badge bg-danger">Inactive</span>
@@ -236,11 +238,13 @@
                                             <input type="checkbox" class="product-checkbox-list" value="{{ product.id }}" onchange="updateBulkActionsList()">
                                         </td>
                                         <td>
-                                            {% if product.images.first %}
-                                                <img src="{{ product.images.first.image.url }}" width="50" height="50" style="object-fit: cover; border-radius: 8px;">
+                                            {% with first_image=product.images.all.0 %}
+                                            {% if first_image %}
+                                                <img src="{{ first_image.image.url }}" width="50" height="50" style="object-fit: cover; border-radius: 8px;">
                                             {% else %}
                                                 <i class="fas fa-image fa-2x text-muted"></i>
                                             {% endif %}
+                                            {% endwith %}
                                         </td>
                                         <td>
                                             <strong>{{ product.name }}</strong><br>

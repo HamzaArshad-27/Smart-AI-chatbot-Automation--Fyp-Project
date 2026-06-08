@@ -447,13 +447,15 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                {% if item.product.images.first %}
-                                    <img src="{{ item.product.images.first.image.url }}" class="product-image-mini" alt="{{ item.product.name }}">
+                                {% with first_image=item.product.images.all.0 %}
+                                {% if first_image %}
+                                    <img src="{{ first_image.image.url }}" class="product-image-mini" alt="{{ item.product.name }}">
                                 {% else %}
                                     <div class="product-image-mini bg-light d-flex align-items-center justify-content-center">
                                         <i class="fas fa-box text-muted"></i>
                                     </div>
                                 {% endif %}
+                                {% endwith %}
                                 <div>
                                     <div class="fw-bold">{{ item.product.name|truncatechars:35 }}</div>
                                     <small class="text-muted">SKU: {{ item.product.sku|default:"N/A" }}</small>

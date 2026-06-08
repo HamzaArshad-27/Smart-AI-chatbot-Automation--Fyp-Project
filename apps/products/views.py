@@ -11,7 +11,7 @@ from apps.ai_assistant.models import UserProductInterest
 
 def product_list(request, category_slug=None):
     """Display list of products with filtering and search"""
-    products = Product.objects.filter(is_active=True)
+    products = Product.objects.filter(is_active=True).select_related('company').prefetch_related('images')
     
     # Product type filter
     product_type = request.GET.get('type')
@@ -158,9 +158,9 @@ def add_review(request, slug):
 def product_manage(request):
     """Manage products - for company and seller"""
     if request.user.role == 'company':
-        products = Product.objects.filter(company=request.user.company_profile)
+        products = Product.objects.filter(company=request.user.company_profile).select_related('category').prefetch_related('images')
     elif request.user.role == 'seller':
-        products = Product.objects.filter(seller=request.user.seller_profile)
+        products = Product.objects.filter(seller=request.user.seller_profile).select_related('category').prefetch_related('images')
     else:
         messages.error(request, 'You do not have permission to manage products')
         return redirect('dashboard:index')
@@ -451,7 +451,7 @@ def category_delete(request, category_id):
 
 def api_products(request):
     """API endpoint for products with filtering"""
-    products = Product.objects.filter(is_active=True)
+    products = Product.objects.filter(is_active=True).prefetch_related('images')
     
     # Product type filter
     product_type = request.GET.get('type')
@@ -494,6 +494,9 @@ def api_products(request):
     # Prepare data
     products_data = []
     for product in products:
+        images = list(product.images.all())
+        image_url = images[0].image.url if images else None
+        
         products_data.append({
             'id': product.id,
             'name': product.name,
@@ -503,7 +506,7 @@ def api_products(request):
             'discount_percentage': product.discount_percentage,
             'average_rating': float(product.average_rating) if product.average_rating else 0,
             'total_reviews': product.total_reviews,
-            'image': product.images.first().image.url if product.images.first() else None,
+            'image': image_url,
         })
     
     return JsonResponse({

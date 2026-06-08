@@ -414,13 +414,15 @@
                             <tr>
                                 <td>
                                     <div class="product-cell">
-                                        {% if item.product.images.first %}
-                                            <img src="{{ item.product.images.first.image.url }}" class="product-img" alt="{{ item.product.name }}">
+                                        {% with first_image=item.product.images.all.0 %}
+                                        {% if first_image %}
+                                            <img src="{{ first_image.image.url }}" class="product-img" alt="{{ item.product.name }}">
                                         {% else %}
                                             <div class="product-img d-flex align-items-center justify-content-center bg-light">
                                                 <i class="fas fa-box text-muted"></i>
                                             </div>
                                         {% endif %}
+                                        {% endwith %}
                                         <a href="{% url 'products:detail' item.product.slug %}" class="product-name">
                                             {{ item.product.name }}
                                         </a>

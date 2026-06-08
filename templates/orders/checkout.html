@@ -476,13 +476,15 @@
                     <div class="cart-items-list mb-3" style="max-height: 300px; overflow-y: auto;">
                         {% for item in cart.items.all %}
                             <div class="cart-item">
-                                {% if item.product.images.first %}
-                                    <img src="{{ item.product.images.first.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
+                                {% with first_image=item.product.images.all.0 %}
+                                {% if first_image %}
+                                    <img src="{{ first_image.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
                                 {% else %}
                                     <div class="cart-item-img d-flex align-items-center justify-content-center bg-light">
                                         <i class="fas fa-box text-muted"></i>
                                     </div>
                                 {% endif %}
+                                {% endwith %}
                                 <div class="cart-item-details">
                                     <div class="cart-item-name">{{ item.product.name|truncatechars:30 }}</div>
                                     <div class="cart-item-meta">Quantity: {{ item.quantity }}</div>
