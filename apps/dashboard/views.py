@@ -178,8 +178,8 @@ def seller_dashboard(request):
     except:
         return render(request, 'dashboard/error.html', {'message': 'Seller profile not found'})
     
-    # Products managed by seller
-    products = seller.products.filter(is_active=True)
+    # Products managed by seller - Optimized with select_related and prefetch_related
+    products = seller.products.filter(is_active=True).select_related('category').prefetch_related('images')
     total_products = products.count()
     
     # Orders processed
@@ -200,10 +200,10 @@ def seller_dashboard(request):
         status='pending'
     ).count()
     
-    # Recent order items
+    # Recent order items - Optimized with prefetch_related for product images
     recent_order_items = OrderItem.objects.filter(
         seller=seller
-    ).select_related('order', 'product').order_by('-created_at')[:10]
+    ).select_related('order', 'product').prefetch_related('product__images').order_by('-created_at')[:10]
     
     context = {
         'seller': seller,

@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -6,10 +7,11 @@ from django.db.models import Q, Avg, F
 from django.utils import timezone
 from .models import Product, Category, ProductReview, ProductImage
 from .forms import ProductForm, ProductReviewForm, ProductImageForm
+from apps.ai_assistant.models import UserProductInterest
 
 def product_list(request, category_slug=None):
     """Display list of products with filtering and search"""
-    products = Product.objects.filter(is_active=True)
+    products = Product.objects.filter(is_active=True).select_related('company').prefetch_related('images')
     
     # Product type filter
     product_type = request.GET.get('type')
@@ -30,6 +32,9 @@ def product_list(request, category_slug=None):
     # Category filter
     if category_slug:
         category = get_object_or_404(Category, slug=category_slug)
+        products = products.filter(category=category)
+    elif request.GET.get('category'):
+        category = get_object_or_404(Category, slug=request.GET.get('category'))
         products = products.filter(category=category)
     else:
         category = None
@@ -92,6 +97,14 @@ def product_list(request, category_slug=None):
 def product_detail(request, slug):
     """Display product details"""
     product = get_object_or_404(Product, slug=slug, is_active=True)
+    if request.user.is_authenticated and request.user.role in {"customer", "retailer"}:
+        UserProductInterest.objects.create(
+            user=request.user,
+            product=product,
+            interest_type="view",
+            weight=1.0,
+            metadata={"source": "product_detail"},
+        )
     reviews = product.reviews.filter(is_approved=True)[:10]
     
     # Get average rating
@@ -145,16 +158,22 @@ def add_review(request, slug):
 def product_manage(request):
     """Manage products - for company and seller"""
     if request.user.role == 'company':
-        products = Product.objects.filter(company=request.user.company_profile)
+        products = Product.objects.filter(company=request.user.company_profile).select_related('category').prefetch_related('images')
     elif request.user.role == 'seller':
-        products = Product.objects.filter(seller=request.user.seller_profile)
+        products = Product.objects.filter(seller=request.user.seller_profile).select_related('category').prefetch_related('images')
     else:
         messages.error(request, 'You do not have permission to manage products')
         return redirect('dashboard:index')
     
+    categories = Category.objects.filter(is_active=True)
+    
     context = {
         'products': products.order_by('-created_at'),
         'total_products': products.count(),
+        'active_products': products.filter(is_active=True).count(),
+        'low_stock_count': products.filter(stock_quantity__lte=F('low_stock_threshold')).count(),
+        'featured_count': products.filter(is_featured=True).count(),
+        'categories': categories,
     }
     return render(request, 'products/manage.html', context)
 
@@ -181,6 +200,10 @@ def product_create(request):
         messages.error(request, 'You do not have permission to add products')
         return redirect('dashboard:index')
     
+    company_currency = company.currency if company else 'USD'
+    from apps.core.currency import CURRENCY_SYMBOLS, convert_currency
+    company_currency_symbol = CURRENCY_SYMBOLS.get(company_currency, '$')
+    
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
@@ -189,6 +212,15 @@ def product_create(request):
                 product.company = company
                 product.seller = seller
                 product.slug = slugify(product.name)
+                
+                # Convert price fields from Company currency to USD!
+                if company_currency != 'USD':
+                    if product.price:
+                        product.price = convert_currency(product.price, 'USD', company_currency)
+                    if product.compare_price:
+                        product.compare_price = convert_currency(product.compare_price, 'USD', company_currency)
+                    if product.cost_per_item:
+                        product.cost_per_item = convert_currency(product.cost_per_item, 'USD', company_currency)
                 
                 # Ensure unique slug
                 original_slug = product.slug
@@ -225,6 +257,8 @@ def product_create(request):
         'form': form,
         'categories': categories,
         'is_edit': False,
+        'company_currency': company_currency,
+        'company_currency_symbol': company_currency_symbol,
     }
     return render(request, 'products/form.html', context)
 
@@ -240,20 +274,46 @@ def product_edit(request, product_id):
     elif request.user.role == 'seller' and product.seller != request.user.seller_profile:
         messages.error(request, 'You do not have permission to edit this product')
         return redirect('products:manage')
+        
+    company = product.company
+    company_currency = company.currency if company else 'USD'
+    from apps.core.currency import CURRENCY_SYMBOLS, convert_currency
+    company_currency_symbol = CURRENCY_SYMBOLS.get(company_currency, '$')
     
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product)
         if form.is_valid():
-            product = form.save()
+            product = form.save(commit=False)
+            
+            # Convert price fields from Company currency to USD!
+            if company_currency != 'USD':
+                if product.price:
+                    product.price = convert_currency(product.price, 'USD', company_currency)
+                if product.compare_price:
+                    product.compare_price = convert_currency(product.compare_price, 'USD', company_currency)
+                if product.cost_per_item:
+                    product.cost_per_item = convert_currency(product.cost_per_item, 'USD', company_currency)
+            
+            product.save()
             messages.success(request, f'Product "{product.name}" updated successfully!')
             return redirect('products:manage')
     else:
+        # Pre-convert prices from USD to company currency for editing form
+        if company_currency != 'USD':
+            if product.price:
+                product.price = convert_currency(product.price, company_currency, 'USD')
+            if product.compare_price:
+                product.compare_price = convert_currency(product.compare_price, company_currency, 'USD')
+            if product.cost_per_item:
+                product.cost_per_item = convert_currency(product.cost_per_item, company_currency, 'USD')
         form = ProductForm(instance=product)
     
     context = {
         'form': form,
         'product': product,
         'is_edit': True,
+        'company_currency': company_currency,
+        'company_currency_symbol': company_currency_symbol,
     }
     return render(request, 'products/form.html', context)
 
@@ -391,7 +451,7 @@ def category_delete(request, category_id):
 
 def api_products(request):
     """API endpoint for products with filtering"""
-    products = Product.objects.filter(is_active=True)
+    products = Product.objects.filter(is_active=True).prefetch_related('images')
     
     # Product type filter
     product_type = request.GET.get('type')
@@ -434,6 +494,9 @@ def api_products(request):
     # Prepare data
     products_data = []
     for product in products:
+        images = list(product.images.all())
+        image_url = images[0].image.url if images else None
+        
         products_data.append({
             'id': product.id,
             'name': product.name,
@@ -443,7 +506,7 @@ def api_products(request):
             'discount_percentage': product.discount_percentage,
             'average_rating': float(product.average_rating) if product.average_rating else 0,
             'total_reviews': product.total_reviews,
-            'image': product.images.first().image.url if product.images.first() else None,
+            'image': image_url,
         })
     
     return JsonResponse({

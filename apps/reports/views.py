@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
+from django.utils import timezone
 from django.http import HttpResponse
 from apps.orders.models import Order, OrderItem
-from apps.products.models import Product
+from apps.products.models import Product, Category
 from apps.accounts.models import User
+from apps.core.currency import convert_currency
 import csv
 import openpyxl
 from datetime import datetime, timedelta
@@ -33,12 +35,19 @@ def sales_report(request):
     average_order_value = total_revenue / total_orders if total_orders > 0 else 0
     
     # Daily sales
-    daily_sales = orders.extra(
+    daily_sales_raw = orders.extra(
         {'day': "date(created_at)"}
     ).values('day').annotate(
         total=Sum('total_amount'),
         count=Count('id')
     ).order_by('day')
+    
+    daily_sales = []
+    for d in daily_sales_raw:
+        total = d['total'] or 0
+        count = d['count'] or 1
+        d['average'] = float(total) / count
+        daily_sales.append(d)
     
     context = {
         'total_orders': total_orders,
@@ -63,7 +72,7 @@ def products_report(request):
     
     # Product performance
     product_performance = products.annotate(
-        total_sold=Sum('order_items__quantity'),
+        sales_count=Sum('order_items__quantity'),
         total_revenue=Sum('order_items__total')
     ).order_by('-total_revenue')[:50]
     
@@ -89,32 +98,7 @@ def users_report(request):
     
     return render(request, 'reports/users.html', context)
 
-@login_required
-def download_report(request):
-    """Download report as CSV/Excel"""
-    report_type = request.GET.get('type', 'sales')
-    format_type = request.GET.get('format', 'csv')
-    
-    # Create response
-    if format_type == 'csv':
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{report_type}_report.csv"'
-        writer = csv.writer(response)
-        
-        # Write headers and data based on report type
-        if report_type == 'sales':
-            writer.writerow(['Date', 'Order Count', 'Revenue'])
-            # Add data rows...
-    else:
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename="{report_type}_report.xlsx"'
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = f"{report_type.capitalize()} Report"
-        # Add data...
-        wb.save(response)
-    
-    return response
+
 
 
 # Additional helper functions for data processing can be added here
@@ -235,6 +219,7 @@ def inventory_report(request):
     
     return render(request, 'reports/inventory.html', context)
 
+@login_required
 def download_report(request):
     """Enhanced download report with multiple formats"""
     report_type = request.GET.get('type', 'sales')
@@ -242,15 +227,19 @@ def download_report(request):
     date_from = request.GET.get('from')
     date_to = request.GET.get('to')
     
+    currency_code = request.session.get('currency', 'USD')
+    from apps.core.currency import CURRENCY_SYMBOLS
+    currency_symbol = CURRENCY_SYMBOLS.get(currency_code, '$')
+    
     # Get data based on report type
     if report_type == 'sales':
-        data = get_sales_data(date_from, date_to)
+        data = get_sales_data(date_from, date_to, currency_code, currency_symbol)
         filename = f"sales_report_{datetime.now().strftime('%Y%m%d')}"
     elif report_type == 'products':
-        data = get_products_data()
+        data = get_products_data(currency_code, currency_symbol)
         filename = f"products_report_{datetime.now().strftime('%Y%m%d')}"
     elif report_type == 'users':
-        data = get_users_data()
+        data = get_users_data(currency_code, currency_symbol)
         filename = f"users_report_{datetime.now().strftime('%Y%m%d')}"
     else:
         data = []
@@ -285,7 +274,7 @@ def download_report(request):
     
     return response
 
-def get_sales_data(date_from=None, date_to=None):
+def get_sales_data(date_from=None, date_to=None, currency_code='USD', currency_symbol='$'):
     """Helper function to get sales data for export"""
     orders = Order.objects.filter(status='delivered')
     
@@ -296,17 +285,18 @@ def get_sales_data(date_from=None, date_to=None):
     
     data = [['Date', 'Order #', 'Customer', 'Amount', 'Status']]
     for order in orders:
+        converted_amount = convert_currency(order.total_amount, currency_code, 'USD')
         data.append([
             order.created_at.strftime('%Y-%m-%d'),
             order.order_number,
             order.user.email,
-            f"${order.total_amount}",
+            f"{currency_symbol}{converted_amount:.2f}",
             order.get_status_display()
         ])
     
     return data
 
-def get_products_data(request):
+def get_products_data(currency_code='USD', currency_symbol='$'):
     """Helper function to get products data for export"""
     products = Product.objects.filter(is_active=True)
     
@@ -314,19 +304,22 @@ def get_products_data(request):
     for product in products:
         total_sold = product.order_items.aggregate(Sum('quantity'))['quantity__sum'] or 0
         revenue = product.order_items.aggregate(Sum('total'))['total__sum'] or 0
+        
+        converted_price = convert_currency(product.price, currency_code, 'USD')
+        converted_revenue = convert_currency(revenue, currency_code, 'USD')
         data.append([
             product.name,
             product.sku or 'N/A',
             product.category.name if product.category else 'Uncategorized',
-            f"${product.price}",
+            f"{currency_symbol}{converted_price:.2f}",
             product.stock_quantity,
             total_sold,
-            f"${revenue}"
+            f"{currency_symbol}{converted_revenue:.2f}"
         ])
     
     return data
 
-def get_users_data(request):
+def get_users_data(currency_code='USD', currency_symbol='$'):
     """Helper function to get users data for export"""
     users = User.objects.all()
     
@@ -334,6 +327,8 @@ def get_users_data(request):
     for user in users:
         total_orders = user.orders.filter(status='delivered').count()
         total_spent = user.orders.filter(status='delivered').aggregate(Sum('total_amount'))['total__sum'] or 0
+        
+        converted_spent = convert_currency(total_spent, currency_code, 'USD')
         data.append([
             user.email,
             user.get_role_display(),
@@ -341,7 +336,102 @@ def get_users_data(request):
             'Active' if user.is_active else 'Inactive',
             user.date_joined.strftime('%Y-%m-%d'),
             total_orders,
-            f"${total_spent}"
+            f"{currency_symbol}{converted_spent:.2f}"
         ])
     
     return data
+
+@login_required
+def sales_api(request):
+    """JSON API for real-time sales reporting"""
+    from django.http import JsonResponse
+    
+    date_from_str = request.GET.get('from')
+    date_to_str = request.GET.get('to')
+    
+    if date_from_str:
+        try:
+            date_from = datetime.strptime(date_from_str, '%Y-%m-%d').date()
+        except ValueError:
+            date_from = (datetime.now() - timedelta(days=30)).date()
+    else:
+        date_from = (datetime.now() - timedelta(days=30)).date()
+        
+    if date_to_str:
+        try:
+            date_to = datetime.strptime(date_to_str, '%Y-%m-%d').date()
+        except ValueError:
+            date_to = datetime.now().date()
+    else:
+        date_to = datetime.now().date()
+        
+    # Filter orders based on user role
+    if request.user.is_admin:
+        orders = Order.objects.filter(created_at__date__range=[date_from, date_to])
+    elif request.user.role == 'company':
+        orders = Order.objects.filter(
+            company=request.user.company_profile,
+            created_at__date__range=[date_from, date_to]
+        )
+    else:
+        orders = Order.objects.filter(user=request.user, created_at__date__range=[date_from, date_to])
+        
+    total_orders = orders.count()
+    total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+    average_order_value = float(total_revenue / total_orders) if total_orders > 0 else 0
+    
+    currency_code = request.session.get('currency', 'USD')
+    from apps.core.currency import CURRENCY_SYMBOLS
+    currency_symbol = CURRENCY_SYMBOLS.get(currency_code, '$')
+    
+    total_revenue_converted = convert_currency(total_revenue, currency_code, 'USD')
+    average_order_value_converted = convert_currency(average_order_value, currency_code, 'USD')
+    
+    # Status distribution
+    status_counts = list(orders.values('status').annotate(count=Count('id')))
+    # Payment method distribution
+    method_counts = list(orders.values('payment_method').annotate(count=Count('id')))
+    # Payment status distribution
+    pstatus_counts = list(orders.values('payment_status').annotate(count=Count('id')))
+    
+    # Daily sales
+    daily_sales_qs = orders.extra(
+        select={'day': "date(created_at)"}
+    ).values('day').annotate(
+        total=Sum('total_amount'),
+        count=Count('id')
+    ).order_by('day')
+    
+    daily_data = []
+    for item in daily_sales_qs:
+        day_val = item['day']
+        if day_val:
+            if isinstance(day_val, str):
+                day_str = day_val
+            else:
+                day_str = day_val.strftime('%Y-%m-%d')
+            daily_data.append({
+                'day': day_str,
+                'total': float(convert_currency(item['total'] or 0, currency_code, 'USD')),
+                'count': item['count']
+            })
+            
+    # Format status labels and values
+    status_data = {item['status']: item['count'] for item in status_counts}
+    method_data = {item['payment_method']: item['count'] for item in method_counts}
+    pstatus_data = {item['payment_status']: item['count'] for item in pstatus_counts}
+    
+    return JsonResponse({
+        'success': True,
+        'currency_code': currency_code,
+        'currency_symbol': currency_symbol,
+        'summary': {
+            'total_orders': total_orders,
+            'total_revenue': float(total_revenue_converted),
+            'average_order_value': float(average_order_value_converted),
+        },
+        'daily_sales': daily_data,
+        'status_distribution': status_data,
+        'method_distribution': method_data,
+        'payment_status_distribution': pstatus_data
+    })

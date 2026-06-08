@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block title %}Seller Orders - Vendora{% endblock %}
 
@@ -446,13 +447,15 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                {% if item.product.images.first %}
-                                    <img src="{{ item.product.images.first.image.url }}" class="product-image-mini" alt="{{ item.product.name }}">
+                                {% with first_image=item.product.images.all.0 %}
+                                {% if first_image %}
+                                    <img src="{{ first_image.image.url }}" class="product-image-mini" alt="{{ item.product.name }}">
                                 {% else %}
                                     <div class="product-image-mini bg-light d-flex align-items-center justify-content-center">
                                         <i class="fas fa-box text-muted"></i>
                                     </div>
                                 {% endif %}
+                                {% endwith %}
                                 <div>
                                     <div class="fw-bold">{{ item.product.name|truncatechars:35 }}</div>
                                     <small class="text-muted">SKU: {{ item.product.sku|default:"N/A" }}</small>
@@ -469,8 +472,8 @@
                             <span class="badge bg-secondary px-3 py-2">{{ item.quantity }}</span>
                         </td>
                         <td>
-                            <div class="fw-bold text-primary">${{ item.total }}</div>
-                            <small class="text-muted">${{ item.price }} each</small>
+                            <div class="fw-bold text-primary">{{ item.total|order_currency_format:item.order }}</div>
+                            <small class="text-muted">{{ item.price|order_currency_format:item.order }} each</small>
                         </td>
                         <td>
                             <span class="badge-status status-{{ item.status }}">

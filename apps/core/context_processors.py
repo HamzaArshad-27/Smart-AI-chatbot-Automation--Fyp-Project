@@ -19,3 +19,18 @@ def site_settings(request):
         'site_description': 'Multi-Vendor E-Commerce Platform',
         'site_year': 2026,
     }
+
+def currency_settings(request):
+    """Add active currency and currency choices to all templates"""
+    from apps.core.currency import get_active_currency, CURRENCY_SYMBOLS, CURRENCY_RATES
+    active_curr = get_active_currency(request)
+    
+    return {
+        'active_currency': active_curr,
+        'active_currency_symbol': CURRENCY_SYMBOLS.get(active_curr, '$'),
+        'active_currency_rate': CURRENCY_RATES.get(active_curr, 1.0),
+        'currency_choices': [
+            {'code': code, 'symbol': sym, 'rate': CURRENCY_RATES[code]}
+            for code, sym in CURRENCY_SYMBOLS.items()
+        ]
+    }

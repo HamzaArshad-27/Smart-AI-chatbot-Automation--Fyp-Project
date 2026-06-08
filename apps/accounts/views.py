@@ -68,7 +68,7 @@ Vendora Team
     
     # Always print OTP to console for development
     print(f"\n{'='*60}")
-    print(f"📧 OTP for {user.email}")
+    print(f"OTP for {user.email}")
     print(f"   Purpose: {purpose}")
     print(f"   Code: {otp_code}")
     print(f"   DEV_MODE: {settings.DEV_MODE}")
@@ -113,7 +113,7 @@ Vendora Team
         
     except Exception as e:
         logger.error(f"Failed to send email to {user.email}: {str(e)}")
-        print(f"❌ Email sending failed: {str(e)}")
+        print(f"Email sending failed: {str(e)}")
         return False
 
 def get_redirect_url(user):
@@ -447,7 +447,7 @@ def forgot_password(request):
                     # Dev mode: store in session
                     request.session['reset_user_id'] = user.id
                     request.session['reset_otp'] = otp_code
-                    print(f"\n🔑 DEV MODE: Password reset OTP for {email}: {otp_code}\n")
+                    print(f"\nDEV MODE: Password reset OTP for {email}: {otp_code}\n")
                     messages.success(request, f'🔧 Dev Mode: Your OTP is {otp_code}')
                     return redirect('accounts:reset_password')
                 else:
@@ -543,19 +543,33 @@ def reset_password(request):
 @login_required
 def profile(request):
     """User profile view"""
+    company = getattr(request.user, 'company_profile', None)
+    
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
+        company_form = None
+        if company:
+            from apps.companies.forms import CompanyForm
+            company_form = CompanyForm(request.POST, request.FILES, instance=company)
+            
+        if form.is_valid() and (not company_form or company_form.is_valid()):
             form.save()
+            if company_form:
+                company_form.save()
             messages.success(request, '✅ Profile updated successfully!')
             return redirect('accounts:profile')
     else:
         form = UserProfileForm(instance=request.user)
+        company_form = None
+        if company:
+            from apps.companies.forms import CompanyForm
+            company_form = CompanyForm(instance=company)
     
     context = {
         'form': form,
+        'company_form': company_form,
         'profile_user': request.user,
-        'company': getattr(request.user, 'company_profile', None),
+        'company': company,
         'seller': getattr(request.user, 'seller_profile', None),
     }
     

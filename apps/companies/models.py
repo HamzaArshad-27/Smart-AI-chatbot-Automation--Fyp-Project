@@ -31,6 +31,15 @@ class Company(models.Model):
     tax_number = models.CharField(max_length=50, blank=True)
     registration_number = models.CharField(max_length=50, blank=True)
     is_active = models.BooleanField(default=True)
+    CURRENCY_CHOICES = [
+        ('USD', 'USD ($)'),
+        ('PKR', 'PKR (Rs.)'),
+        ('SAR', 'SAR (SR)'),
+        ('AED', 'AED (AED)'),
+        ('EUR', 'EUR (€)'),
+        ('GBP', 'GBP (£)'),
+    ]
+    currency = models.CharField(max_length=10, choices=CURRENCY_CHOICES, default='USD')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

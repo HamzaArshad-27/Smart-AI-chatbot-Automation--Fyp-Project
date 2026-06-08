@@ -18,7 +18,7 @@ class Cart(models.Model):
         return sum(item.get_subtotal() for item in self.items.all())
     
     def get_total_items(self):
-        return sum(item.quantity for item in self.items.all())
+        return self.items.aggregate(total=models.Sum('quantity'))['total'] or 0
     
     def clear(self):
         self.items.all().delete()

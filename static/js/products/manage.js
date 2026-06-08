@@ -36,13 +36,14 @@ let currentView = 'grid';
         const statusFilter = document.getElementById('statusFilter').value;
         const stockFilter = document.getElementById('stockFilter').value;
         
-        const products = document.querySelectorAll('.product-card');
+        const items = document.querySelectorAll('.product-card, .product-row');
         
-        products.forEach(product => {
-            const name = product.dataset.productName || '';
-            const category = product.dataset.category || '';
-            const status = product.dataset.status || '';
-            const stock = parseInt(product.dataset.stock || 0);
+        items.forEach(item => {
+            const name = item.dataset.productName || '';
+            const category = item.dataset.category || '';
+            const status = item.dataset.status || '';
+            const stock = parseInt(item.dataset.stock || 0);
+            const featured = item.dataset.featured === 'true';
             
             let show = true;
             
@@ -50,11 +51,12 @@ let currentView = 'grid';
             if (categoryFilter && category !== categoryFilter) show = false;
             if (statusFilter === 'active' && status !== 'active') show = false;
             if (statusFilter === 'inactive' && status !== 'inactive') show = false;
+            if (statusFilter === 'featured' && !featured) show = false;
             if (stockFilter === 'low' && stock > 10) show = false;
             if (stockFilter === 'out' && stock > 0) show = false;
             if (stockFilter === 'in' && stock === 0) show = false;
             
-            product.style.display = show ? 'block' : 'none';
+            item.style.display = show ? (item.tagName === 'TR' ? 'table-row' : 'block') : 'none';
         });
     }
     

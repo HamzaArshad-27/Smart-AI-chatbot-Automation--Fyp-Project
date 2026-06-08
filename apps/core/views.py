@@ -12,18 +12,10 @@ def home(request):
     )[:10]
     
     featured_products = Product.objects.filter(is_active=True, is_featured=True).prefetch_related('images')[:8]
-    new_arrivals = Product.objects.filter(is_active=True).order_by('-created_at').prefetch_related('images')[:8]
-    top_rated = Product.objects.filter(is_active=True).annotate(avg=Avg('reviews__rating')).order_by('-avg').prefetch_related('images')[:8]
-    most_reviewed = Product.objects.filter(is_active=True).annotate(rc=Count('reviews')).order_by('-rc').prefetch_related('images')[:8]
-    best_selling = Product.objects.filter(is_active=True, order_items__order__status='delivered').annotate(ts=Sum('order_items__quantity')).order_by('-ts').prefetch_related('images')[:8]
     
     context = {
         'categories': categories,
         'featured_products': featured_products,
-        'new_arrivals': new_arrivals,
-        'top_rated': top_rated,
-        'most_reviewed': most_reviewed,
-        'best_selling': best_selling,
     }
     return render(request, 'core/home.html', context)
 
@@ -63,12 +55,14 @@ def products_api(request):
     products_data = []
     for product in products:
         # Get first image
-        first_image = product.images.first()
+        images = list(product.images.all())
+        first_image = images[0] if images else None
         image_url = first_image.image.url if first_image else None
         
         products_data.append({
             'id': product.id,
             'name': product.name,
+            'slug': product.slug,
             'price': float(product.price),
             'compare_price': float(product.compare_price) if product.compare_price else None,
             'discount_percentage': product.discount_percentage,
@@ -99,3 +93,15 @@ def terms(request):
 
 def privacy(request):
     return render(request, 'core/privacy.html')
+
+def set_currency(request):
+    """Set active currency in user session"""
+    from django.shortcuts import redirect
+    currency = request.GET.get('currency', 'USD')
+    from apps.core.currency import CURRENCY_RATES
+    if currency in CURRENCY_RATES:
+        request.session['currency'] = currency
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    return redirect('core:home')

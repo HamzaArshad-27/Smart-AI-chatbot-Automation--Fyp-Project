@@ -20,6 +20,7 @@ class CompanyForm(forms.ModelForm):
             'website': forms.URLInput(attrs={'class': 'form-control'}),
             'tax_number': forms.TextInput(attrs={'class': 'form-control'}),
             'registration_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
         }
 
 

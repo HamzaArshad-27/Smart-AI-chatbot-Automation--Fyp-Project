@@ -11,6 +11,8 @@ urlpatterns = [
     path('cancel/<int:order_id>/', views.cancel_order, name='cancel'),
     path('<int:order_id>/', views.order_detail, name='detail'),
     path('track/<int:order_id>/', views.track_order, name='track'),
+    path('receipt/<int:order_id>/', views.upload_receipt, name='upload_receipt'),
+    path('verify-payment/<int:order_id>/', views.verify_payment, name='verify_payment'),
     
     # Company URLs
     path('company/orders/', views.company_orders, name='company_orders'),
@@ -18,6 +20,12 @@ urlpatterns = [
     path('company/process/<int:order_id>/', views.process_order, name='process_order'),
     path('company/ship/<int:order_id>/', views.ship_order, name='ship_order'),
     path('deliver/<int:order_id>/', views.deliver_order, name='deliver_order'),
+    path('company/bulk-approve/', views.bulk_approve_orders, name='bulk_approve'),
+    path('company/bulk-cancel/', views.bulk_cancel_orders, name='bulk_cancel'),
+    path('company/export/', views.export_orders_csv, name='export_orders'),
+    path('company/api/detail/<int:order_id>/', views.order_detail_api, name='detail_api'),
+    path('company/api/update-status/<int:order_id>/', views.update_order_status_api, name='update_status_api'),
+    
     # Seller URLs
     path('seller/orders/', views.seller_orders, name='seller_orders'),
     path('seller/process/<int:item_id>/', views.process_order_item, name='process_order_item'),

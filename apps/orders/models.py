@@ -17,6 +17,7 @@ class Order(models.Model):
     
     PAYMENT_STATUS = [
         ('pending', 'Pending'),
+        ('partial', 'Partially Paid'),
         ('paid', 'Paid'),
         ('failed', 'Failed'),
         ('refunded', 'Refunded'),
@@ -43,6 +44,9 @@ class Order(models.Model):
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='cod')
     payment_id = models.CharField(max_length=100, blank=True)
+    payment_receipt = models.ImageField(upload_to='receipts/', null=True, blank=True)
+    payment_receipt_uploaded_at = models.DateTimeField(null=True, blank=True)
+    currency = models.CharField(max_length=10, default='USD')
     
     shipping_address = models.TextField()
     shipping_city = models.CharField(max_length=100)

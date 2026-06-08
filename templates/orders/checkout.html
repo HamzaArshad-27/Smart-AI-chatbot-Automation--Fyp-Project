@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load currency_tags %}
 
 {% block title %}Secure Checkout • Vendora{% endblock %}
 
@@ -346,7 +347,7 @@
                     <h5><i class="fas fa-truck text-primary"></i> Shipping Information</h5>
                 </div>
                 <div class="checkout-card-body">
-                    <form method="post" action="{% url 'orders:create' %}" id="checkoutForm">
+                    <form method="post" action="{% url 'orders:create' %}" id="checkoutForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         
                         <!-- Address Fields -->
@@ -443,6 +444,13 @@
                             </div>
                         </div>
                         
+                        <!-- Receipt Upload Input -->
+                        <div class="form-group-modern mt-3" id="receiptUploadGroup" style="display: none;">
+                            <label class="fw-semibold text-dark"><i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Upload Payment Receipt (Optional)</label>
+                            <input type="file" name="payment_receipt" id="paymentReceiptInput" class="form-control-modern" accept="image/*">
+                            <small class="text-muted d-block mt-1">If you have made a transfer, upload the receipt photo/screenshot here to expedite approval.</small>
+                        </div>
+                        
                         <!-- Order Notes -->
                         <div class="form-group-modern mt-4">
                             <label><i class="fas fa-pen me-2 text-muted"></i>Order Notes (Optional)</label>
@@ -468,18 +476,20 @@
                     <div class="cart-items-list mb-3" style="max-height: 300px; overflow-y: auto;">
                         {% for item in cart.items.all %}
                             <div class="cart-item">
-                                {% if item.product.images.first %}
-                                    <img src="{{ item.product.images.first.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
+                                {% with first_image=item.product.images.all.0 %}
+                                {% if first_image %}
+                                    <img src="{{ first_image.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
                                 {% else %}
                                     <div class="cart-item-img d-flex align-items-center justify-content-center bg-light">
                                         <i class="fas fa-box text-muted"></i>
                                     </div>
                                 {% endif %}
+                                {% endwith %}
                                 <div class="cart-item-details">
                                     <div class="cart-item-name">{{ item.product.name|truncatechars:30 }}</div>
                                     <div class="cart-item-meta">Quantity: {{ item.quantity }}</div>
                                 </div>
-                                <div class="cart-item-price">${{ item.get_subtotal|floatformat:2 }}</div>
+                                <div class="cart-item-price">{{ item.get_subtotal|currency_format:request }}</div>
                             </div>
                         {% empty %}
                             <div class="text-center py-4">
@@ -493,7 +503,7 @@
                     <!-- Price Summary -->
                     <div class="summary-row">
                         <span>Subtotal</span>
-                        <strong>${{ cart.get_total|floatformat:2 }}</strong>
+                        <strong>{{ cart.get_total|currency_format:request }}</strong>
                     </div>
                     <div class="summary-row">
                         <span>Shipping</span>
@@ -505,7 +515,7 @@
                     </div>
                     <div class="summary-total">
                         <span class="fw-bold">Total</span>
-                        <span class="fw-bold text-primary" id="orderTotal">${{ cart.get_total|floatformat:2 }}</span>
+                        <span class="fw-bold text-primary" id="orderTotal">{{ cart.get_total|currency_format:request }}</span>
                     </div>
                     
                     <!-- Place Order Button -->
@@ -530,6 +540,86 @@
         </div>
     </div>
 </div>
+<!-- Secure Payment Gateway Sandbox Modal -->
+<div id="paymentGatewayModal" class="loading-overlay" style="display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="width: 100%; max-width: 500px; background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255,255,255,0.4);">
+        <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-shield-alt text-success me-2"></i>Secure Payment Gateway</h5>
+            <button type="button" class="btn-close btn-close-white" onclick="closePaymentModal()"></button>
+        </div>
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Pay To</span>
+                <span class="fw-bold text-dark">Vendora Platform</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="text-muted">Total Amount</span>
+                <span class="fw-bold text-primary fs-4" id="modalTotalAmount">$0.00</span>
+            </div>
+
+            <!-- Card Form Section -->
+            <div id="modalCardSection" style="display: none;">
+                <h6 class="fw-bold mb-3">Credit/Debit Card Details</h6>
+                <div class="form-group-modern mb-3">
+                    <label class="small text-muted mb-1">Cardholder Name</label>
+                    <input type="text" id="modalCardName" class="form-control-modern" placeholder="John Doe">
+                </div>
+                <div class="form-group-modern mb-3">
+                    <label class="small text-muted mb-1">Card Number</label>
+                    <div class="position-relative">
+                        <input type="text" id="modalCardNumber" class="form-control-modern" placeholder="4111 2222 3333 4444" maxlength="19">
+                        <span class="position-absolute end-0 top-50 translate-middle-y me-3 text-muted" id="cardBrandIcon">
+                            <i class="far fa-credit-card fa-lg"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group-modern mb-3">
+                            <label class="small text-muted mb-1">Expiry Date</label>
+                            <input type="text" id="modalCardExpiry" class="form-control-modern" placeholder="MM/YY" maxlength="5">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-modern mb-3">
+                            <label class="small text-muted mb-1">CVV</label>
+                            <input type="password" id="modalCardCVV" class="form-control-modern" placeholder="123" maxlength="4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Payment Section -->
+            <div id="modalMobileSection" style="display: none;">
+                <h6 class="fw-bold mb-3">Mobile Wallet Payment</h6>
+                <div class="form-group-modern mb-3">
+                    <label class="small text-muted mb-1">Wallet Operator</label>
+                    <select id="modalMobileOperator" class="form-control-modern">
+                        <option value="easypaisa">EasyPaisa</option>
+                        <option value="jazzcash">JazzCash</option>
+                        <option value="nayapay">NayaPay</option>
+                    </select>
+                </div>
+                <div class="form-group-modern mb-3">
+                    <label class="small text-muted mb-1">Mobile Number</label>
+                    <input type="tel" id="modalMobileNumber" class="form-control-modern" placeholder="03001234567">
+                </div>
+                <div class="form-group-modern mb-3" id="otpGroup" style="display: none;">
+                    <label class="small text-muted mb-1">Enter OTP code sent to your phone</label>
+                    <input type="text" id="modalMobileOTP" class="form-control-modern" placeholder="XXXXXX" maxlength="6">
+                    <div class="text-success small mt-1"><i class="fas fa-info-circle me-1"></i>Demo OTP code is 123456</div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary w-100 py-3 mt-3 rounded-pill fw-bold" id="btnConfirmModalPay" onclick="submitSecuredPayment()">
+                <i class="fas fa-lock me-2"></i> Pay Now Secured
+            </button>
+            <div class="text-center mt-3 text-muted" style="font-size: 0.75rem;">
+                <i class="fas fa-lock-open me-1"></i> Sandbox Simulation Mode - Do not enter real bank credentials.
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Loading Overlay -->
 <div id="loadingOverlay" class="loading-overlay">
@@ -540,7 +630,8 @@
 </div>
 
 <script>
-    // Payment method selection styling
+    // Payment method selection styling and receipt field toggle
+    const receiptUploadGroup = document.getElementById('receiptUploadGroup');
     document.querySelectorAll('.payment-method-card').forEach(card => {
         const radio = card.querySelector('input[type="radio"]');
         
@@ -548,19 +639,31 @@
             radio.checked = true;
             document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
+            toggleReceiptGroup(radio.value);
         });
         
         if (radio.checked) {
             card.classList.add('selected');
+            toggleReceiptGroup(radio.value);
         }
     });
+
+    function toggleReceiptGroup(method) {
+        if (method === 'bank' || method === 'mobile') {
+            receiptUploadGroup.style.display = 'block';
+        } else {
+            receiptUploadGroup.style.display = 'none';
+        }
+    }
     
     // Calculate shipping and tax based on country selection
     const countrySelect = document.querySelector('select[name="shipping_country"]');
     const shippingEstimateSpan = document.getElementById('shippingEstimate');
     const taxEstimateSpan = document.getElementById('taxEstimate');
     const orderTotalSpan = document.getElementById('orderTotal');
-    const subtotal = {{ cart.get_total|floatformat:2 }};
+    const activeRate = parseFloat("{{ active_currency_rate|default:1.0 }}");
+    const activeSymbol = "{{ active_currency_symbol|default:'$' }}";
+    const subtotal = {{ cart.get_total }};
     
     function calculateShippingAndTax() {
         const country = countrySelect?.value || '';
@@ -572,32 +675,28 @@
             case 'Pakistan':
                 shipping = 2.99;
                 tax = subtotal * 0.05; // 5% tax
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
                 break;
             case 'United States':
                 shipping = 5.99;
                 tax = subtotal * 0.08;
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
                 break;
             case 'United Kingdom':
                 shipping = 6.99;
                 tax = subtotal * 0.07;
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
                 break;
             case 'Canada':
                 shipping = 7.99;
                 tax = subtotal * 0.09;
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
                 break;
             default:
                 shipping = 9.99;
                 tax = subtotal * 0.1;
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
         }
         
-        taxEstimateSpan.innerHTML = `$${tax.toFixed(2)}`;
+        shippingEstimateSpan.innerHTML = `${activeSymbol}${(shipping * activeRate).toFixed(2)}`;
+        taxEstimateSpan.innerHTML = `${activeSymbol}${(tax * activeRate).toFixed(2)}`;
         const total = subtotal + shipping + tax;
-        orderTotalSpan.innerHTML = `$${total.toFixed(2)}`;
+        orderTotalSpan.innerHTML = `${activeSymbol}${(total * activeRate).toFixed(2)}`;
         
         // Add hidden fields to form for shipping and tax
         let shippingInput = document.querySelector('input[name="shipping_cost"]');
@@ -631,9 +730,6 @@
     const checkoutForm = document.getElementById('checkoutForm');
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('.btn-place-order');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            
             // Validate required fields
             const requiredFields = this.querySelectorAll('[required]');
             let isValid = true;
@@ -653,17 +749,164 @@
                 return;
             }
             
-            // Show loading overlay
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'flex';
-            }
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'cod';
             
-            // Disable submit button
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+            // If card or mobile payment is chosen, prevent submit and show gateway modal
+            if (paymentMethod === 'card' || paymentMethod === 'mobile') {
+                e.preventDefault();
+                openPaymentModal(paymentMethod);
+            } else {
+                const submitBtn = this.querySelector('.btn-place-order');
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                
+                // Show loading overlay
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'flex';
+                }
+                
+                // Disable submit button
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+                }
             }
         });
+    }
+
+    // Modal Control Functions
+    const gatewayModal = document.getElementById('paymentGatewayModal');
+    const cardSection = document.getElementById('modalCardSection');
+    const mobileSection = document.getElementById('modalMobileSection');
+    const modalTotalAmount = document.getElementById('modalTotalAmount');
+    const orderTotalSpan = document.getElementById('orderTotal');
+
+    function openPaymentModal(method) {
+        modalTotalAmount.innerHTML = orderTotalSpan.innerHTML;
+        gatewayModal.style.display = 'flex';
+        
+        // Reset inputs
+        document.getElementById('modalCardName').value = '';
+        document.getElementById('modalCardNumber').value = '';
+        document.getElementById('modalCardExpiry').value = '';
+        document.getElementById('modalCardCVV').value = '';
+        document.getElementById('modalMobileNumber').value = '';
+        document.getElementById('modalMobileOTP').value = '';
+        document.getElementById('otpGroup').style.display = 'none';
+        
+        const btnPay = document.getElementById('btnConfirmModalPay');
+        btnPay.innerHTML = '<i class="fas fa-lock me-2"></i> Pay Now Secured';
+        btnPay.disabled = false;
+        btnPay.className = 'btn btn-primary w-100 py-3 mt-3 rounded-pill fw-bold';
+        
+        if (method === 'card') {
+            cardSection.style.display = 'block';
+            mobileSection.style.display = 'none';
+        } else {
+            cardSection.style.display = 'none';
+            mobileSection.style.display = 'block';
+        }
+    }
+
+    function closePaymentModal() {
+        gatewayModal.style.display = 'none';
+    }
+
+    // Detect card branding
+    const cardNumberInput = document.getElementById('modalCardNumber');
+    cardNumberInput?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/g, '');
+        let formatted = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) formatted += ' ';
+            formatted += value[i];
+        }
+        e.target.value = formatted;
+
+        const iconContainer = document.getElementById('cardBrandIcon');
+        if (value.startsWith('4')) {
+            iconContainer.innerHTML = '<i class="fab fa-cc-visa fa-lg text-primary"></i>';
+        } else if (value.startsWith('5')) {
+            iconContainer.innerHTML = '<i class="fab fa-cc-mastercard fa-lg text-danger"></i>';
+        } else if (value.startsWith('3')) {
+            iconContainer.innerHTML = '<i class="fab fa-cc-amex fa-lg text-info"></i>';
+        } else {
+            iconContainer.innerHTML = '<i class="far fa-credit-card fa-lg"></i>';
+        }
+    });
+
+    // Expiry MM/YY slash
+    const cardExpiryInput = document.getElementById('modalCardExpiry');
+    cardExpiryInput?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length > 2) {
+            e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        } else {
+            e.target.value = value;
+        }
+    });
+
+    // Mobile OTP toggle / submit flow
+    function submitSecuredPayment() {
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'cod';
+        const btnPay = document.getElementById('btnConfirmModalPay');
+        
+        if (paymentMethod === 'card') {
+            const name = document.getElementById('modalCardName').value.trim();
+            const num = document.getElementById('modalCardNumber').value.replace(/\s/g, '');
+            const exp = document.getElementById('modalCardExpiry').value.trim();
+            const cvv = document.getElementById('modalCardCVV').value.trim();
+            
+            if (!name || num.length < 15 || exp.length < 5 || cvv.length < 3) {
+                showToast('Please enter valid credit card details.', 'error');
+                return;
+            }
+            
+            simulatePaymentProcessing(btnPay);
+        } else if (paymentMethod === 'mobile') {
+            const phone = document.getElementById('modalMobileNumber').value.trim();
+            const otpGroup = document.getElementById('otpGroup');
+            
+            if (phone.length < 10) {
+                showToast('Please enter a valid mobile number.', 'error');
+                return;
+            }
+            
+            if (otpGroup.style.display === 'none') {
+                btnPay.disabled = true;
+                btnPay.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Sending OTP...';
+                setTimeout(() => {
+                    otpGroup.style.display = 'block';
+                    btnPay.disabled = false;
+                    btnPay.innerHTML = '<i class="fas fa-check-circle me-2"></i> Verify OTP & Pay';
+                    showToast('Demo OTP 123456 sent to your phone!', 'success');
+                }, 1000);
+            } else {
+                const otp = document.getElementById('modalMobileOTP').value.trim();
+                if (otp !== '123456') {
+                    showToast('Invalid OTP code. Please use 123456.', 'error');
+                    return;
+                }
+                
+                simulatePaymentProcessing(btnPay);
+            }
+        }
+    }
+
+    function simulatePaymentProcessing(btnPay) {
+        btnPay.disabled = true;
+        btnPay.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing Secured Payment...';
+        
+        setTimeout(() => {
+            btnPay.innerHTML = '<i class="fas fa-check me-2"></i> Payment Approved!';
+            btnPay.className = 'btn btn-success w-100 py-3 mt-3 rounded-pill fw-bold';
+            
+            setTimeout(() => {
+                closePaymentModal();
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) loadingOverlay.style.display = 'flex';
+                checkoutForm.submit();
+            }, 800);
+        }, 2000);
     }
     
     // Show toast function

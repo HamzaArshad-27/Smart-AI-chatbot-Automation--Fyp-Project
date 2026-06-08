@@ -83,9 +83,18 @@
                     </div>
                     
                     {% for item in cart.items.all %}
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>{{ item.product.name|truncatechars:20 }} x {{ item.quantity }}</span>
-                            <span>${{ item.get_subtotal|floatformat:2 }}</span>
+                        <div class="d-flex justify-content-between mb-2 align-items-center">
+                            <div>
+                                <span class="fw-semibold text-dark">{{ item.product.name|truncatechars:25 }}</span>
+                                <span class="text-muted small">x {{ item.quantity }}</span>
+                                {% if item.product.compare_price %}
+                                    <div style="line-height: 1.1;">
+                                        <small class="text-muted text-decoration-line-through">${{ item.product.compare_price|floatformat:2 }}</small>
+                                        <span class="badge bg-danger" style="font-size: 0.65rem; padding: 0.15rem 0.35rem;">{{ item.product.discount_percentage }}% OFF</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <span class="fw-bold">${{ item.get_subtotal|floatformat:2 }}</span>
                         </div>
                     {% endfor %}
                     

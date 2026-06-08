@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}Retailer Dashboard{% endblock %}
 
@@ -12,8 +13,8 @@
             <p class="mb-0 opacity-75">Track your orders, discover new products, and manage your purchases</p>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="{% url 'products:list' %}" class="btn btn-light">
-                <i class="fas fa-shopping-cart"></i> Start Shopping
+            <a href="{% url 'products:list' %}" class="btn btn-light d-inline-flex align-items-center gap-2">
+                <i class="fas fa-shopping-cart text-primary"></i> Start Shopping
             </a>
         </div>
     </div>
@@ -23,52 +24,52 @@
 <div class="row mb-4">
     <div class="col-md-4 mb-3">
         <div class="card stat-card animated" style="animation-delay: 0.2s;">
-            <div class="card-body">
+            <div class="card-body bg-primary text-white position-relative">
                 <div class="stat-icon">
                     <i class="fas fa-shopping-bag"></i>
                 </div>
-                <h6 class="text-muted mb-2">Total Orders</h6>
+                <h6 class="card-title opacity-75 mb-2">Total Orders</h6>
                 <h2 class="mb-0">{{ total_orders }}</h2>
-                <small class="text-success mt-2 d-block">
+                <div class="growth-indicator mt-2">
                     <i class="fas fa-arrow-up"></i> Lifetime orders
-                </small>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-4 mb-3">
         <div class="card stat-card animated" style="animation-delay: 0.3s;">
-            <div class="card-body">
+            <div class="card-body bg-success text-white position-relative">
                 <div class="stat-icon">
                     <i class="fas fa-dollar-sign"></i>
                 </div>
-                <h6 class="text-muted mb-2">Total Spent</h6>
-                <h2 class="mb-0">${{ total_spent|floatformat:2 }}</h2>
-                <small class="text-success mt-2 d-block">
+                <h6 class="card-title opacity-75 mb-2">Total Spent</h6>
+                <h2 class="mb-0">{{ total_spent|currency_format:request }}</h2>
+                <div class="growth-indicator growth-up mt-2">
                     <i class="fas fa-chart-line"></i> All time
-                </small>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-4 mb-3">
         <div class="card stat-card animated" style="animation-delay: 0.4s;">
-            <div class="card-body">
+            <div class="card-body bg-info text-white position-relative">
                 <div class="stat-icon">
                     <i class="fas fa-receipt"></i>
                 </div>
-                <h6 class="text-muted mb-2">Average Order Value</h6>
-                <h2 class="mb-0">${{ average_order_value|floatformat:2 }}</h2>
-                <small class="text-info mt-2 d-block">
+                <h6 class="card-title opacity-75 mb-2">Average Order Value</h6>
+                <h2 class="mb-0">{{ average_order_value|currency_format:request }}</h2>
+                <div class="growth-indicator mt-2">
                     <i class="fas fa-calculator"></i> Per order
-                </small>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Orders by Status -->
-<div class="chart-container animated" style="animation-delay: 0.5s;">
+<div class="chart-container animated mb-4" style="animation-delay: 0.5s;">
     <h5 class="mb-3">
-        <i class="fas fa-chart-pie"></i> Orders by Status
+        <i class="fas fa-chart-pie text-primary"></i> Orders by Status
     </h5>
     <div class="row text-center">
         <div class="col-md-2 col-4 mb-3">
@@ -111,10 +112,10 @@
 </div>
 
 <!-- Recent Orders -->
-<div class="card animated" style="animation-delay: 0.7s;">
+<div class="card mb-4 animated" style="animation-delay: 0.7s;">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
-            <i class="fas fa-history"></i> Recent Orders
+            <i class="fas fa-history text-primary"></i> Recent Orders
         </h5>
     </div>
     <div class="card-body p-0">
@@ -133,7 +134,7 @@
                 </thead>
                 <tbody id="ordersTableBody">
                     {% for order in recent_orders %}
-                    <tr onclick="window.location.href='{% url 'orders:detail' order.id %}'">
+                    <tr onclick="window.location.href='{% url 'orders:detail' order.id %}'" style="cursor: pointer;">
                         <td>
                             <strong>{{ order.order_number }}</strong>
                             <br>
@@ -141,9 +142,9 @@
                         </td>
                         <td>
                             {% if order.company.logo %}
-                                <img src="{{ order.company.logo.url }}" width="30" height="30" class="rounded-circle me-2">
+                                <img src="{{ order.company.logo.url }}" width="30" height="30" class="rounded-circle me-2" style="object-fit: cover;">
                             {% else %}
-                                <i class="fas fa-building text-muted"></i>
+                                <i class="fas fa-building text-muted me-2"></i>
                             {% endif %}
                             {{ order.company.name|default:"N/A" }}
                         </td>
@@ -151,7 +152,7 @@
                             <span class="badge bg-secondary">{{ order.items.count }} items</span>
                         </td>
                         <td>
-                            <strong class="text-primary">${{ order.total_amount }}</strong>
+                            <strong class="text-primary">{{ order.total_amount|order_currency_format:order }}</strong>
                         </td>
                         <td>
                             <span class="badge-status {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% elif order.status == 'pending' %}bg-warning{% elif order.status == 'shipped' %}bg-info{% else %}bg-primary{% endif %}">
@@ -163,7 +164,7 @@
                             {{ order.created_at|date:"M d, Y" }}
                         </td>
                         <td>
-                            <a href="{% url 'orders:detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'orders:detail' order.id %}" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation();">
                                 <i class="fas fa-map-marker-alt"></i> Track
                             </a>
                         </td>
@@ -186,13 +187,13 @@
 <!-- Quick Actions -->
 <div class="chart-container animated mt-4" style="animation-delay: 0.8s;">
     <h5 class="mb-3">
-        <i class="fas fa-bolt"></i> Quick Actions
+        <i class="fas fa-bolt text-primary"></i> Quick Actions
     </h5>
     <div class="row">
         <div class="col-md-3 col-6 mb-3">
             <a href="{% url 'products:list' %}" class="text-decoration-none text-center d-block">
                 <div class="stat-card-mini">
-                    <div class="action-icon mx-auto mb-2"><i class="fas fa-search"></i></div>
+                    <div class="action-icon text-primary mx-auto mb-2"><i class="fas fa-search"></i></div>
                     <small class="text-dark">Browse Products</small>
                 </div>
             </a>
@@ -200,7 +201,7 @@
         <div class="col-md-3 col-6 mb-3">
             <a href="{% url 'cart:view' %}" class="text-decoration-none text-center d-block">
                 <div class="stat-card-mini">
-                    <div class="action-icon mx-auto mb-2"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="action-icon text-success mx-auto mb-2"><i class="fas fa-shopping-cart"></i></div>
                     <small class="text-dark">View Cart</small>
                 </div>
             </a>
@@ -208,7 +209,7 @@
         <div class="col-md-3 col-6 mb-3">
             <a href="{% url 'orders:checkout' %}" class="text-decoration-none text-center d-block">
                 <div class="stat-card-mini">
-                    <div class="action-icon mx-auto mb-2"><i class="fas fa-truck"></i></div>
+                    <div class="action-icon text-info mx-auto mb-2"><i class="fas fa-truck"></i></div>
                     <small class="text-dark">Bulk Order</small>
                 </div>
             </a>
@@ -216,7 +217,7 @@
         <div class="col-md-3 col-6 mb-3">
             <a href="{% url 'accounts:profile' %}" class="text-decoration-none text-center d-block">
                 <div class="stat-card-mini">
-                    <div class="action-icon mx-auto mb-2"><i class="fas fa-user-cog"></i></div>
+                    <div class="action-icon text-warning mx-auto mb-2"><i class="fas fa-user-cog"></i></div>
                     <small class="text-dark">Account Settings</small>
                 </div>
             </a>
@@ -228,7 +229,6 @@
 {% block dashboard_js %}
 <script>
     function filterOrders(status) {
-        // Implement filtering if needed, or redirect
         window.location.href = "{% url 'orders:company_orders' %}?status=" + status;
     }
 </script>
