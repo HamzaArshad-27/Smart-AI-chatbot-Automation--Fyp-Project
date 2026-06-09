@@ -284,9 +284,101 @@
         border-color: #2563eb;
     }
     
+    /* Tablet Responsiveness */
     @media (max-width: 991px) {
         .auth-form-container {
             padding: 3rem 1.5rem;
+        }
+        .auth-sidebar {
+            padding: 2rem 1.5rem;
+        }
+        .auth-title {
+            font-size: 1.5rem;
+        }
+        .auth-form-header h2 {
+            font-size: 1.5rem;
+        }
+    }
+    
+    /* Mobile Responsiveness */
+    @media (max-width: 767px) {
+        .auth-section {
+            min-height: auto;
+            padding: 1.5rem 1rem;
+        }
+        .auth-card {
+            border-radius: 16px;
+        }
+        .auth-sidebar {
+            padding: 2rem 1.5rem !important;
+            display: none !important;
+        }
+        .auth-form-container {
+            padding: 2rem 1.5rem;
+        }
+        .auth-form-header h2 {
+            font-size: 1.25rem;
+        }
+        .auth-form-header p {
+            font-size: 0.85rem;
+        }
+        .form-modern label {
+            font-size: 0.75rem;
+        }
+        .form-modern .form-control,
+        .form-modern .form-select {
+            font-size: 0.9rem;
+            padding: 0.6rem 0.8rem;
+        }
+        .btn-auth-submit {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.9rem;
+        }
+        .auth-divider {
+            font-size: 0.7rem;
+            margin: 1.25rem 0;
+        }
+        .auth-footer-card {
+            padding: 0.7rem;
+            font-size: 0.85rem;
+        }
+        .auth-footer-card a {
+            font-size: 0.85rem;
+        }
+    }
+    
+    /* Extra Small Devices */
+    @media (max-width: 480px) {
+        .auth-section {
+            padding: 1rem;
+        }
+        .auth-card {
+            border-radius: 12px;
+        }
+        .auth-form-container {
+            padding: 1.5rem 1rem;
+        }
+        .auth-form-header h2 {
+            font-size: 1.1rem;
+        }
+        .auth-form-header p {
+            font-size: 0.8rem;
+        }
+        .form-modern .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-modern .form-control,
+        .form-modern .form-select {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.7rem;
+            border-radius: 8px !important;
+        }
+        .btn-auth-submit {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+        .forgot-link {
+            font-size: 0.75rem;
         }
     }
 </style>

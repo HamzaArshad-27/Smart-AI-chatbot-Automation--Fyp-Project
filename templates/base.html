@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Responsive utilities CSS -->
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
     <!-- AOS Library (optional smooth scroll animations) -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
@@ -49,11 +51,43 @@
             margin: 0 0.25rem;
             transition: 0.2s;
             border-radius: 40px;
+            font-size: 0.95rem;
         }
         .navbar-modern .nav-link:hover {
             background: rgba(255,255,255,0.12);
             color: white !important;
             transform: translateY(-1px);
+        }
+        
+        /* Mobile Navbar Adjustments */
+        @media (max-width: 991px) {
+            .navbar-modern .navbar-brand {
+                font-size: 1.3rem;
+            }
+            .navbar-modern .nav-link {
+                font-size: 0.85rem;
+                padding: 0.5rem 0.75rem !important;
+            }
+            .navbar-modern {
+                padding: 0.6rem 0;
+            }
+            .navbar-collapse {
+                margin-top: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .navbar-modern .navbar-brand {
+                font-size: 1.1rem;
+            }
+            .navbar-modern .nav-link {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.5rem !important;
+                margin: 0.2rem 0 !important;
+            }
+            .navbar-nav {
+                gap: 0.5rem !important;
+            }
         }
         .btn-outline-light-custom {
             border: 1px solid rgba(255,255,255,0.3);
@@ -135,6 +169,43 @@
             border-radius: 40px;
             padding: 0.25rem 0.9rem;
         }
+        
+        /* Responsive Product Cards */
+        @media (max-width: 1200px) {
+            .product-img-modern {
+                height: 200px;
+            }
+            .product-card-modern {
+                margin-bottom: 24px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .product-img-modern {
+                height: 180px;
+            }
+            .product-card-modern {
+                margin-bottom: 20px;
+                border-radius: 20px;
+            }
+            .product-badge {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.7rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .product-img-modern {
+                height: 150px;
+            }
+            .product-card-modern {
+                margin-bottom: 16px;
+                border-radius: 16px;
+            }
+            .product-badge {
+                font-size: 0.6rem;
+            }
+        }
         /* dashboard sidebar modern */
         .dashboard-sidebar-modern {
             background: #ffffff;
@@ -145,6 +216,24 @@
             height: fit-content;
             position: sticky;
             top: 100px;
+        }
+        
+        /* Responsive Dashboard Sidebar */
+        @media (max-width: 768px) {
+            .dashboard-sidebar-modern {
+                border-radius: 24px;
+                padding: 1.5rem 0.8rem;
+                top: 80px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .dashboard-sidebar-modern {
+                border-radius: 16px;
+                padding: 1.2rem 0.6rem;
+                position: static;
+                top: auto;
+            }
         }
         .sidebar-link {
             display: flex;
@@ -188,6 +277,49 @@
         .footer-modern a:hover {
             color: white;
             text-decoration: underline;
+        }
+        
+        /* Responsive Footer */
+        @media (max-width: 768px) {
+            .footer-modern {
+                padding: 2rem 0 1rem;
+                margin-top: 50px;
+                border-top-left-radius: 24px;
+                border-top-right-radius: 24px;
+            }
+            .footer-modern h5 {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+            }
+            .footer-modern .col-md-5,
+            .footer-modern .col-md-3,
+            .footer-modern .col-md-4 {
+                margin-bottom: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .footer-modern {
+                padding: 1.5rem 0 1rem;
+                margin-top: 30px;
+                border-radius: 16px 16px 0 0;
+            }
+            .footer-modern h5 {
+                font-size: 0.9rem;
+                margin-bottom: 0.8rem;
+            }
+            .footer-modern p {
+                font-size: 0.85rem;
+            }
+            .footer-modern a {
+                font-size: 0.85rem;
+            }
+            .footer-modern .small {
+                font-size: 0.75rem;
+            }
+            .footer-modern hr {
+                margin: 1rem 0 !important;
+            }
         }
         /* alert modern */
         .alert-modern {
@@ -235,6 +367,40 @@
             padding: 3rem 2rem;
             color: white;
         }
+        
+        /* Responsive Hero Section */
+        @media (max-width: 768px) {
+            .hero-modern {
+                border-radius: 32px;
+                padding: 2rem 1.5rem;
+                margin: 1rem 0 1.5rem;
+            }
+            .hero-modern .display-5 {
+                font-size: 1.8rem;
+            }
+            .hero-modern .lead {
+                font-size: 0.95rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero-modern {
+                border-radius: 20px;
+                padding: 1.5rem 1rem;
+                margin: 0.75rem 0 1rem;
+            }
+            .hero-modern .display-5 {
+                font-size: 1.3rem;
+            }
+            .hero-modern .lead {
+                font-size: 0.85rem;
+                margin-top: 0.75rem;
+            }
+            .hero-modern .btn-lg {
+                padding: 0.5rem 1.2rem !important;
+                font-size: 0.8rem !important;
+            }
+        }
         /* misc */
         .section-title {
             font-weight: 800;
@@ -249,6 +415,44 @@
         }
         .bg-soft-primary {
             background-color: #eef2ff;
+        }
+        
+        /* Responsive Buttons & Utilities */
+        @media (max-width: 768px) {
+            .btn-primary-glass,
+            .btn-outline-light-custom {
+                padding: 0.35rem 1rem !important;
+                font-size: 0.85rem;
+            }
+            .container {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .btn-primary-glass,
+            .btn-outline-light-custom {
+                padding: 0.3rem 0.8rem !important;
+                font-size: 0.75rem;
+            }
+            .container {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+            .navbar-brand {
+                font-size: 1rem !important;
+            }
+            .nav-link {
+                padding: 0.4rem 0.5rem !important;
+            }
+            .dropdown-menu {
+                min-width: 150px !important;
+                font-size: 0.8rem;
+            }
+            .dropdown-item {
+                padding: 0.4rem 0.8rem !important;
+            }
         }
     </style>
     {% block extra_css %}{% endblock %}

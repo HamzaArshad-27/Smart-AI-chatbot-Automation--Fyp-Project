@@ -43,9 +43,9 @@
             </button>
         </div>
 
-        <div class="row">
+        <div class="row align-items-start dashboard-row-md-nowrap">
             <!-- Sidebar (Desktop View) -->
-            <div class="col-md-3 col-lg-2 mb-4 d-none d-md-block">
+            <div class="col-md-3 col-lg-2 mb-4 d-none d-md-block pe-md-3">
                 {% include 'dashboard/sidebar_menu.html' %}
             </div>
 
@@ -61,7 +61,7 @@
             </div>
 
             <!-- Main Dashboard Content -->
-            <div class="col-md-9 col-lg-10">
+            <div class="col-md-9 col-lg-10 ps-md-3">
                 {% block dashboard_content %}{% endblock %}
             </div>
         </div>
