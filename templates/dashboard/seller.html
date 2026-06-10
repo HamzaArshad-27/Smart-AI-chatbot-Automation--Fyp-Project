@@ -3,115 +3,110 @@
 {% load currency_tags %}
 
 {% block dashboard_title %}Seller Dashboard{% endblock %}
+{% block dashboard_page_title %}Seller Dashboard{% endblock %}
 
 {% block dashboard_content %}
 <!-- Welcome Banner -->
-<div class="welcome-banner animated" style="animation-delay: 0.1s;">
+<div class="welcome-banner">
     <div class="row align-items-center">
         <div class="col-md-8">
-            <h1 class="display-6 mb-2">Welcome back, {{ seller.user.get_full_name|default:seller.user.email }}!</h1>
-            <p class="mb-0 opacity-75">Here's your sales performance and order summary</p>
+            <h1 class="mb-1">Welcome back, {{ seller.user.get_full_name|default:seller.user.email }}!</h1>
+            <p class="text-muted">Here's your sales performance and order summary</p>
         </div>
-        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <div class="d-inline-block bg-white bg-opacity-25 rounded px-3 py-2 text-white">
-                <i class="fas fa-calendar-alt"></i> {% now "F j, Y" %}
-            </div>
+        <div class="col-md-4 text-md-end mt-2 mt-md-0">
+            <span class="badge bg-primary px-3 py-2 fs-7">
+                <i class="fas fa-calendar-alt me-1"></i> {% now "F j, Y" %}
+            </span>
         </div>
     </div>
 </div>
 
 <!-- Stats Cards -->
-<div class="row mb-4">
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.2s;">
-            <div class="card-body bg-primary text-white position-relative">
-                <div class="stat-icon">
-                    <i class="fas fa-box"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">My Products</h6>
-                <h2 class="mb-0">{{ total_products }}</h2>
-                <div class="growth-indicator growth-up mt-2">
-                    <i class="fas fa-arrow-up"></i> Active products
-                </div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">My Products</span>
+                <h3 class="metric-value">{{ total_products }}</h3>
+                <span class="metric-subtext text-muted">Active products</span>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-primary">
+                <i class="fas fa-box"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.3s;">
-            <div class="card-body bg-info text-white position-relative">
-                <div class="stat-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Orders Processed</h6>
-                <h2 class="mb-0">{{ orders_processed }}</h2>
-                <div class="growth-indicator growth-up mt-2">
-                    <i class="fas fa-check-circle"></i> Completed
-                </div>
+    <div class="col-6 col-md-3">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Orders Processed</span>
+                <h3 class="metric-value">{{ orders_processed }}</h3>
+                <span class="metric-subtext text-success">Completed</span>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-info">
+                <i class="fas fa-shopping-cart"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.4s;">
-            <div class="card-body bg-success text-white position-relative">
-                <div class="stat-icon">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Total Revenue</h6>
-                <h2 class="mb-0">{{ revenue|currency_format:request }}</h2>
-                <div class="growth-indicator growth-up mt-2">
-                    <i class="fas fa-chart-line"></i> +15% this month
-                </div>
+    <div class="col-6 col-md-3">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Total Revenue</span>
+                <h3 class="metric-value">{{ revenue|currency_format:request }}</h3>
+                <span class="metric-subtext text-success">+15% this month</span>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-success">
+                <i class="fas fa-dollar-sign"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.5s;">
-            <div class="card-body bg-warning text-white position-relative">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Pending Orders</h6>
-                <h2 class="mb-0">{{ pending_orders }}</h2>
-                <div class="growth-indicator mt-2">
-                    <i class="fas fa-exclamation-triangle"></i> Need attention
-                </div>
+    <div class="col-6 col-md-3">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Pending Orders</span>
+                <h3 class="metric-value">{{ pending_orders }}</h3>
+                <span class="metric-subtext text-danger">Need attention</span>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-warning">
+                <i class="fas fa-clock"></i>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Quick Stats Row -->
-<div class="chart-container animated mb-4" style="animation-delay: 0.6s;">
-    <div class="row text-center">
-        <div class="col-md-3 col-6">
-            <div class="stat-mini">
-                <div class="stat-number text-primary">{{ total_sales|default:0 }}</div>
-                <div class="stat-label">Total Sales</div>
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <div class="row text-center g-2">
+            <div class="col-6 col-md-3">
+                <div class="stat-mini">
+                    <div class="stat-number text-primary">{{ total_sales|default:0 }}</div>
+                    <div class="stat-label">Total Sales</div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="stat-mini">
-                <div class="stat-number text-primary">{{ average_rating|default:"4.8" }}</div>
-                <div class="stat-label">Rating ★</div>
+            <div class="col-6 col-md-3">
+                <div class="stat-mini">
+                    <div class="stat-number text-primary">{{ average_rating|default:"4.8" }}</div>
+                    <div class="stat-label">Rating ★</div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="stat-mini">
-                <div class="stat-number text-primary">{{ total_customers|default:0 }}</div>
-                <div class="stat-label">Unique Customers</div>
+            <div class="col-6 col-md-3">
+                <div class="stat-mini">
+                    <div class="stat-number text-primary">{{ total_customers|default:0 }}</div>
+                    <div class="stat-label">Unique Customers</div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="stat-mini">
-                <div class="stat-number text-primary">{{ completion_rate|default:"98" }}%</div>
-                <div class="stat-label">Order Completion</div>
+            <div class="col-6 col-md-3">
+                <div class="stat-mini">
+                    <div class="stat-number text-primary">{{ completion_rate|default:"98" }}%</div>
+                    <div class="stat-label">Order Completion</div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Recent Orders to Process -->
-<div class="card mb-4 animated" style="animation-delay: 0.7s;">
+<div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
             <i class="fas fa-clock text-primary"></i> Recent Orders to Process
@@ -146,15 +141,15 @@
                             <div class="d-flex align-items-center gap-2">
                                 {% with first_image=item.product.images.all.0 %}
                                 {% if first_image %}
-                                    <img src="{{ first_image.image.url }}" width="40" height="40" class="rounded" alt="{{ item.product.name }}">
+                                    <img src="{{ first_image.image.url }}" width="35" height="35" class="rounded" alt="{{ item.product.name }}">
                                 {% else %}
-                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        <i class="fas fa-box text-muted"></i>
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        <i class="fas fa-box text-muted" style="font-size: 0.8rem;"></i>
                                     </div>
                                 {% endif %}
                                 {% endwith %}
                                 <div>
-                                    <div class="fw-bold text-dark">{{ item.product.name|truncatechars:30 }}</div>
+                                    <div class="fw-bold text-dark">{{ item.product.name|truncatechars:25 }}</div>
                                     <small class="text-muted">SKU: {{ item.product.sku|default:"N/A" }}</small>
                                 </div>
                             </div>
@@ -170,11 +165,11 @@
                         </td>
                         <td>
                             <div class="btn-group" role="group" onclick="event.stopPropagation();">
-                                <a href="{% url 'orders:detail' item.order.id %}" class="btn btn-sm btn-outline-primary">
+                                <a href="{% url 'orders:detail' item.order.id %}" class="btn btn-sm btn-outline-primary py-1 px-2">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 {% if item.status == 'pending' %}
-                                <a href="{% url 'orders:process_order_item' item.id %}" class="btn btn-sm btn-outline-success" onclick="return confirm('Start processing this order?')">
+                                <a href="{% url 'orders:process_order_item' item.id %}" class="btn btn-sm btn-outline-success py-1 px-2" onclick="return confirm('Start processing this order?')">
                                     <i class="fas fa-cogs"></i>
                                 </a>
                                 {% endif %}
@@ -193,7 +188,7 @@
 </div>
 
 <!-- My Products -->
-<div class="card animated" style="animation-delay: 0.8s;">
+<div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
             <i class="fas fa-box text-primary"></i> My Products
@@ -222,15 +217,15 @@
                             <div class="d-flex align-items-center gap-2">
                                 {% with first_image=product.images.all.0 %}
                                 {% if first_image %}
-                                    <img src="{{ first_image.image.url }}" width="40" height="40" class="rounded" alt="{{ product.name }}">
+                                    <img src="{{ first_image.image.url }}" width="35" height="35" class="rounded" alt="{{ product.name }}">
                                 {% else %}
-                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        <i class="fas fa-box text-muted"></i>
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        <i class="fas fa-box text-muted" style="font-size: 0.8rem;"></i>
                                     </div>
                                 {% endif %}
                                 {% endwith %}
                                 <div>
-                                    <div class="fw-bold text-dark">{{ product.name|truncatechars:40 }}</div>
+                                    <div class="fw-bold text-dark">{{ product.name|truncatechars:35 }}</div>
                                     <small class="text-muted">{{ product.category.name|default:"Uncategorized" }}</small>
                                 </div>
                             </div>
@@ -250,17 +245,17 @@
                         <td>{{ product.total_sold|default:0 }} sold</td>
                         <td>
                             {% if product.is_active %}
-                                <span class="badge-status bg-success">Active</span>
+                                <span class="badge bg-success">Active</span>
                             {% else %}
-                                <span class="badge-status bg-danger">Inactive</span>
+                                <span class="badge bg-danger">Inactive</span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="{% url 'products:detail' product.slug %}" class="btn btn-sm btn-outline-info" title="View">
+                                <a href="{% url 'products:detail' product.slug %}" class="btn btn-sm btn-outline-info py-1 px-2" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{% url 'products:edit' product.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                <a href="{% url 'products:edit' product.id %}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             </div>
@@ -276,12 +271,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block dashboard_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Shared JS will handle animations
-    });
-</script>
 {% endblock %}

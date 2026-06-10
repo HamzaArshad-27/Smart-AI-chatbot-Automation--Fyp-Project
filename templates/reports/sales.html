@@ -157,17 +157,21 @@
 </div>
 
 <!-- Sales Revenue Overview Chart -->
-<div class="chart-container animated mb-4" style="animation-delay: 0.3s;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0 text-dark">
-            <i class="fas fa-chart-line text-primary me-2"></i> Sales Revenue Overview
-        </h5>
-        <div class="btn-group btn-group-sm">
-            <button id="btnLineChart" class="btn btn-outline-primary active" onclick="changeChartType('line')">Line</button>
-            <button id="btnBarChart" class="btn btn-outline-primary" onclick="changeChartType('bar')">Bar</button>
+<div class="card border-0 shadow-sm mb-4 animated" style="animation-delay: 0.3s; background: var(--bg-card); border-radius: var(--radius-md);">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 text-dark">
+                <i class="fas fa-chart-line text-primary me-2"></i> Sales Revenue Overview
+            </h5>
+            <div class="btn-group btn-group-sm">
+                <button id="btnLineChart" class="btn btn-outline-primary active" onclick="changeChartType('line')">Line</button>
+                <button id="btnBarChart" class="btn btn-outline-primary" onclick="changeChartType('bar')">Bar</button>
+            </div>
+        </div>
+        <div class="chart-wrapper" style="height: 300px; position: relative; width: 100%;">
+            <canvas id="revenueReportChart"></canvas>
         </div>
     </div>
-    <canvas id="revenueReportChart" height="100"></canvas>
 </div>
 
 <!-- Daily Sales Table Card -->
@@ -230,7 +234,9 @@
                 </h6>
             </div>
             <div class="card-body">
-                <canvas id="paymentChart" height="220"></canvas>
+                <div class="chart-wrapper" style="height: 250px; position: relative; width: 100%;">
+                    <canvas id="paymentChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -242,7 +248,9 @@
                 </h6>
             </div>
             <div class="card-body">
-                <canvas id="statusChart" height="220"></canvas>
+                <div class="chart-wrapper" style="height: 250px; position: relative; width: 100%;">
+                    <canvas id="statusChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -301,7 +309,7 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: false

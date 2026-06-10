@@ -54,9 +54,47 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if 'reports' in request.path %}active{% endif %}" href="{% url 'reports:sales' %}">
-                    <i class="fas fa-chart-bar"></i> Reports
+                <a class="nav-link collapsed d-flex justify-content-between align-items-center {% if 'reports' in request.path %}active{% endif %}" data-bs-toggle="collapse" href="#adminReportsSubmenu" role="button" aria-expanded="{% if 'reports' in request.path %}true{% else %}false{% endif %}" aria-controls="adminReportsSubmenu">
+                    <span><i class="fas fa-chart-pie"></i> Reports</span>
+                    <i class="fas fa-chevron-down fs-8"></i>
                 </a>
+                <div class="collapse {% if 'reports' in request.path %}show{% endif %}" id="adminReportsSubmenu">
+                    <ul class="nav flex-column submenu-collapse">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'sales_overview' or not request.GET.report %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=sales_overview">Sales Overview</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'revenue_analytics' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=revenue_analytics">Revenue Analytics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'order_status' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=order_status">Order Status</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'product_performance' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=product_performance">Product Performance</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'customer_growth' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=customer_growth">Customer Growth</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'vendor_performance' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=vendor_performance">Vendor Performance</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'inventory_stock' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=inventory_stock">Inventory Stock</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'refund_return' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=refund_return">Refund & Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'payment_analytics' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=payment_analytics">Payment Analytics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'category_performance' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=category_performance">Category Performance</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'business_summary' %}active{% endif %}" href="{% url 'reports:admin_reports' %}?report=business_summary">Business Summary</a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
         {% elif user.role == 'company' %}
@@ -84,9 +122,50 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if 'reports' in request.path %}active{% endif %}" href="{% url 'reports:sales' %}">
-                    <i class="fas fa-chart-bar"></i> Reports
+                <a class="nav-link collapsed d-flex justify-content-between align-items-center {% if 'reports' in request.path %}active{% endif %}" data-bs-toggle="collapse" href="#companyReportsSubmenu" role="button" aria-expanded="{% if 'reports' in request.path %}true{% else %}false{% endif %}" aria-controls="companyReportsSubmenu">
+                    <span><i class="fas fa-chart-pie"></i> Reports</span>
+                    <i class="fas fa-chevron-down fs-8"></i>
                 </a>
+                <div class="collapse {% if 'reports' in request.path %}show{% endif %}" id="companyReportsSubmenu">
+                    <ul class="nav flex-column submenu-collapse">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'vendor_sales' or not request.GET.report %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=vendor_sales">Vendor Sales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'product_sales' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=product_sales">Product Sales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'revenue_profit' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=revenue_profit">Revenue & Profit</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'inventory_mgmt' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=inventory_mgmt">Inventory Management</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'order_fulfillment' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=order_fulfillment">Order Fulfillment</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'rating_reviews' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=rating_reviews">Product Ratings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'customer_purchase' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=customer_purchase">Customer Purchase</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'low_stock' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=low_stock">Low Stock Alerts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'best_selling' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=best_selling">Best Selling</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'return_analysis' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=return_analysis">Return Analysis</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'discount_campaign' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=discount_campaign">Discount Campaigns</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'seller_earnings' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=seller_earnings">Seller Performance</a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
         {% elif user.role == 'seller' %}
@@ -108,6 +187,34 @@
                     <i class="fas fa-box"></i> My Products
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed d-flex justify-content-between align-items-center {% if 'reports' in request.path %}active{% endif %}" data-bs-toggle="collapse" href="#sellerReportsSubmenu" role="button" aria-expanded="{% if 'reports' in request.path %}true{% else %}false{% endif %}" aria-controls="sellerReportsSubmenu">
+                    <span><i class="fas fa-chart-pie"></i> Reports</span>
+                    <i class="fas fa-chevron-down fs-8"></i>
+                </a>
+                <div class="collapse {% if 'reports' in request.path %}show{% endif %}" id="sellerReportsSubmenu">
+                    <ul class="nav flex-column submenu-collapse">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'vendor_sales' or not request.GET.report %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=vendor_sales">Vendor Sales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'product_sales' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=product_sales">Product Sales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'inventory_mgmt' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=inventory_mgmt">Inventory Management</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'order_fulfillment' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=order_fulfillment">Order Fulfillment</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'low_stock' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=low_stock">Low Stock Alerts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'best_selling' %}active{% endif %}" href="{% url 'reports:company_reports' %}?report=best_selling">Best Selling</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
 
         {% elif user.role == 'retailer' %}
             <li class="nav-item">
@@ -120,6 +227,31 @@
                     <i class="fas fa-shopping-bag"></i> My Cart
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed d-flex justify-content-between align-items-center {% if 'reports' in request.path %}active{% endif %}" data-bs-toggle="collapse" href="#retailerReportsSubmenu" role="button" aria-expanded="{% if 'reports' in request.path %}true{% else %}false{% endif %}" aria-controls="retailerReportsSubmenu">
+                    <span><i class="fas fa-chart-pie"></i> Reports</span>
+                    <i class="fas fa-chevron-down fs-8"></i>
+                </a>
+                <div class="collapse {% if 'reports' in request.path %}show{% endif %}" id="retailerReportsSubmenu">
+                    <ul class="nav flex-column submenu-collapse">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'purchase_history' or not request.GET.report %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=purchase_history">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'order_tracking' %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=order_tracking">Order Tracking</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'spending_summary' %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=spending_summary">Spending Summary</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'product_interests' %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=product_interests">Product Interests</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'return_refund_history' %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=return_refund_history">Refunds & Returns</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
 
         {% elif user.role == 'customer' %}
             <li class="nav-item">
@@ -131,6 +263,31 @@
                 <a class="nav-link" href="{% url 'cart:view' %}">
                     <i class="fas fa-shopping-cart"></i> My Cart
                 </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed d-flex justify-content-between align-items-center {% if 'reports' in request.path %}active{% endif %}" data-bs-toggle="collapse" href="#customerReportsSubmenu" role="button" aria-expanded="{% if 'reports' in request.path %}true{% else %}false{% endif %}" aria-controls="customerReportsSubmenu">
+                    <span><i class="fas fa-chart-pie"></i> Reports</span>
+                    <i class="fas fa-chevron-down fs-8"></i>
+                </a>
+                <div class="collapse {% if 'reports' in request.path %}show{% endif %}" id="customerReportsSubmenu">
+                    <ul class="nav flex-column submenu-collapse">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'purchase_history' or not request.GET.report %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=purchase_history">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'order_tracking' %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=order_tracking">Order Tracking</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'spending_summary' %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=spending_summary">Spending Summary</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'product_interests' %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=product_interests">Product Interests</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.GET.report == 'return_refund_history' %}active{% endif %}" href="{% url 'reports:customer_reports' %}?report=return_refund_history">Refunds & Returns</a>
+                        </li>
+                    </ul>
+                </div>
             </li>
         {% endif %}
     </ul>

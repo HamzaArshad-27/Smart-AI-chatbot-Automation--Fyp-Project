@@ -4,73 +4,58 @@
 {% block title %}{% block dashboard_title %}Dashboard{% endblock %} - Vendora{% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/dashboard/dashboard.css' %}?v=5.0" rel="stylesheet">
-<style>
-    /* Responsive Dashboard Shell Tweaks */
-    @media (max-width: 767.98px) {
-        .dashboard-sidebar {
-            border-radius: 0;
-            min-height: 100vh;
-            box-shadow: none;
-            top: 0;
-        }
-        .offcanvas {
-            background-color: var(--bg-sidebar);
-            border-right: none;
-        }
-        .offcanvas-body {
-            padding: 0;
-        }
-    }
-</style>
+<link href="{% static 'css/dashboard/dashboard.css' %}?v=5.2" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-<!-- Background Gradient Mesh Blobs -->
-<div class="mesh-blob mesh-blob-1"></div>
-<div class="mesh-blob mesh-blob-2"></div>
-<div class="mesh-blob mesh-blob-3"></div>
+<div class="dashboard-layout">
+    <!-- Sidebar (Desktop View - Always Visible / Fixed) -->
+    <aside class="dashboard-sidebar-aside d-none d-md-block">
+        {% include 'dashboard/sidebar_menu.html' %}
+    </aside>
 
-<div class="dashboard-wrapper">
-    <div class="container-fluid mt-3 mt-md-4">
-        <!-- Mobile Header Bar -->
-        <div class="d-flex d-md-none justify-content-between align-items-center mb-3 bg-white bg-opacity-10 backdrop-blur border border-white border-opacity-10 p-3 rounded-4 shadow-sm">
-            <h5 class="mb-0 fw-bold text-white">
-                {% block mobile_dashboard_title %}Dashboard{% endblock %}
+    <!-- Main Content Area -->
+    <div class="dashboard-main-area">
+        <!-- Dashboard Topbar -->
+        <div class="dashboard-topbar px-3 d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fw-bold text-dark">
+                {% block dashboard_page_title %}Dashboard{% endblock %}
             </h5>
-            <button class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
-                <i class="fas fa-bars"></i> Menu
-            </button>
-        </div>
-
-        <div class="row align-items-start dashboard-row-md-nowrap">
-            <!-- Sidebar (Desktop View) -->
-            <div class="col-md-3 col-lg-2 mb-4 d-none d-md-block pe-md-3">
-                {% include 'dashboard/sidebar_menu.html' %}
-            </div>
-
-            <!-- Sidebar (Mobile Offcanvas Drawer) -->
-            <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel" style="width: 280px; background-color: var(--bg-sidebar);">
-                <div class="offcanvas-header border-bottom border-secondary border-opacity-25 py-3">
-                    <h5 class="offcanvas-title text-white fw-bold" id="mobileSidebarLabel">Menu Navigation</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    {% include 'dashboard/sidebar_menu.html' %}
-                </div>
-            </div>
-
-            <!-- Main Dashboard Content -->
-            <div class="col-md-9 col-lg-10 ps-md-3">
-                {% block dashboard_content %}{% endblock %}
+            <div class="d-flex align-items-center gap-2">
+                <!-- Mobile Menu Toggler (Visible on mobile only) -->
+                <button class="btn btn-primary btn-sm d-md-none d-flex align-items-center gap-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
+                    <i class="fas fa-bars"></i> Menu
+                </button>
             </div>
         </div>
+
+        <!-- Dashboard Content Body -->
+        <div class="dashboard-content-body">
+            {% block dashboard_content %}{% endblock %}
+        </div>
+
+        <!-- Dashboard Footer -->
+        <footer class="dashboard-footer text-center py-2 mt-auto border-top bg-white" style="font-size: 0.75rem; color: var(--text-muted); border-color: var(--border-light) !important;">
+            &copy; {% now "Y" %} Vendora — Dashboard Management System. All rights reserved.
+        </footer>
+    </div>
+</div>
+
+<!-- Sidebar (Mobile Offcanvas Drawer - Backed by the same navigation items) -->
+<div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel" style="width: 260px; background-color: #0f172a; border-right: 1px solid #1e293b;">
+    <div class="offcanvas-header border-bottom border-secondary border-opacity-25 py-3">
+        <h5 class="offcanvas-title text-white fw-bold" id="mobileSidebarLabel">Navigation</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        {% include 'dashboard/sidebar_menu.html' %}
     </div>
 </div>
 {% endblock %}
 
+{% block footer %}{% endblock %}
+
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{% static 'js/dashboard/dashboard.js' %}"></script>
 {% block dashboard_js %}{% endblock %}
 {% endblock %}

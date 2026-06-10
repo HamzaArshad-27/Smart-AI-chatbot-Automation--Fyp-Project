@@ -1,0 +1,535 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+{% load currency_tags %}
+
+{% block dashboard_title %}Admin Reports - {{ report_type|title|replace_underscore:" " }}{% endblock %}
+{% block mobile_dashboard_title %}Admin Reports{% endblock %}
+
+{% block dashboard_content %}
+<div class="welcome-banner animated mb-4" style="animation-delay: 0.1s;">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-6 mb-2">
+                <i class="fas fa-chart-bar"></i> Admin Analytics
+            </h1>
+            <p class="mb-0 opacity-75">
+                {% if report_type == 'sales_overview' %}Sales Overview Report
+                {% elif report_type == 'revenue_analytics' %}Revenue Analytics Report
+                {% elif report_type == 'order_status' %}Order Status Distribution Report
+                {% elif report_type == 'product_performance' %}Top Product Performance Report
+                {% elif report_type == 'customer_growth' %}Customer Acquisition & Growth Report
+                {% elif report_type == 'vendor_performance' %}Vendor Sales & Performance Report
+                {% elif report_type == 'inventory_stock' %}Inventory & Stock Levels Report
+                {% elif report_type == 'refund_return' %}Refunds & Returns Report
+                {% elif report_type == 'payment_analytics' %}Payment Methods Analytics Report
+                {% elif report_type == 'category_performance' %}Category Sales Performance Report
+                {% elif report_type == 'business_summary' %}Monthly Business Summary Report
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Date Filter Card (Only if report supports date filtering) -->
+{% if report_type != 'inventory_stock' %}
+<div class="card mb-4 border-0 shadow-sm" style="border-radius: var(--radius-md); background: var(--bg-card);">
+    <div class="card-body">
+        <form method="get" id="filterForm">
+            <input type="hidden" name="report" value="{{ report_type }}">
+            <div class="row align-items-end g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-semibold">Date From</label>
+                    <input type="date" name="from" class="form-control" value="{{ date_from|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-semibold">Date To</label>
+                    <input type="date" name="to" class="form-control" value="{{ date_to|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="fas fa-sync-alt me-2"></i> Update Report
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Report Content Wrapper -->
+<div class="card border-0 shadow-sm" style="border-radius: var(--radius-md); background: var(--bg-card);">
+    <div class="card-header bg-transparent border-bottom border-secondary border-opacity-10 py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-dark">
+            <i class="fas fa-file-alt text-primary me-2"></i> Report Data
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        
+        <!-- 1. SALES OVERVIEW & REVENUE ANALYTICS -->
+        {% if report_type == 'sales_overview' or report_type == 'revenue_analytics' %}
+        <div class="p-4">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="metric-card bg-light border border-secondary border-opacity-10 p-3 rounded-3">
+                        <div>
+                            <span class="text-muted small">Total Orders</span>
+                            <h3 class="mb-0 text-dark fw-bold">{{ total_orders }}</h3>
+                        </div>
+                        <div class="fs-3 text-primary"><i class="fas fa-shopping-bag"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="metric-card bg-light border border-secondary border-opacity-10 p-3 rounded-3">
+                        <div>
+                            <span class="text-muted small">Total Revenue</span>
+                            <h3 class="mb-0 text-success fw-bold">{{ total_revenue|currency_format:request }}</h3>
+                        </div>
+                        <div class="fs-3 text-success"><i class="fas fa-dollar-sign"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="metric-card bg-light border border-secondary border-opacity-10 p-3 rounded-3">
+                        <div>
+                            <span class="text-muted small">Avg Order Value</span>
+                            <h3 class="mb-0 text-info fw-bold">{{ average_order_value|currency_format:request }}</h3>
+                        </div>
+                        <div class="fs-3 text-info"><i class="fas fa-calculator"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            {% if daily_sales %}
+            <div class="chart-wrapper mb-4" style="height: 300px; position: relative;">
+                <canvas id="salesOverviewChart"></canvas>
+            </div>
+            {% endif %}
+            
+            <div class="table-responsive mt-3">
+                <table class="table premium-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Orders</th>
+                            <th>Revenue</th>
+                            <th>Average Order Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in daily_sales %}
+                        <tr>
+                            <td><strong>{{ day.day|date:"M d, Y"|default:day.day }}</strong></td>
+                            <td><span class="badge bg-primary rounded-pill">{{ day.count }}</span></td>
+                            <td><strong class="text-success">{{ day.total|currency_format:request }}</strong></td>
+                            <td>{{ day.average|currency_format:request }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No sales records in this date range.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. ORDER STATUS REPORT -->
+        {% elif report_type == 'order_status' %}
+        <div class="p-4">
+            <div class="table-responsive">
+                <table class="table premium-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Total Orders</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in status_counts %}
+                        <tr>
+                            <td>
+                                <span class="badge 
+                                    {% if item.status == 'delivered' %}bg-success
+                                    {% elif item.status == 'pending' %}bg-warning
+                                    {% elif item.status == 'cancelled' %}bg-danger
+                                    {% else %}bg-secondary{% endif %} px-3 py-1">
+                                    {{ item.status|title }}
+                                </span>
+                            </td>
+                            <td><strong>{{ item.count }} orders</strong></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center py-4 text-muted">No orders found in this date range.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. PRODUCT PERFORMANCE -->
+        {% elif report_type == 'product_performance' %}
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Product Details</th>
+                        <th>Price</th>
+                        <th>Stock Status</th>
+                        <th>Units Sold</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                    <tr>
+                        <td>
+                            <strong>{{ p.name }}</strong><br>
+                            <small class="text-muted">SKU: {{ p.sku }}</small>
+                        </td>
+                        <td>{{ p.price|currency_format:request }}</td>
+                        <td>
+                            {% if p.stock_quantity == 0 %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                            {% elif p.stock_quantity <= p.low_stock_threshold %}
+                            <span class="badge bg-warning">Low Stock ({{ p.stock_quantity }})</span>
+                            {% else %}
+                            <span class="badge bg-success">In Stock ({{ p.stock_quantity }})</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ p.sales_count }} units</strong></td>
+                        <td><strong class="text-success">{{ p.total_revenue|currency_format:request }}</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No products have sales records in this date range.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. CUSTOMER GROWTH -->
+        {% elif report_type == 'customer_growth' %}
+        <div class="p-4">
+            <div class="alert alert-info border-0 rounded-3 mb-4">
+                Total new customers registered in this period: <strong>{{ total_new_customers }}</strong>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table premium-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>New Registrations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for month in growth %}
+                        <tr>
+                            <td><strong>{{ month.month|date:"F Y" }}</strong></td>
+                            <td><span class="badge bg-primary px-3 py-1">{{ month.count }} users</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center py-4 text-muted">No customer registrations in this period.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. VENDOR PERFORMANCE -->
+        {% elif report_type == 'vendor_performance' %}
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Contact Email</th>
+                        <th>Total Orders</th>
+                        <th>Gross Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in companies %}
+                    <tr>
+                        <td><strong>{{ c.name }}</strong></td>
+                        <td>{{ c.user.email }}</td>
+                        <td>{{ c.total_orders }}</td>
+                        <td><strong class="text-success">{{ c.total_revenue|default:0|currency_format:request }}</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No vendor sales recorded in this period.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 6. INVENTORY STOCK -->
+        {% elif report_type == 'inventory_stock' %}
+        <div class="p-4">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="metric-card bg-light border border-secondary border-opacity-10 p-3 rounded-3">
+                        <div>
+                            <span class="text-muted small">Low Stock Items</span>
+                            <h3 class="mb-0 text-warning fw-bold">{{ low_stock_count }}</h3>
+                        </div>
+                        <div class="fs-3 text-warning"><i class="fas fa-exclamation-triangle"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="metric-card bg-light border border-secondary border-opacity-10 p-3 rounded-3">
+                        <div>
+                            <span class="text-muted small">Out of Stock Items</span>
+                            <h3 class="mb-0 text-danger fw-bold">{{ out_of_stock_count }}</h3>
+                        </div>
+                        <div class="fs-3 text-danger"><i class="fas fa-times-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table premium-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>SKU</th>
+                            <th>Current Stock</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr>
+                            <td><strong>{{ p.name }}</strong></td>
+                            <td>{{ p.sku }}</td>
+                            <td><strong>{{ p.stock_quantity }} units</strong></td>
+                            <td>
+                                {% if p.stock_quantity == 0 %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                                {% elif p.stock_quantity <= p.low_stock_threshold %}
+                                <span class="badge bg-warning">Low Stock</span>
+                                {% else %}
+                                <span class="badge bg-success">In Stock</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No products found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 7. REFUND & RETURN -->
+        {% elif report_type == 'refund_return' %}
+        <div class="p-4">
+            <div class="alert alert-danger border-0 rounded-3 mb-4">
+                Total Refunded/Cancelled Orders: <strong>{{ total_refunded_orders }}</strong> | Total Amount Refunded: <strong>{{ total_refunded_amount|currency_format:request }}</strong>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table premium-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Order Number</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in refunded_orders %}
+                        <tr>
+                            <td><strong>{{ o.order_number }}</strong></td>
+                            <td>{{ o.user.email }}</td>
+                            <td>{{ o.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="badge {% if o.status == 'refunded' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ o.get_status_display }}
+                                </span>
+                            </td>
+                            <td><strong class="text-danger">{{ o.total_amount|currency_format:request }}</strong></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No refund or cancellation logs in this date range.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 8. PAYMENT ANALYTICS -->
+        {% elif report_type == 'payment_analytics' %}
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Payment Method</th>
+                        <th>Total Orders</th>
+                        <th>Total Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in payment_methods %}
+                    <tr>
+                        <td>
+                            <strong class="text-dark">
+                                {% if m.payment_method == 'cod' %}Cash on Delivery
+                                {% elif m.payment_method == 'card' %}Credit/Debit Card
+                                {% elif m.payment_method == 'bank' %}Bank Transfer
+                                {% elif m.payment_method == 'mobile' %}Mobile Payment
+                                {% else %}{{ m.payment_method|upper }}{% endif %}
+                            </strong>
+                        </td>
+                        <td>{{ m.count }} orders</td>
+                        <td><strong class="text-success">{{ m.total_amount|currency_format:request }}</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">No sales record found for this period.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 9. CATEGORY PERFORMANCE -->
+        {% elif report_type == 'category_performance' %}
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Category Name</th>
+                        <th>Active Products</th>
+                        <th>Units Sold</th>
+                        <th>Gross Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in categories %}
+                    <tr>
+                        <td><strong>{{ c.name }}</strong></td>
+                        <td>{{ c.total_products }} products</td>
+                        <td>{{ c.total_sold|default:0 }} units</td>
+                        <td><strong class="text-success">{{ c.total_revenue|default:0|currency_format:request }}</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No category data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 10. BUSINESS SUMMARY -->
+        {% elif report_type == 'business_summary' %}
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Total Orders</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in summary %}
+                    <tr>
+                        <td><strong>{{ m.month|date:"F Y" }}</strong></td>
+                        <td>{{ m.total_orders }} orders</td>
+                        <td><strong class="text-success">{{ m.total_revenue|currency_format:request }}</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">No data.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+{% if report_type == 'sales_overview' or report_type == 'revenue_analytics' %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('salesOverviewChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f5f5f5';
+        const labelColor = isDark ? '#94a3b8' : '#64748b';
+        
+        const labels = [
+            {% for d in daily_sales %}
+                "{{ d.day|date:'M d'|default:d.day }}",
+            {% endfor %}
+        ];
+        
+        const values = [
+            {% for d in daily_sales %}
+                {{ d.total|default:0 }},
+            {% endfor %}
+        ];
+        
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.15)');
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0)');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: values,
+                    borderColor: '#4f46e5',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4f46e5',
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor },
+                        ticks: { color: labelColor }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: labelColor }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

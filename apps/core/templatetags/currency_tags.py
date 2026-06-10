@@ -66,3 +66,17 @@ def order_currency_format(value, order_or_currency):
     converted = convert_currency(value, currency, 'USD')
     return format_currency(converted, currency)
 
+
+@register.filter
+def replace_underscore(value, arg=" "):
+    """
+    Replace underscores with space or another string.
+    Usage: {{ value|replace_underscore:" " }}
+    """
+    if not value:
+        return ""
+    if not isinstance(value, str):
+        value = str(value)
+    return value.replace('_', arg)
+
+

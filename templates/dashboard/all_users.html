@@ -20,48 +20,48 @@
 </div>
 
 <!-- Stats Cards -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.2s;">
-            <div class="card-body bg-primary text-white">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Total Users</h6>
-                <h2 class="mb-0">{{ total_users }}</h2>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Total Users</span>
+                <h3 class="metric-value">{{ total_users }}</h3>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-primary">
+                <i class="fas fa-users"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.3s;">
-            <div class="card-body bg-success text-white">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Active Users</h6>
-                <h2 class="mb-0">{{ active_users }}</h2>
+    <div class="col-6 col-md-3">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Active Users</span>
+                <h3 class="metric-value">{{ active_users }}</h3>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-success">
+                <i class="fas fa-check-circle"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.4s;">
-            <div class="card-body bg-warning text-white">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Pending Users</h6>
-                <h2 class="mb-0">{{ pending_users }}</h2>
+    <div class="col-6 col-md-3">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Pending Users</span>
+                <h3 class="metric-value">{{ pending_users }}</h3>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-warning">
+                <i class="fas fa-clock"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.5s;">
-            <div class="card-body bg-danger text-white">
-                <div class="stat-icon">
-                    <i class="fas fa-ban"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Inactive Users</h6>
-                <h2 class="mb-0">{{ inactive_users }}</h2>
+    <div class="col-6 col-md-3">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Inactive Users</span>
+                <h3 class="metric-value">{{ inactive_users }}</h3>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-danger">
+                <i class="fas fa-ban"></i>
             </div>
         </div>
     </div>
