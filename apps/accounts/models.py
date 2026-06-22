@@ -1,7 +1,12 @@
+# pyrefly: ignore [missing-import]
 from django.db import models
+# pyrefly: ignore [missing-import]
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+# pyrefly: ignore [missing-import]
 from django.utils import timezone
+# pyrefly: ignore [missing-import]
 from django.core.validators import FileExtensionValidator
+# pyrefly: ignore [missing-import]
 import os
 
 class UserManager(BaseUserManager):
@@ -42,7 +47,7 @@ class User(AbstractUser):
         null=True,
         validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'gif'])]
     )
-    is_approved = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=True)
     email_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
