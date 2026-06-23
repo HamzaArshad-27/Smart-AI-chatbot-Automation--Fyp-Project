@@ -138,3 +138,17 @@ class ProductReview(models.Model):
         db_table = 'product_reviews'
         unique_together = ['product', 'user']
         ordering = ['-created_at']
+
+
+class Wishlist(models.Model):
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='wishlists')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlists')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'wishlists'
+        unique_together = ['user', 'product']
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.product.name}"

@@ -4,8 +4,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Avg, F
+from django.http import JsonResponse
 from django.utils import timezone
-from .models import Product, Category, ProductReview, ProductImage
+from .models import Product, Category, ProductReview, ProductImage, Wishlist
 from .forms import ProductForm, ProductReviewForm, ProductImageForm
 from apps.ai_assistant.models import UserProductInterest
 
@@ -83,6 +84,13 @@ def product_list(request, category_slug=None):
     # Get all categories for sidebar
     categories = Category.objects.filter(is_active=True)
     
+    # Wishlist IDs for the current user
+    wishlist_product_ids = set()
+    if request.user.is_authenticated:
+        wishlist_product_ids = set(
+            Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        )
+
     context = {
         'products': products,
         'categories': categories,
@@ -90,6 +98,7 @@ def product_list(request, category_slug=None):
         'search_query': search_query,
         'sort_by': sort_by,
         'sort_options': sort_options,
+        'wishlist_product_ids': wishlist_product_ids,
     }
     
     return render(request, 'products/list.html', context)
@@ -118,6 +127,11 @@ def product_detail(request, slug):
     
     # Review form
     review_form = ProductReviewForm()
+
+    # Check if user has wishlisted this product
+    is_wishlisted = False
+    if request.user.is_authenticated:
+        is_wishlisted = Wishlist.objects.filter(user=request.user, product=product).exists()
     
     context = {
         'product': product,
@@ -125,6 +139,7 @@ def product_detail(request, slug):
         'avg_rating': avg_rating,
         'related_products': related_products,
         'review_form': review_form,
+        'is_wishlisted': is_wishlisted,
     }
     
     return render(request, 'products/detail.html', context)
@@ -513,3 +528,33 @@ def api_products(request):
         'products': products_data,
         'total': len(products_data)
     })
+
+
+@login_required
+def wishlist_toggle(request, product_id):
+    """Toggle product in/out of user wishlist via AJAX POST"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    product = get_object_or_404(Product, id=product_id, is_active=True)
+    wishlist_item, created = Wishlist.objects.get_or_create(
+        user=request.user, product=product
+    )
+    if not created:
+        wishlist_item.delete()
+        return JsonResponse({'status': 'removed', 'message': 'Removed from wishlist'})
+    return JsonResponse({'status': 'added', 'message': 'Added to wishlist'})
+
+
+@login_required
+def wishlist_view(request):
+    """View wishlist page"""
+    wishlist_items = Wishlist.objects.filter(
+        user=request.user
+    ).select_related('product', 'product__category', 'product__company').prefetch_related('product__images')
+
+    context = {
+        'wishlist_items': wishlist_items,
+        'wishlist_count': wishlist_items.count(),
+    }
+    return render(request, 'products/wishlist.html', context)

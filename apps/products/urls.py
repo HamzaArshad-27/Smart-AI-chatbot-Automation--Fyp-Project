@@ -25,4 +25,8 @@ urlpatterns = [
     path('categories/delete/<int:category_id>/', views.category_delete, name='category_delete'),
 
     path('api/products/', views.api_products, name='api_products'),
+
+    # Wishlist
+    path('wishlist/', views.wishlist_view, name='wishlist'),
+    path('wishlist/toggle/<int:product_id>/', views.wishlist_toggle, name='wishlist_toggle'),
 ]
