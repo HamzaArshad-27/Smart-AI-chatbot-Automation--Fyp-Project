@@ -11,23 +11,38 @@ class ProductForm(forms.ModelForm):
             'is_active', 'is_featured', 'is_digital'
         ]
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Wireless Headphones'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Detailed product description...'}),
-            'short_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Brief description for listings...'}),
-            'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'compare_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'cost_per_item': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'stock_quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-            'low_stock_threshold': forms.NumberInput(attrs={'class': 'form-control'}),
-            'sku': forms.TextInput(attrs={'class': 'form-control'}),
-            'barcode': forms.TextInput(attrs={'class': 'form-control'}),
-            'weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Detailed product description...'}),
+            'short_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Brief description (Optional)...'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': '0.00'}),
+            'compare_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Original price (Optional)'}),
+            'cost_per_item': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Cost per item (Optional)'}),
+            'stock_quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'}),
+            'low_stock_threshold': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Default is 5'}),
+            'sku': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Auto-generated if left blank'}),
+            'barcode': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Optional Barcode'}),
+            'weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Weight in kg'}),
             'dimensions': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'L x W x H in cm'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_digital': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+        labels = {
+            'sku': 'SKU (Optional)',
+            'barcode': 'Barcode (Optional)',
+            'low_stock_threshold': 'Low Stock Alert Threshold (Optional)',
+            'compare_price': 'Compare at Price / Original Price (Optional)',
+            'cost_per_item': 'Cost Per Item (Optional)',
+            'weight': 'Weight (Optional)',
+            'dimensions': 'Dimensions (Optional)',
+            'short_description': 'Short Description (Optional)',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['sku'].required = False
+        self.fields['low_stock_threshold'].required = False
 
     def clean(self):
         cleaned_data = super().clean()

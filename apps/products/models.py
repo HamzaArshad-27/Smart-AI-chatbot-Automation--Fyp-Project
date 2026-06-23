@@ -43,7 +43,7 @@ class Product(models.Model):
     stock_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     low_stock_threshold = models.IntegerField(default=5)
     
-    sku = models.CharField(max_length=50, unique=True)
+    sku = models.CharField(max_length=50, unique=True, blank=True)
     barcode = models.CharField(max_length=50, blank=True)
     
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -75,6 +75,12 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
+        if not self.sku:
+            import uuid
+            unique_sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+            while Product.objects.filter(sku=unique_sku).exists():
+                unique_sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+            self.sku = unique_sku
         super().save(*args, **kwargs)
     
     @property
