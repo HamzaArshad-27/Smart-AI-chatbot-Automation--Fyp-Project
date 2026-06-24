@@ -1,132 +1,154 @@
-{% extends 'base.html' %}
+{% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
-{% block title %}Manage Products - Vendora{% endblock %}
+{% block dashboard_title %}Manage Products - Vendora{% endblock %}
+{% block dashboard_page_title %}Manage Products{% endblock %}
 
-{% block content %}
-<link href="{% static 'css/products/manage.css' %}" rel="stylesheet">
+{% block extra_css %}
+{{ block.super }}
+<link href="{% static 'css/products/manage.css' %}?v=1.1" rel="stylesheet">
+{% endblock %}
 
-<div class="container mt-4">
-    <!-- Page Header -->
-    <div class="page-header animated" style="animation-delay: 0.1s;">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="display-6 mb-2">
-                    <i class="fas fa-box"></i> Manage Products
-                </h1>
-                <p class="mb-0 opacity-75">Manage your product inventory, pricing, and availability</p>
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <a href="{% url 'products:create' %}" class="btn btn-light btn-lg">
-                    <i class="fas fa-plus"></i> Add New Product
-                </a>
-            </div>
+{% block dashboard_content %}
+<div class="container-fluid mt-2 px-0">
+    <!-- Action Header / Title Subtext -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <p class="text-muted mb-0">Monitor and update your product inventory, pricing, and status</p>
+        </div>
+        <div>
+            <a href="{% url 'products:create' %}" class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+                <i class="fas fa-plus"></i> Add New Product
+            </a>
         </div>
     </div>
 
     <!-- Quick Stats -->
-    <div class="row mb-4 animated" style="animation-delay: 0.2s;">
-        <div class="col-md-3 col-sm-6 mb-2">
-            <div class="stat-card-mini">
-                <div class="stat-number text-primary">{{ total_products }}</div>
-                <div class="stat-label">Total Products</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-2">
-            <div class="stat-card-mini">
-                <div class="stat-number text-success">{{ active_products|default:total_products }}</div>
-                <div class="stat-label">Active Products</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-2">
-            <div class="stat-card-mini">
-                <div class="stat-number text-warning">{{ low_stock_count|default:0 }}</div>
-                <div class="stat-label">Low Stock</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-2">
-            <div class="stat-card-mini">
-                <div class="stat-number text-info">{{ featured_count|default:0 }}</div>
-                <div class="stat-label">Featured</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter Section -->
-    <div class="filter-section animated" style="animation-delay: 0.3s;">
-        <div class="row align-items-center">
-            <div class="col-md-4 mb-3 mb-md-0">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search products by name, SKU, or category...">
+    <div class="row g-3 mb-4 animated" style="animation-delay: 0.1s;">
+        <div class="col-6 col-md-3">
+            <div class="metric-card bg-white p-3 border rounded-3 shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small d-block mb-1">Total Products</span>
+                    <h3 class="fw-bold mb-0 text-primary">{{ total_products }}</h3>
+                </div>
+                <div class="bg-light p-2.5 rounded-circle text-primary">
+                    <i class="fas fa-box fa-lg"></i>
                 </div>
             </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <select id="categoryFilter" class="form-select">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}</option>
-                    {% endfor %}
-                </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="metric-card bg-white p-3 border rounded-3 shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small d-block mb-1">Active Products</span>
+                    <h3 class="fw-bold mb-0 text-success">{{ active_products|default:total_products }}</h3>
+                </div>
+                <div class="bg-light p-2.5 rounded-circle text-success">
+                    <i class="fas fa-check-circle fa-lg"></i>
+                </div>
             </div>
-            <div class="col-md-2 mb-3 mb-md-0">
-                <select id="statusFilter" class="form-select">
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="featured">Featured</option>
-                </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="metric-card bg-white p-3 border rounded-3 shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small d-block mb-1">Low Stock Alert</span>
+                    <h3 class="fw-bold mb-0 text-warning">{{ low_stock_count|default:0 }}</h3>
+                </div>
+                <div class="bg-light p-2.5 rounded-circle text-warning">
+                    <i class="fas fa-exclamation-triangle fa-lg"></i>
+                </div>
             </div>
-            <div class="col-md-2 mb-3 mb-md-0">
-                <select id="stockFilter" class="form-select">
-                    <option value="">All Stock</option>
-                    <option value="low">Low Stock</option>
-                    <option value="out">Out of Stock</option>
-                    <option value="in">In Stock</option>
-                </select>
-            </div>
-            <div class="col-md-1">
-                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
-                    <i class="fas fa-redo"></i>
-                </button>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="metric-card bg-white p-3 border rounded-3 shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small d-block mb-1">Featured Items</span>
+                    <h3 class="fw-bold mb-0 text-info">{{ featured_count|default:0 }}</h3>
+                </div>
+                <div class="bg-light p-2.5 rounded-circle text-info">
+                    <i class="fas fa-star fa-lg"></i>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- View Toggle & Bulk Actions -->
-    <div class="d-flex justify-content-between align-items-center mb-3 animated" style="animation-delay: 0.4s;">
-        <div class="view-toggle">
-            <button class="view-toggle-btn active" onclick="setView('grid')" id="gridViewBtn">
-                <i class="fas fa-th-large"></i> Grid
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 animated" style="animation-delay: 0.2s;">
+        <div class="card-body p-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-lg-4 col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0 text-muted"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control bg-light border-0" placeholder="Search by name, SKU...">
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <select id="categoryFilter" class="form-select bg-light border-0">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <select id="statusFilter" class="form-select bg-light border-0">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="featured">Featured</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <select id="stockFilter" class="form-select bg-light border-0">
+                        <option value="">All Stocks</option>
+                        <option value="low">Low Stock</option>
+                        <option value="out">Out of Stock</option>
+                        <option value="in">In Stock</option>
+                    </select>
+                </div>
+                <div class="col-lg-1 col-md-4">
+                    <button class="btn btn-outline-secondary w-100 border-0 bg-light text-muted" onclick="resetFilters()" title="Reset Filters">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toggle & Actions Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-3 animated" style="animation-delay: 0.3s;">
+        <div class="view-toggle bg-light p-1 rounded-3 d-inline-flex">
+            <button class="btn btn-sm btn-white active shadow-sm px-3 py-1.5" onclick="setView('grid')" id="gridViewBtn">
+                <i class="fas fa-th-large me-1"></i> Grid
             </button>
-            <button class="view-toggle-btn" onclick="setView('list')" id="listViewBtn">
-                <i class="fas fa-list"></i> List
+            <button class="btn btn-sm btn-light px-3 py-1.5 ms-1" onclick="setView('list')" id="listViewBtn">
+                <i class="fas fa-list me-1"></i> List
             </button>
         </div>
         <div>
-            <button class="btn btn-outline-danger btn-sm" onclick="deleteSelected()" style="display: none;" id="deleteSelectedBtn">
-                <i class="fas fa-trash"></i> Delete Selected
+            <button class="btn btn-outline-danger btn-sm rounded-3 py-1.5 px-3" onclick="deleteSelected()" style="display: none;" id="deleteSelectedBtn">
+                <i class="fas fa-trash me-1"></i> Delete Selected
             </button>
         </div>
     </div>
 
-    <!-- Bulk Actions Bar -->
-    <div class="bulk-actions" id="bulkActions">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <strong><span id="selectedCount">0</span> products selected</strong>
+    <!-- Bulk Actions bar -->
+    <div class="bulk-actions card border-0 shadow-sm rounded-4 mb-3 p-3 bg-light-blue" id="bulkActions" style="display:none; background: #eef2ff;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center">
+            <div class="fw-semibold text-primary">
+                <i class="fas fa-check-double me-1"></i> <span id="selectedCount">0</span> products selected
             </div>
-            <div class="col-md-6 text-md-end">
-                <button class="btn btn-success btn-sm" onclick="bulkActivate()">
+            <div class="d-flex gap-2">
+                <button class="btn btn-success btn-sm rounded-3 px-3" onclick="bulkActivate()">
                     <i class="fas fa-check-circle"></i> Activate
                 </button>
-                <button class="btn btn-warning btn-sm" onclick="bulkDeactivate()">
+                <button class="btn btn-warning btn-sm rounded-3 px-3" onclick="bulkDeactivate()">
                     <i class="fas fa-ban"></i> Deactivate
                 </button>
-                <button class="btn btn-danger btn-sm" onclick="bulkDelete()">
+                <button class="btn btn-danger btn-sm rounded-3 px-3" onclick="bulkDelete()">
                     <i class="fas fa-trash"></i> Delete
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="clearSelection()">
+                <button class="btn btn-secondary btn-sm rounded-3 px-3" onclick="clearSelection()">
                     <i class="fas fa-times"></i> Clear
                 </button>
             </div>
@@ -137,70 +159,83 @@
     <div id="productsContainer">
         {% if products %}
             <!-- Grid View -->
-            <div id="gridView" class="products-grid">
+            <div id="gridView" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
                 {% for product in products %}
-                <div class="product-card" data-product-id="{{ product.id }}" data-product-name="{{ product.name|lower }}" data-category="{{ product.category.id }}" data-status="{% if product.is_active %}active{% else %}inactive{% endif %}" data-stock="{{ product.stock_quantity }}">
-                    <div class="product-image">
-                        {% if product.images.first %}
-                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                        {% else %}
-                            <img src="https://via.placeholder.com/300x200?text=No+Image" alt="{{ product.name }}">
-                        {% endif %}
-                        <div class="product-badges">
+                <div class="col product-card-col" data-product-id="{{ product.id }}" data-product-name="{{ product.name|lower }}" data-category="{{ product.category.id }}" data-status="{% if product.is_active %}active{% else %}inactive{% endif %}" data-stock="{{ product.stock_quantity }}" data-featured="{% if product.is_featured %}true{% else %}false{% endif %}">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative product-card-manage">
+                        <!-- Checkbox and badge overlay -->
+                        <div class="position-absolute top-0 start-0 p-3 z-3">
+                            <input type="checkbox" class="product-checkbox form-check-input" value="{{ product.id }}" onchange="updateBulkActions()" style="width: 1.25rem; height: 1.25rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        </div>
+                        
+                        <!-- Badges overlay -->
+                        <div class="position-absolute top-0 end-0 p-3 z-3 d-flex flex-column gap-1 text-end">
                             {% if not product.is_active %}
-                                <span class="badge bg-danger">Inactive</span>
+                                <span class="badge bg-danger shadow-sm">Inactive</span>
                             {% endif %}
                             {% if product.is_featured %}
-                                <span class="badge bg-info">Featured</span>
-                            {% endif %}
-                            {% if product.discount_percentage %}
-                                <span class="badge bg-danger">{{ product.discount_percentage }}% OFF</span>
+                                <span class="badge bg-info shadow-sm text-dark">Featured</span>
                             {% endif %}
                             {% if product.stock_quantity <= 0 %}
-                                <span class="badge bg-dark">Out of Stock</span>
+                                <span class="badge bg-dark shadow-sm">Out of Stock</span>
                             {% elif product.stock_quantity <= product.low_stock_threshold %}
-                                <span class="badge bg-warning">Low Stock</span>
+                                <span class="badge bg-warning text-dark shadow-sm">Low Stock</span>
                             {% endif %}
                         </div>
-                        <div class="product-actions">
-                            <input type="checkbox" class="product-checkbox" value="{{ product.id }}" onchange="updateBulkActions()" style="width: 20px; height: 20px;">
-                            <a href="{% url 'products:edit' product.id %}" class="btn btn-sm btn-primary" title="Edit">
-                                <i class="fas fa-edit"></i>
+
+                        <!-- Image -->
+                        <div class="product-image-container bg-light" style="height: 180px; overflow: hidden; position: relative;">
+                            {% with first_image=product.images.all.0 %}
+                            {% if first_image %}
+                                <img src="{{ first_image.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
+                                    <i class="fas fa-box fa-3x opacity-50"></i>
+                                </div>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+
+                        <!-- Info -->
+                        <div class="card-body p-3 d-flex flex-column">
+                            <h6 class="card-title fw-bold text-dark mb-1 text-truncate" title="{{ product.name }}">{{ product.name }}</h6>
+                            <div class="text-muted small mb-2 d-flex align-items-center gap-1">
+                                <i class="fas fa-tag fa-xs"></i> <span>{{ product.category.name|default:"Uncategorized" }}</span>
+                                <span class="mx-1">•</span>
+                                <span>SKU: {{ product.sku|default:"N/A" }}</span>
+                            </div>
+                            
+                            <div class="fs-5 fw-bold text-primary mb-3">
+                                {{ product.price|currency_format:request }}
+                                {% if product.compare_price %}
+                                    <small class="text-muted text-decoration-line-through fs-7 fw-normal ms-1">{{ product.compare_price|currency_format:request }}</small>
+                                {% endif %}
+                            </div>
+
+                            <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center small text-muted">
+                                <div>
+                                    <i class="fas fa-cubes me-1"></i> {{ product.stock_quantity }} units
+                                </div>
+                                <div>
+                                    <i class="fas fa-shopping-bag me-1"></i> {{ product.total_sold|default:0 }} sold
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions Hover Panel -->
+                        <div class="card-footer bg-white border-0 p-2 d-flex gap-1 justify-content-center border-top">
+                            <a href="{% url 'products:edit' product.id %}" class="btn btn-sm btn-light flex-fill text-primary" title="Edit">
+                                <i class="fas fa-edit"></i> Edit
                             </a>
-                            <a href="{% url 'products:images' product.id %}" class="btn btn-sm btn-secondary" title="Manage Images">
-                                <i class="fas fa-image"></i>
+                            <a href="{% url 'products:images' product.id %}" class="btn btn-sm btn-light flex-fill text-secondary" title="Images">
+                                <i class="fas fa-images"></i> Media
                             </a>
-                            <a href="{% url 'products:detail' product.slug %}" class="btn btn-sm btn-info" title="View" target="_blank">
-                                <i class="fas fa-eye"></i>
+                            <a href="{% url 'products:detail' product.slug %}" class="btn btn-sm btn-light flex-fill text-info" title="Preview" target="_blank">
+                                <i class="fas fa-eye"></i> View
                             </a>
-                            <button class="btn btn-sm btn-danger" onclick="deleteProduct({{ product.id }})" title="Delete">
+                            <button class="btn btn-sm btn-light flex-fill text-danger" onclick="deleteProduct({{ product.id }})" title="Delete">
                                 <i class="fas fa-trash"></i>
                             </button>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-title">{{ product.name }}</div>
-                        <div class="product-category">
-                            <i class="fas fa-tag"></i> {{ product.category.name|default:"Uncategorized" }}
-                            <br>
-                            <small class="text-muted">SKU: {{ product.sku|default:"N/A" }}</small>
-                        </div>
-                        <div class="product-price">
-                            ${{ product.price }}
-                            {% if product.compare_price %}
-                                <small class="text-muted text-decoration-line-through">${{ product.compare_price }}</small>
-                            {% endif %}
-                        </div>
-                        <div class="product-stats">
-                            <div class="stock-indicator">
-                                <i class="fas fa-box"></i>
-                                <span class="{% if product.stock_quantity <= 0 %}stock-critical{% elif product.stock_quantity <= product.low_stock_threshold %}stock-low{% else %}stock-good{% endif %}">
-                                    {{ product.stock_quantity }} in stock
-                                </span>
-                            </div>
-                            <div class="sales-count">
-                                <i class="fas fa-chart-line"></i> {{ product.total_sold|default:0 }} sold
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -208,102 +243,106 @@
             </div>
 
             <!-- List View (Table) -->
-            <div id="listView" style="display: none;">
-                <div class="card">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th style="width: 30px;">
-                                            <input type="checkbox" id="selectAllList" onchange="toggleSelectAllList()">
-                                        </th>
-                                        <th>Image</th>
-                                        <th>Name</th>
-                                        <th>SKU</th>
-                                        <th>Price</th>
-                                        <th>Stock</th>
-                                        <th>Sales</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for product in products %}
-                                    <tr data-product-id="{{ product.id }}">
-                                        <td>
-                                            <input type="checkbox" class="product-checkbox-list" value="{{ product.id }}" onchange="updateBulkActionsList()">
-                                        </td>
-                                        <td>
-                                            {% if product.images.first %}
-                                                <img src="{{ product.images.first.image.url }}" width="50" height="50" style="object-fit: cover; border-radius: 8px;">
+            <div id="listView" style="display: none;" class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40px;" class="ps-3">
+                                    <input type="checkbox" id="selectAllList" class="form-check-input" onchange="toggleSelectAllList()">
+                                </th>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>SKU</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Sales</th>
+                                <th>Status</th>
+                                <th class="text-end pe-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr class="product-row" data-product-id="{{ product.id }}" data-product-name="{{ product.name|lower }}" data-category="{{ product.category.id }}" data-status="{% if product.is_active %}active{% else %}inactive{% endif %}" data-stock="{{ product.stock_quantity }}" data-featured="{% if product.is_featured %}true{% else %}false{% endif %}">
+                                <td class="ps-3">
+                                    <input type="checkbox" class="product-checkbox-list form-check-input" value="{{ product.id }}" onchange="updateBulkActionsList()">
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-3 bg-light overflow-hidden" style="width: 45px; height: 45px; flex-shrink: 0;">
+                                            {% with first_image=product.images.all.0 %}
+                                            {% if first_image %}
+                                                <img src="{{ first_image.image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
-                                                <i class="fas fa-image fa-2x text-muted"></i>
+                                                <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                                    <i class="fas fa-box"></i>
+                                                </div>
                                             {% endif %}
-                                        </td>
-                                        <td>
-                                            <strong>{{ product.name }}</strong><br>
-                                            <small class="text-muted">{{ product.category.name|default:"Uncategorized" }}</small>
-                                        </td>
-                                        <td>{{ product.sku|default:"N/A" }}</td>
-                                        <td>
-                                            <strong>${{ product.price }}</strong>
-                                            {% if product.compare_price %}
-                                                <br><small class="text-muted text-decoration-line-through">${{ product.compare_price }}</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if product.stock_quantity <= 0 %}
-                                                <span class="badge bg-danger">Out of Stock</span>
-                                            {% elif product.stock_quantity <= product.low_stock_threshold %}
-                                                <span class="badge bg-warning">{{ product.stock_quantity }} left</span>
-                                            {% else %}
-                                                <span class="badge bg-success">{{ product.stock_quantity }}</span>
-                                            {% endif %}
-                                         </td>
-                                        <td>{{ product.total_sold|default:0 }}</td>
-                                        <td>
-                                            {% if product.is_active %}
-                                                <span class="badge bg-success">Active</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">Inactive</span>
-                                            {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ product.name }}</div>
                                             {% if product.is_featured %}
-                                                <span class="badge bg-info">Featured</span>
+                                                <span class="badge bg-info text-dark scale-90">Featured</span>
                                             {% endif %}
-                                         </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{% url 'products:edit' product.id %}" class="btn btn-primary" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="{% url 'products:images' product.id %}" class="btn btn-secondary" title="Images">
-                                                    <i class="fas fa-image"></i>
-                                                </a>
-                                                <a href="{% url 'products:detail' product.slug %}" class="btn btn-info" title="View" target="_blank">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <button class="btn btn-danger" onclick="deleteProduct({{ product.id }})" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                         </td>
-                                     </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ product.category.name|default:"Uncategorized" }}</td>
+                                <td><code class="text-dark bg-light px-2 py-1 rounded small">{{ product.sku|default:"N/A" }}</code></td>
+                                <td>
+                                    <span class="fw-semibold">{{ product.price|currency_format:request }}</span>
+                                    {% if product.compare_price %}
+                                        <br><small class="text-muted text-decoration-line-through">{{ product.compare_price|currency_format:request }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if product.stock_quantity <= 0 %}
+                                        <span class="badge bg-danger rounded-pill">Out of Stock</span>
+                                    {% elif product.stock_quantity <= product.low_stock_threshold %}
+                                        <span class="badge bg-warning text-dark rounded-pill">{{ product.stock_quantity }} Low</span>
+                                    {% else %}
+                                        <span class="badge bg-success rounded-pill">{{ product.stock_quantity }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ product.total_sold|default:0 }}</td>
+                                <td>
+                                    {% if product.is_active %}
+                                        <span class="badge bg-success-subtle text-success px-2.5 py-1.5 border border-success border-opacity-25 rounded-3">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger px-2.5 py-1.5 border border-danger border-opacity-25 rounded-3">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'products:edit' product.id %}" class="btn btn-outline-light text-primary border" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'products:images' product.id %}" class="btn btn-outline-light text-secondary border" title="Images">
+                                            <i class="fas fa-image"></i>
+                                        </a>
+                                        <a href="{% url 'products:detail' product.slug %}" class="btn btn-outline-light text-info border" title="Preview" target="_blank">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-light text-danger border" onclick="deleteProduct({{ product.id }})" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         {% else %}
             <!-- Empty State -->
-            <div class="empty-state">
-                <i class="fas fa-box-open fa-5x text-muted mb-4"></i>
-                <h3 class="text-muted">No Products Yet</h3>
-                <p class="text-muted">Start by adding your first product to showcase to customers.</p>
-                <a href="{% url 'products:create' %}" class="btn btn-primary btn-lg mt-3">
-                    <i class="fas fa-plus"></i> Add Your First Product
+            <div class="empty-state text-center py-5 bg-white rounded-4 border shadow-sm my-4">
+                <i class="fas fa-box-open fa-5x text-muted opacity-30 mb-4"></i>
+                <h4 class="fw-bold text-dark">No Products Registered</h4>
+                <p class="text-muted mx-auto" style="max-width: 400px;">Create your first catalog item to publish listings to prospective buyers.</p>
+                <a href="{% url 'products:create' %}" class="btn btn-primary btn-lg rounded-3 py-2 px-4 shadow-sm mt-3 fw-semibold">
+                    <i class="fas fa-plus me-1"></i> Add Your First Product
                 </a>
             </div>
         {% endif %}
@@ -345,5 +384,6 @@
     {% endif %}
 </div>
 
+<!-- Modal / Dialog logic references -->
 <script src="{% static 'js/products/manage.js' %}"></script>
 {% endblock %}

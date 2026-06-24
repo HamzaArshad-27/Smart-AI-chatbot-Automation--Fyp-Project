@@ -1,131 +1,203 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block title %}Shopping Cart • Vendora{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Modern Cart Styling */
+    /* Simplified Modern Shopping Cart Styles */
+    :root {
+        --radius-lg: 16px;
+        --radius-md: 12px;
+    }
+
     .cart-container {
-        max-width: 1400px;
+        max-width: 1200px;
         margin: 0 auto;
     }
-    .cart-header-modern {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border-radius: 32px;
-        padding: 2rem 2rem;
-        margin-bottom: 2rem;
-        color: white;
-    }
-    .cart-table-wrapper {
-        background: white;
-        border-radius: 28px;
-        box-shadow: 0 8px 28px -12px rgba(0,0,0,0.08);
+
+    /* Flat Card containers */
+    .glass-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
         overflow: hidden;
-        border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    /* Cart Header Banner */
+    .cart-banner {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Free Shipping Goal */
+    .free-shipping-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-md);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .free-shipping-progress {
+        height: 8px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+    .free-shipping-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #3b82f6, #2563eb);
+        border-radius: 10px;
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .free-shipping-bar.qualified {
+        background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    /* Cart list layout */
+    .cart-table-wrapper {
+        border-radius: var(--radius-lg);
     }
     .cart-table {
         margin-bottom: 0;
     }
     .cart-table thead th {
         background: #f8fafc;
-        border-bottom: 1px solid #eef2ff;
-        padding: 1rem 1.2rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.1rem;
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.8px;
         color: #475569;
     }
+    .cart-table tbody tr {
+        transition: all 0.3s ease;
+    }
+    .cart-table tbody tr.removing {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+        background: rgba(239, 68, 68, 0.05);
+    }
     .cart-table tbody td {
-        padding: 1.2rem;
+        padding: 1.25rem 1.1rem;
         vertical-align: middle;
         border-bottom: 1px solid #f1f5f9;
     }
-    .product-info-cell {
-        min-width: 280px;
-    }
+
     .product-img-cart {
-        width: 70px;
-        height: 70px;
+        width: 64px;
+        height: 64px;
         object-fit: cover;
-        border-radius: 16px;
+        border-radius: 12px;
         background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: transform 0.2s;
     }
+    .product-img-cart:hover {
+        transform: scale(1.04);
+    }
+
     .product-name-cart {
         font-weight: 700;
         color: #1e293b;
         text-decoration: none;
-        transition: 0.2s;
+        transition: color 0.2s;
     }
     .product-name-cart:hover {
         color: #2563eb;
     }
+
+    /* Quantity Pill */
     .quantity-control {
         display: inline-flex;
         align-items: center;
-        background: #f8fafc;
-        border-radius: 60px;
+        background: #f1f5f9;
+        border-radius: 50px;
         border: 1px solid #e2e8f0;
-        overflow: hidden;
+        padding: 2px;
     }
     .quantity-btn-cart {
-        background: transparent;
+        background: white;
         border: none;
-        width: 34px;
-        height: 34px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: bold;
-        font-size: 1.2rem;
-        transition: 0.2s;
+        color: #475569;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: all 0.2s;
         cursor: pointer;
     }
     .quantity-btn-cart:hover {
-        background: #e2e8f0;
+        background: #2563eb;
+        color: white;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
     }
     .quantity-input-cart {
-        width: 50px;
+        width: 36px;
         text-align: center;
         border: none;
         background: transparent;
-        font-weight: 600;
-        padding: 0.3rem 0;
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.9rem;
     }
     .quantity-input-cart:focus {
         outline: none;
     }
+
     .price-text {
         font-weight: 700;
-        color: #0f172a;
+        color: #1e293b;
+        font-size: 0.95rem;
     }
     .subtotal-text {
         font-weight: 800;
         color: #2563eb;
+        font-size: 0.95rem;
     }
+
     .remove-item-btn {
-        background: none;
+        background: transparent;
         border: none;
         color: #94a3b8;
-        transition: 0.2s;
         padding: 8px 12px;
-        border-radius: 40px;
+        border-radius: 50%;
+        transition: all 0.2s;
     }
     .remove-item-btn:hover {
         color: #ef4444;
-        background: #fef2f2;
+        background: rgba(239, 68, 68, 0.08);
     }
+
+    /* Order Summary Panel */
     .summary-card-modern {
-        background: white;
-        border-radius: 28px;
-        border: 1px solid rgba(0,0,0,0.03);
-        box-shadow: 0 8px 28px -12px rgba(0,0,0,0.08);
-        overflow: hidden;
         position: sticky;
         top: 100px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     }
     .summary-header {
-        background: #0f172a;
-        padding: 1.2rem 1.5rem;
-        color: white;
+        background: #f8fafc;
+        padding: 1.25rem 1.5rem;
+        color: #1e293b;
+        border-bottom: 1px solid #e2e8f0;
     }
     .summary-body {
         padding: 1.5rem;
@@ -133,175 +205,259 @@
     .summary-row {
         display: flex;
         justify-content: space-between;
-        padding: 0.6rem 0;
-        border-bottom: 1px dashed #eef2ff;
+        padding: 0.7rem 0;
+        border-bottom: 1px dashed #e2e8f0;
+        color: #475569;
+        font-size: 0.9rem;
     }
     .summary-total {
         display: flex;
         justify-content: space-between;
-        padding: 1rem 0;
+        padding: 1.1rem 0;
         font-size: 1.2rem;
         font-weight: 800;
         border-top: 2px solid #e2e8f0;
-        margin-top: 0.5rem;
+        margin-top: 0.75rem;
+        color: #1e293b;
     }
+
+    /* Checkout & Continue Buttons */
     .btn-checkout {
-        background: linear-gradient(105deg, #10b981, #059669);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         border: none;
-        border-radius: 60px;
-        padding: 0.9rem;
+        border-radius: 50px;
+        padding: 0.9rem 1.5rem;
         font-weight: 700;
         font-size: 1rem;
-        transition: 0.2s;
+        color: white;
         width: 100%;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        display: inline-block;
+        text-align: center;
+        text-decoration: none;
         margin-bottom: 0.75rem;
     }
     .btn-checkout:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+        color: white;
     }
     .btn-continue {
-        background: #f1f5f9;
-        border: none;
-        border-radius: 60px;
-        padding: 0.75rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
         font-weight: 600;
         width: 100%;
-        transition: 0.2s;
+        color: #475569;
+        transition: all 0.2s;
+        display: inline-block;
+        text-align: center;
+        text-decoration: none;
     }
     .btn-continue:hover {
-        background: #e2e8f0;
+        background: #f1f5f9;
+        color: #1e293b;
     }
-    .empty-cart-modern {
-        text-align: center;
-        padding: 4rem 2rem;
+
+    /* Coupon promo box */
+    .promo-input-group {
         background: white;
-        border-radius: 42px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.03);
-    }
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 50px;
+        padding: 3px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        z-index: 9999;
+    }
+    .promo-input {
+        border: none;
+        background: transparent;
+        padding: 0.4rem 1rem;
+        flex-grow: 1;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    .promo-input::placeholder {
+        color: #94a3b8;
+    }
+    .promo-input:focus {
+        outline: none;
+    }
+    .promo-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 40px;
+        padding: 0.45rem 1.25rem;
+        font-weight: 700;
+        font-size: 0.82rem;
+        transition: all 0.2s;
+    }
+    .promo-btn:hover {
+        background: #2563eb;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Loader */
+    .cart-loader {
         display: none;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.6);
+        z-index: 5;
+        backdrop-filter: blur(2px);
     }
-    .loading-spinner {
-        background: white;
-        padding: 2rem;
-        border-radius: 60px;
-        box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-    }
+
     @media (max-width: 768px) {
-        .cart-header-modern {
-            padding: 1.2rem;
-        }
-        .product-info-cell {
-            min-width: 200px;
-        }
         .cart-table thead {
             display: none;
         }
         .cart-table tbody tr {
             display: block;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #eef2ff;
+            margin-bottom: 1.5rem;
+            background: white;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            border-radius: 20px;
+            padding: 1rem;
         }
         .cart-table tbody td {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.8rem;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px dashed rgba(226, 232, 240, 0.6);
         }
-        .cart-table tbody td:before {
+        .cart-table tbody td:last-child {
+            border-bottom: none;
+        }
+        .cart-table tbody td::before {
             content: attr(data-label);
-            font-weight: 600;
+            font-weight: 700;
             color: #64748b;
+            font-size: 0.85rem;
+        }
+        .product-info-cell {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 10px;
+        }
+        .product-info-cell::before {
+            display: none !important;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container cart-container py-4">
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-            <p class="mt-2 mb-0">Updating cart...</p>
-        </div>
-    </div>
-
-    <!-- Modern Cart Header -->
-    <div class="cart-header-modern" data-aos="fade-down">
+<div class="container cart-container py-5">
+    <!-- Modern Header Banner -->
+    <div class="cart-banner animated" data-aos="fade-down">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
-                <h1 class="display-6 fw-bold mb-1"><i class="fas fa-bag-shopping me-3"></i>Shopping Cart</h1>
-                <p class="opacity-75 mb-0">Review and manage your items before checkout</p>
+                <h1 class="display-6 fw-bold mb-1"><i class="fas fa-shopping-bag me-3 text-primary"></i>Shopping Cart</h1>
+                <p class="opacity-75 mb-0">Secure shopping for your enterprise wholesale requirements.</p>
             </div>
             {% if cart.items.all %}
-                <a href="{% url 'cart:clear' %}" class="btn btn-outline-light rounded-pill px-4" onclick="return confirmClearCart()">
+                <button onclick="confirmClearCart()" class="btn btn-outline-light rounded-pill px-4">
                     <i class="fas fa-trash-alt me-2"></i>Clear Cart
-                </a>
+                </button>
             {% endif %}
         </div>
     </div>
 
     {% if cart.items.all %}
+        <!-- Free Shipping Tracker -->
+        <div class="free-shipping-card animated" data-aos="fade-up" data-aos-delay="50">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="fw-bold text-dark" id="shippingGoalText">
+                    <i class="fas fa-shipping-fast text-primary me-2"></i>
+                    <!-- Dynamic Text -->
+                </span>
+                <span class="badge bg-light text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold" id="shippingGoalValue">
+                    Limit: $200.00
+                </span>
+            </div>
+            <div class="free-shipping-progress">
+                <div class="free-shipping-bar" id="shippingProgressBar"></div>
+            </div>
+        </div>
+
         <div class="row g-4">
-            <!-- Cart Items Column -->
+            <!-- Left Items List -->
             <div class="col-lg-8">
-                <div class="cart-table-wrapper" data-aos="fade-right">
+                <div class="glass-card position-relative cart-table-wrapper animated" data-aos="fade-right" data-aos-delay="100">
+                    <!-- Inline Loader overlay -->
+                    <div class="cart-loader" id="cartTableLoader">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    
                     <table class="cart-table table align-middle">
                         <thead>
                             <tr>
-                                <th>Product</th>
+                                <th>Product Details</th>
                                 <th>Price</th>
                                 <th>Quantity</th>
                                 <th>Subtotal</th>
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="cartTableBody">
                             {% for item in cart.items.all %}
-                                <tr id="cart-item-{{ item.id }}" data-item-id="{{ item.id }}" data-price="{{ item.product.price }}" data-product-id="{{ item.product.id }}">
+                                <tr id="cart-item-{{ item.id }}" data-item-id="{{ item.id }}" data-price="{{ item.product.price }}">
                                     <td data-label="Product" class="product-info-cell">
                                         <div class="d-flex align-items-center gap-3">
-                                            {% if item.product.images.first %}
-                                                <img src="{{ item.product.images.first.image.url }}" class="product-img-cart" alt="{{ item.product.name }}" loading="lazy">
+                                            {% with first_image=item.product.images.all.0 %}
+                                            {% if first_image %}
+                                                <img src="{{ first_image.image.url }}" class="product-img-cart" alt="{{ item.product.name }}">
                                             {% else %}
                                                 <div class="product-img-cart d-flex align-items-center justify-content-center bg-light">
-                                                    <i class="fas fa-box fa-2x text-muted"></i>
+                                                    <i class="fas fa-box fa-lg text-muted"></i>
                                                 </div>
                                             {% endif %}
+                                            {% endwith %}
                                             <div>
-                                                <a href="{% url 'products:detail' item.product.slug %}" class="product-name-cart fw-semibold">{{ item.product.name|truncatechars:40 }}</a>
+                                                <a href="{% url 'products:detail' item.product.slug %}" class="product-name-cart fw-bold">
+                                                    {{ item.product.name|truncatechars:40 }}
+                                                </a>
                                                 <div class="mt-1">
-                                                    <span class="badge bg-light text-dark rounded-pill">
-                                                        <i class="fas fa-store me-1"></i>{{ item.product.company.name|truncatechars:15 }}
+                                                    <span class="badge bg-white text-secondary border border-light-subtle rounded-pill">
+                                                        <i class="fas fa-store me-1"></i>{{ item.product.company.name|truncatechars:18 }}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td data-label="Price" class="price-text">${{ item.product.price|floatformat:2 }}</td>
+                                    <td data-label="Price" class="price-text">
+                                        {{ item.product.price|currency_format:request }}
+                                        {% if item.product.compare_price %}
+                                            <br>
+                                            <small class="text-muted text-decoration-line-through" style="font-size: 0.85rem; font-weight: normal;">
+                                                {{ item.product.compare_price|currency_format:request }}
+                                            </small>
+                                            <span class="badge bg-danger ms-1" style="font-size: 0.7rem; font-weight: 600;">
+                                                {{ item.product.discount_percentage }}% OFF
+                                            </span>
+                                        {% endif %}
+                                    </td>
                                     <td data-label="Quantity">
                                         <div class="quantity-control">
-                                            <button class="quantity-btn-cart" onclick="updateQuantity({{ item.id }}, -1, {{ item.product.stock_quantity }})">−</button>
+                                            <button class="quantity-btn-cart" onclick="updateQuantityAjax({{ item.id }}, -1, {{ item.product.stock_quantity }})">−</button>
                                             <input type="text" id="qty-{{ item.id }}" value="{{ item.quantity }}" class="quantity-input-cart" readonly>
-                                            <button class="quantity-btn-cart" onclick="updateQuantity({{ item.id }}, 1, {{ item.product.stock_quantity }})">+</button>
+                                            <button class="quantity-btn-cart" onclick="updateQuantityAjax({{ item.id }}, 1, {{ item.product.stock_quantity }})">+</button>
                                         </div>
                                     </td>
-                                    <td data-label="Subtotal" class="subtotal-text" id="subtotal-{{ item.id }}">${{ item.get_subtotal|floatformat:2 }}</td>
-                                    <td data-label="Actions">
-                                        <button class="remove-item-btn" onclick="removeCartItem({{ item.id }})" title="Remove item">
-                                            <i class="fas fa-trash-alt fa-lg"></i>
+                                    <td data-label="Subtotal" class="subtotal-text" id="subtotal-{{ item.id }}">
+                                        {{ item.get_subtotal|currency_format:request }}
+                                    </td>
+                                    <td data-label="Remove">
+                                        <button class="remove-item-btn" onclick="removeCartItemAjax({{ item.id }})" title="Remove item">
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -309,39 +465,71 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Special Notes -->
+                <div class="card mt-4 border-0 shadow-sm rounded-4 animated" data-aos="fade-up" data-aos-delay="150" style="background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border);">
+                    <div class="card-body">
+                        <label class="form-label fw-bold text-dark"><i class="far fa-sticky-note me-2 text-primary"></i>Delivery Notes & Instructions</label>
+                        <textarea class="form-control" rows="3" placeholder="Specify any delivery instructions, order details, or packaging notes here..."></textarea>
+                    </div>
+                </div>
             </div>
 
-            <!-- Order Summary Column -->
+            <!-- Right Sticky Summary -->
             <div class="col-lg-4">
-                <div class="summary-card-modern" data-aos="fade-left">
+                <div class="glass-card summary-card-modern animated" data-aos="fade-left" data-aos-delay="200">
                     <div class="summary-header">
                         <h5 class="mb-0 fw-bold"><i class="fas fa-receipt me-2"></i>Order Summary</h5>
                     </div>
                     <div class="summary-body">
+                        <!-- Subtotal -->
                         <div class="summary-row">
-                            <span>Subtotal (<span id="itemCount">{{ cart.items.count }}</span> items)</span>
-                            <strong id="cartSubtotal">${{ cart.get_total|floatformat:2 }}</strong>
-                        </div>
-                        <div class="summary-row">
-                            <span>Shipping</span>
-                            <span class="text-muted">Calculated at checkout</span>
-                        </div>
-                        <div class="summary-total">
-                            <span class="fw-bold">Estimated Total</span>
-                            <span class="fw-bold text-primary" id="cartTotal">${{ cart.get_total|floatformat:2 }}</span>
+                            <span>Subtotal (<span id="summaryItemCount">{{ cart.get_total_items }}</span> items)</span>
+                            <span class="fw-bold text-dark" id="summarySubtotal" data-usd-val="{{ cart.get_total }}">{{ cart.get_total|currency_format:request }}</span>
                         </div>
                         
+                        <!-- Shipping dynamic -->
+                        <div class="summary-row">
+                            <span>Shipping Costs</span>
+                            <span class="fw-bold text-success" id="summaryShipping">FREE</span>
+                        </div>
+
+                        <!-- Promo discount (hidden initially, shown when applied) -->
+                        <div class="summary-row d-none" id="summaryDiscountRow">
+                            <span class="text-success">Discount (10% Promo)</span>
+                            <span class="fw-bold text-success" id="summaryDiscount">-$0.00</span>
+                        </div>
+
+                        <!-- Total amount -->
+                        <div class="summary-total">
+                            <span>Estimated Total</span>
+                            <span class="text-primary" id="summaryTotal">{{ cart.get_total|currency_format:request }}</span>
+                        </div>
+
+                        <!-- Promo Code section -->
+                        <div class="mb-4 mt-2">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2" style="letter-spacing: 0.5px;">Have a Promo Code?</label>
+                            <div class="promo-input-group" id="promoGroup">
+                                <input type="text" id="promoCode" class="promo-input" placeholder="e.g. VENDORA10">
+                                <button type="button" class="promo-btn" onclick="applyPromoCode()">Apply</button>
+                            </div>
+                            <div class="mt-2 text-muted small" style="font-size: 0.75rem;">
+                                <i class="fas fa-info-circle me-1"></i> Try using code <strong class="text-primary">VENDORA10</strong> to get 10% off.
+                            </div>
+                        </div>
+
+                        <!-- Action controls -->
                         <div class="mt-4">
                             <a href="{% url 'orders:checkout' %}" class="btn-checkout text-white">
-                                <i class="fas fa-lock me-2"></i> Proceed to Checkout
+                                <i class="fas fa-shield-alt me-2"></i> Proceed to Checkout
                             </a>
                             <a href="{% url 'products:list' %}" class="btn-continue">
                                 <i class="fas fa-arrow-left me-2"></i> Continue Shopping
                             </a>
                         </div>
-                        
+
                         <div class="mt-3 text-center small text-muted">
-                            <i class="fas fa-shield-alt me-1"></i> Secure checkout • 30-day returns
+                            <i class="fas fa-lock me-1"></i> SSL Secured Payments • Free 30-Day returns
                         </div>
                     </div>
                 </div>
@@ -349,17 +537,17 @@
         </div>
     {% else %}
         <!-- Empty Cart State -->
-        <div class="empty-cart-modern" data-aos="fade-up">
-            <div class="mb-4">
-                <i class="fas fa-shopping-bag fa-5x text-muted opacity-50"></i>
+        <div class="glass-card empty-cart-modern text-center py-5 animated" data-aos="fade-up" style="padding: 5rem 2rem !important;">
+            <div class="mb-4 text-primary bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 100px; height: 100px;">
+                <i class="fas fa-shopping-cart fa-3x"></i>
             </div>
-            <h3 class="fw-bold mb-2">Your cart is empty</h3>
-            <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
+            <h3 class="fw-bold text-dark mb-2">Your Shopping Cart is Empty</h3>
+            <p class="text-muted mb-4" style="max-width: 450px; margin: 0 auto 2rem;">Browse through thousands of curated wholesale manufacturer catalogs and add products to start trading.</p>
             <div class="d-flex gap-3 justify-content-center flex-wrap">
-                <a href="{% url 'products:list' %}" class="btn btn-primary-glass px-5 py-3 rounded-pill">
-                    <i class="fas fa-store me-2"></i> Start Shopping
+                <a href="{% url 'products:list' %}" class="btn btn-primary rounded-pill px-5 py-3 fw-bold">
+                    <i class="fas fa-store me-2"></i> Explore Marketplace
                 </a>
-                <a href="{% url 'core:home' %}" class="btn btn-outline-modern px-5 py-3 rounded-pill">
+                <a href="{% url 'core:home' %}" class="btn btn-light rounded-pill px-5 py-3 fw-bold">
                     <i class="fas fa-home me-2"></i> Back to Home
                 </a>
             </div>
@@ -367,11 +555,17 @@
     {% endif %}
 </div>
 
-<!-- Toast Notification Container -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100" id="toastContainer"></div>
+<!-- Toast notifications -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 10000;" id="toastContainer"></div>
 
 <script>
-    // CSRF token setup for AJAX
+    // Constants
+    const SHIPPING_THRESHOLD = 200.0;
+    const SHIPPING_COST_FLAT = 15.00;
+    let appliedDiscountPercent = 0.0;
+    let rawSubtotal = 0.0;
+
+    // CSRF Utility
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -388,116 +582,281 @@
     }
     const csrftoken = getCookie('csrftoken');
 
-    // Show loading overlay
-    function showLoading() {
-        document.getElementById('loadingOverlay').style.display = 'flex';
-    }
-    
-    function hideLoading() {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }
-
-    // Show toast message
+    // Toast Generator
     function showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
-        const bgClass = type === 'success' ? 'bg-success' : (type === 'error' ? 'bg-danger' : 'bg-info');
-        const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
-        const toastHtml = `
-            <div class="toast align-items-center text-white ${bgClass} border-0 show" role="alert">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas ${icon} me-2"></i> ${message}
+        const id = 'toast-' + Math.floor(Math.random() * 10000);
+        const bg = type === 'success' ? 'success' : (type === 'error' ? 'danger' : 'warning');
+        const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-circle' : 'exclamation-triangle');
+        
+        const html = `
+            <div id="${id}" class="toast align-items-center text-white bg-${bg} border-0 show shadow-lg rounded-4" role="alert" style="min-width: 280px; margin-top: 10px;">
+                <div class="d-flex p-3">
+                    <div class="toast-body d-flex align-items-center gap-2 font-weight-bold">
+                        <i class="fas fa-${icon} fa-lg"></i>
+                        <span>${message}</span>
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="document.getElementById('${id}').remove()"></button>
                 </div>
             </div>
         `;
-        container.insertAdjacentHTML('beforeend', toastHtml);
-        const toastEl = container.lastElementChild;
+        container.insertAdjacentHTML('beforeend', html);
         setTimeout(() => {
-            if (toastEl) toastEl.remove();
+            const el = document.getElementById(id);
+            if (el) el.remove();
         }, 3000);
     }
 
-    // Update cart item quantity via traditional form POST (more reliable)
-    function updateQuantity(itemId, delta, maxStock) {
+    // Set Loading states
+    function setTableLoading(state) {
+        const loader = document.getElementById('cartTableLoader');
+        if (loader) {
+            loader.style.display = state ? 'flex' : 'none';
+        }
+    }
+
+    const activeRate = parseFloat("{{ active_currency_rate }}");
+    const activeSymbol = "{{ active_currency_symbol }}";
+
+    // Initialize calculations on DOM ready
+    document.addEventListener("DOMContentLoaded", () => {
+        {% if cart.items.all %}
+            const subtotalAttr = document.getElementById('summarySubtotal').getAttribute('data-usd-val') || '0';
+            rawSubtotal = parseFloat(subtotalAttr);
+            recalculateSummary();
+        {% endif %}
+    });
+
+    // Recalculate summary details locally on client
+    function recalculateSummary() {
+        if (rawSubtotal <= 0) return;
+
+        // Shipping dynamic calculations
+        let shipping = 0.0;
+        const progressPercent = Math.min((rawSubtotal / SHIPPING_THRESHOLD) * 100, 100);
+        const progressBar = document.getElementById('shippingProgressBar');
+        const shippingGoalText = document.getElementById('shippingGoalText');
+
+        if (progressBar && shippingGoalText) {
+            progressBar.style.width = `${progressPercent}%`;
+            
+            if (rawSubtotal < SHIPPING_THRESHOLD) {
+                shipping = SHIPPING_COST_FLAT;
+                const remaining = ((SHIPPING_THRESHOLD - rawSubtotal) * activeRate).toFixed(2);
+                shippingGoalText.innerHTML = `<i class="fas fa-shipping-fast text-primary me-2"></i>Add <strong class="text-primary">${activeSymbol}${remaining}</strong> more for <strong class="text-success">FREE shipping</strong>!`;
+                progressBar.className = "free-shipping-bar";
+                document.getElementById('summaryShipping').innerText = `${activeSymbol}${(SHIPPING_COST_FLAT * activeRate).toFixed(2)}`;
+                document.getElementById('summaryShipping').className = 'fw-bold text-dark';
+            } else {
+                shipping = 0.0;
+                shippingGoalText.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i>You have qualified for <strong class="text-success">FREE shipping</strong>!`;
+                progressBar.className = "free-shipping-bar qualified";
+                document.getElementById('summaryShipping').innerText = 'FREE';
+                document.getElementById('summaryShipping').className = 'fw-bold text-success';
+            }
+        }
+
+        // Discount details
+        let discount = 0.0;
+        if (appliedDiscountPercent > 0.0) {
+            discount = rawSubtotal * appliedDiscountPercent;
+            document.getElementById('summaryDiscountRow').classList.remove('d-none');
+            document.getElementById('summaryDiscount').innerText = `-${activeSymbol}${(discount * activeRate).toFixed(2)}`;
+        } else {
+            document.getElementById('summaryDiscountRow').classList.add('d-none');
+        }
+
+        // Final total calculation
+        const finalTotal = rawSubtotal + shipping - discount;
+        
+        document.getElementById('summarySubtotal').innerText = `${activeSymbol}${(rawSubtotal * activeRate).toFixed(2)}`;
+        document.getElementById('summaryTotal').innerText = `${activeSymbol}${(finalTotal * activeRate).toFixed(2)}`;
+    }
+
+    // AJAX quantity updates (without page reload)
+    function updateQuantityAjax(itemId, delta, maxStock) {
         const input = document.getElementById(`qty-${itemId}`);
         let currentQty = parseInt(input.value);
         let newQty = currentQty + delta;
-        
-        if (newQty < 1) newQty = 1;
-        if (newQty > maxStock) {
-            showToast(`Only ${maxStock} items available in stock`, 'error');
+
+        if (newQty < 1) {
+            removeCartItemAjax(itemId);
             return;
         }
-        
-        // Show loading
-        showLoading();
-        
-        // Create a form and submit it (traditional way - more reliable)
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/cart/update/${itemId}/`;
-        
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = csrftoken;
-        
-        const quantityInput = document.createElement('input');
-        quantityInput.type = 'hidden';
-        quantityInput.name = 'quantity';
-        quantityInput.value = newQty;
-        
-        form.appendChild(csrfInput);
-        form.appendChild(quantityInput);
-        document.body.appendChild(form);
-        
-        // Submit the form
-        form.submit();
-    }
+        if (newQty > maxStock) {
+            showToast(`Sorry, only ${maxStock} items available in stock.`, 'error');
+            return;
+        }
 
-    // Remove cart item via traditional form POST
-    function removeCartItem(itemId) {
-        if (!confirm('Remove this item from your cart?')) return;
-        
-        showLoading();
-        
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/cart/remove/${itemId}/`;
-        
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = csrftoken;
-        
-        form.appendChild(csrfInput);
-        document.body.appendChild(form);
-        form.submit();
-    }
+        setTableLoading(true);
 
-    // Confirm clear cart
-    function confirmClearCart() {
-        return confirm('⚠️ Are you sure you want to clear your entire cart? This action cannot be undone.');
-    }
+        const formData = new FormData();
+        formData.append('quantity', newQty);
 
-    // Update cart badge in navbar
-    function updateNavbarCartBadge(count) {
-        const cartBadge = document.querySelector('.cart-badge-new');
-        if (cartBadge) {
-            if (count > 0) {
-                cartBadge.textContent = count;
-                cartBadge.style.display = 'inline-flex';
+        fetch(`/cart/update/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            },
+            body: formData
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Response error');
+            return res.json();
+        })
+        .then(data => {
+            setTableLoading(false);
+            if (data.success) {
+                // Update local inputs
+                input.value = newQty;
+                
+                // Update item subtotal in row
+                const itemSubtotalEl = document.getElementById(`subtotal-${itemId}`);
+                if (itemSubtotalEl) {
+                    const subVal = parseFloat(data.item_subtotal);
+                    itemSubtotalEl.innerText = `${activeSymbol}${(subVal * activeRate).toFixed(2)}`;
+                }
+
+                // Update summary calculations
+                rawSubtotal = parseFloat(data.cart_total);
+                document.getElementById('summarySubtotal').setAttribute('data-usd-val', rawSubtotal);
+                document.getElementById('summarySubtotal').innerText = `${activeSymbol}${(rawSubtotal * activeRate).toFixed(2)}`;
+                document.getElementById('summaryItemCount').innerText = data.item_count;
+
+                // Sync Navbar badge
+                updateNavbarCartBadge(data.item_count);
+                
+                recalculateSummary();
+                showToast('Cart item quantity updated successfully!', 'success');
             } else {
-                cartBadge.style.display = 'none';
+                showToast(data.error || 'Failed to update quantity.', 'error');
             }
+        })
+        .catch(err => {
+            setTableLoading(false);
+            showToast('Unable to update cart quantity.', 'error');
+        });
+    }
+
+    // AJAX Row Removal (with fade transition)
+    function removeCartItemAjax(itemId) {
+        if (!confirm('Are you sure you want to remove this item from your cart?')) return;
+
+        setTableLoading(true);
+
+        fetch(`/cart/remove/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Response error');
+            return res.json();
+        })
+        .then(data => {
+            setTableLoading(false);
+            if (data.success) {
+                const row = document.getElementById(`cart-item-${itemId}`);
+                if (row) {
+                    row.classList.add('removing');
+                    setTimeout(() => {
+                        row.remove();
+                        // If empty cart
+                        if (document.querySelectorAll('#cartTableBody tr').length === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+                }
+
+                // Update summary calculations
+                rawSubtotal = parseFloat(data.cart_total);
+                document.getElementById('summarySubtotal').innerText = `$${rawSubtotal.toFixed(2)}`;
+                document.getElementById('summaryItemCount').innerText = data.item_count;
+                
+                // Sync Navbar badge
+                updateNavbarCartBadge(data.item_count);
+
+                recalculateSummary();
+                showToast('Product removed from cart.', 'success');
+            } else {
+                showToast('Unable to remove product from cart.', 'error');
+            }
+        })
+        .catch(err => {
+            setTableLoading(false);
+            showToast('Unable to connect to cart service.', 'error');
+        });
+    }
+
+    // Promo Coupon Engine
+    function applyPromoCode() {
+        const input = document.getElementById('promoCode');
+        const code = input.value.trim().toUpperCase();
+
+        if (code === 'VENDORA10') {
+            appliedDiscountPercent = 0.1;
+            recalculateSummary();
+            showToast('Promo code VENDORA10 (10% Off) applied successfully!', 'success');
+            
+            // Lock coupon input on success
+            const group = document.getElementById('promoGroup');
+            group.innerHTML = `
+                <div class="form-control border-success text-success bg-success bg-opacity-10 d-flex justify-content-between align-items-center px-3 py-2 rounded-pill w-100">
+                    <span class="fw-bold"><i class="fas fa-tag me-1"></i> VENDORA10 APPLIED</span>
+                    <button class="btn btn-close btn-close-dark" style="font-size: 0.7rem;" onclick="removePromoCode()"></button>
+                </div>
+            `;
+        } else if (!code) {
+            showToast('Please enter a coupon code.', 'warning');
+        } else {
+            showToast('Invalid or expired promo code.', 'error');
         }
     }
 
-    // Initialize AOS if available
-    if (typeof AOS !== 'undefined') {
-        AOS.refresh();
+    function removePromoCode() {
+        appliedDiscountPercent = 0.0;
+        recalculateSummary();
+        showToast('Promo code removed.', 'info');
+        
+        const group = document.getElementById('promoGroup');
+        group.innerHTML = `
+            <input type="text" id="promoCode" class="promo-input" placeholder="e.g. VENDORA10">
+            <button type="button" class="promo-btn" onclick="applyPromoCode()">Apply</button>
+        `;
+    }
+
+    // Clear cart handler
+    function confirmClearCart() {
+        if (confirm('⚠️ Are you sure you want to clear your entire cart? This action cannot be undone.')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{% url 'cart:clear' %}";
+            
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrftoken;
+            
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Sync navbar badge
+    function updateNavbarCartBadge(count) {
+        const badge = document.querySelector('.cart-badge-new') || document.querySelector('.badge.bg-primary');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
     }
 </script>
 {% endblock %}

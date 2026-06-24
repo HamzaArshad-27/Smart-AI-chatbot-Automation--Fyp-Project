@@ -10,4 +10,5 @@ urlpatterns = [
     path('update/<int:item_id>/', views.update_cart_item, name='update'),
     path('remove/<int:item_id>/', views.remove_cart_item, name='remove'),
     path('clear/', views.clear_cart, name='clear'),
+    path('json/', views.cart_json, name='json'),
 ]

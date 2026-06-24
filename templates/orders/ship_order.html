@@ -389,13 +389,15 @@
                             <div class="items-list">
                                 {% for item in order.items.all %}
                                 <div class="item-card">
-                                    {% if item.product.images.first %}
-                                        <img src="{{ item.product.images.first.image.url }}" class="item-image" alt="{{ item.product.name }}">
+                                    {% with first_image=item.product.images.all.0 %}
+                                    {% if first_image %}
+                                        <img src="{{ first_image.image.url }}" class="item-image" alt="{{ item.product.name }}">
                                     {% else %}
                                         <div class="item-image bg-light d-flex align-items-center justify-content-center">
                                             <i class="fas fa-box fa-2x text-muted"></i>
                                         </div>
                                     {% endif %}
+                                    {% endwith %}
                                     <div class="item-details">
                                         <div class="item-name">{{ item.product.name }}</div>
                                         <div class="item-meta">

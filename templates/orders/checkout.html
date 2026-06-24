@@ -1,727 +1,726 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
+{% load currency_tags %}
 
-{% block title %}Secure Checkout • Vendora{% endblock %}
+{% block title %}Checkout • Secure Order{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Checkout Page Modern Styling */
-    .checkout-header {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border-radius: 32px;
-        padding: 2rem;
-        margin-bottom: 2rem;
+    /* Checkout Page Unified Styles */
+    body {
+        background-color: #f4f6fb;
+    }
+    
+    /* Blue subheader bar for steps */
+    .steps-subheader {
+        background: #1e3a8a;
         color: white;
+        padding: 0.8rem 0;
+        margin-bottom: 2.5rem;
     }
-    
-    .checkout-steps {
+    .steps-nav {
         display: flex;
-        align-items: center;
         justify-content: center;
-        gap: 2rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-    
-    .step-item {
-        display: flex;
         align-items: center;
         gap: 10px;
-    }
-    
-    .step-number {
-        width: 36px;
-        height: 36px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-    }
-    
-    .step-item.active .step-number {
-        background: #10b981;
-        color: white;
-    }
-    
-    .step-item.completed .step-number {
-        background: #3b82f6;
-        color: white;
-    }
-    
-    .step-label {
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    .checkout-card {
-        background: white;
-        border-radius: 28px;
-        box-shadow: 0 8px 28px -12px rgba(0,0,0,0.08);
-        border: 1px solid rgba(0,0,0,0.03);
-        overflow: hidden;
-        margin-bottom: 1.5rem;
-    }
-    
-    .checkout-card-header {
-        background: #f8fafc;
-        padding: 1.2rem 1.5rem;
-        border-bottom: 1px solid #eef2ff;
-    }
-    
-    .checkout-card-header h5 {
-        margin: 0;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .checkout-card-body {
-        padding: 1.8rem;
-    }
-    
-    .form-group-modern {
-        margin-bottom: 1.2rem;
-    }
-    
-    .form-group-modern label {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: #1e293b;
-        font-size: 0.9rem;
-    }
-    
-    .form-group-modern label .required-star {
-        color: #ef4444;
-        margin-left: 3px;
-    }
-    
-    .form-control-modern {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        transition: all 0.2s;
         font-size: 0.95rem;
+        font-weight: 500;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .steps-nav li {
+        opacity: 0.75;
+    }
+    .steps-nav li.active {
+        opacity: 1;
+        font-weight: 700;
+    }
+    .steps-nav .separator {
+        opacity: 0.5;
+        font-size: 0.8rem;
+    }
+    .verified-user-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 8px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        color: white;
+    }
+
+    /* Column Headers */
+    .step-col-header {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 1.25rem;
+        letter-spacing: -0.3px;
+    }
+
+    /* Checkout Card layouts */
+    .checkout-step-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     }
     
-    .form-control-modern:focus {
-        outline: none;
+    .checkout-step-card h5 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 1.2rem;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 0.5rem;
+    }
+
+    /* Form input styling */
+    .checkout-form-input {
+        width: 100%;
+        padding: 0.55rem 0.85rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.88rem;
+        color: #1e293b;
+        background-color: #ffffff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .checkout-form-input:focus {
         border-color: #3b82f6;
         box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        outline: none;
     }
-    
-    textarea.form-control-modern {
-        resize: vertical;
-        min-height: 100px;
+    .checkout-form-input.is-invalid {
+        border-color: #ef4444;
+        background-color: #fef2f2;
     }
-    
-    .payment-method-card {
-        border: 2px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 1rem;
-        margin-bottom: 0.8rem;
-        cursor: pointer;
-        transition: all 0.2s;
+
+    /* Cart Item layout in Step 1 */
+    .checkout-item-row {
         display: flex;
         align-items: center;
-        gap: 15px;
-    }
-    
-    .payment-method-card:hover {
-        border-color: #3b82f6;
-        background: #f8fafc;
-    }
-    
-    .payment-method-card.selected {
-        border-color: #3b82f6;
-        background: #eff6ff;
-    }
-    
-    .payment-method-card input {
-        margin: 0;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
-    
-    .payment-icon {
-        font-size: 1.8rem;
-        width: 50px;
-        text-align: center;
-    }
-    
-    .payment-info {
-        flex: 1;
-    }
-    
-    .payment-title {
-        font-weight: 700;
-        margin-bottom: 0.2rem;
-    }
-    
-    .payment-desc {
-        font-size: 0.8rem;
-        color: #64748b;
-    }
-    
-    .order-summary-card {
-        background: white;
-        border-radius: 28px;
-        box-shadow: 0 8px 28px -12px rgba(0,0,0,0.08);
-        border: 1px solid rgba(0,0,0,0.03);
-        position: sticky;
-        top: 100px;
-    }
-    
-    .order-summary-header {
-        background: #0f172a;
-        padding: 1.2rem 1.5rem;
-        color: white;
-        border-radius: 28px 28px 0 0;
-    }
-    
-    .order-summary-body {
-        padding: 1.5rem;
-    }
-    
-    .cart-item {
-        display: flex;
         gap: 12px;
-        padding: 0.8rem 0;
+        padding: 0.75rem 0;
         border-bottom: 1px solid #f1f5f9;
     }
-    
-    .cart-item-img {
-        width: 60px;
-        height: 60px;
+    .checkout-item-row:last-child {
+        border-bottom: none;
+    }
+    .checkout-item-img {
+        width: 50px;
+        height: 50px;
         object-fit: cover;
-        border-radius: 12px;
+        border-radius: 8px;
         background: #f8fafc;
+        border: 1px solid #e2e8f0;
     }
-    
-    .cart-item-details {
+    .checkout-item-info {
         flex: 1;
+        min-width: 0;
     }
-    
-    .cart-item-name {
-        font-weight: 600;
-        margin-bottom: 0.2rem;
-        font-size: 0.9rem;
+    .checkout-item-name {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #1e293b;
+        margin-bottom: 0.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    
-    .cart-item-meta {
-        font-size: 0.75rem;
+    .checkout-item-meta {
+        font-size: 0.72rem;
         color: #64748b;
     }
-    
-    .cart-item-price {
+    .checkout-item-price-qty {
+        text-align: right;
+        font-size: 0.85rem;
+    }
+    .checkout-item-price {
         font-weight: 700;
         color: #0f172a;
     }
-    
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.6rem 0;
-    }
-    
-    .summary-total {
-        display: flex;
-        justify-content: space-between;
-        padding: 1rem 0;
-        font-size: 1.2rem;
-        font-weight: 800;
-        border-top: 2px solid #e2e8f0;
-        margin-top: 0.5rem;
-    }
-    
-    .btn-place-order {
-        background: linear-gradient(105deg, #10b981, #059669);
-        border: none;
-        border-radius: 60px;
-        padding: 1rem;
-        font-weight: 700;
-        font-size: 1.1rem;
-        width: 100%;
-        transition: 0.2s;
-        color: white;
-    }
-    
-    .btn-place-order:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(16,185,129,0.3);
-    }
-    
-    .btn-place-order:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-    
-    .secure-badge {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #eef2ff;
-        font-size: 0.8rem;
+    .checkout-item-qty {
+        font-size: 0.72rem;
         color: #64748b;
+        margin-top: 1px;
     }
-    
-    .loading-overlay {
+
+    /* Payment Method selector buttons */
+    .payment-tab-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 1.25rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 0.75rem;
+    }
+    .payment-tab-btn {
+        flex: 1;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+    .payment-tab-btn:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+    .payment-tab-btn.active {
+        background: #eff6ff;
+        border-color: #3b82f6;
+        color: #2563eb;
+    }
+
+    /* Coupon input group */
+    .coupon-group {
+        display: flex;
+        gap: 6px;
+    }
+    .coupon-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        transition: background 0.2s;
+    }
+    .coupon-btn:hover {
+        background: #2563eb;
+    }
+
+    /* Summary info row */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        font-size: 0.88rem;
+        color: #475569;
+    }
+    .info-row strong {
+        color: #1e293b;
+    }
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        border-top: 1.5px solid #e2e8f0;
+        margin-top: 0.5rem;
+        color: #0f172a;
+    }
+
+    /* Submit order button */
+    .btn-complete-checkout {
+        background: #ff5722;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.9rem;
+        font-size: 1.05rem;
+        font-weight: 800;
+        width: 100%;
+        transition: background 0.2s, transform 0.1s;
+        box-shadow: 0 4px 12px rgba(255, 87, 34, 0.2);
+    }
+    .btn-complete-checkout:hover {
+        background: #e64a19;
+        transform: translateY(-1px);
+    }
+    .btn-complete-checkout:active {
+        transform: translateY(0);
+    }
+
+    /* Loading overlay */
+    .checkout-loader {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(4px);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 9999;
         display: none;
     }
-    
-    .loading-spinner {
-        background: white;
-        padding: 2rem;
-        border-radius: 60px;
-        text-align: center;
-        box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-    }
-    
-    @media (max-width: 768px) {
-        .checkout-header {
-            padding: 1.2rem;
-        }
-        .checkout-steps {
-            gap: 1rem;
-        }
-        .step-label {
-            font-size: 0.7rem;
-        }
-        .checkout-card-body {
-            padding: 1.2rem;
-        }
-    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Checkout Header with Steps -->
-    <div class="checkout-header" data-aos="fade-down">
-        <div class="text-center">
-            <h1 class="display-6 fw-bold mb-2"><i class="fas fa-lock me-3"></i>Secure Checkout</h1>
-            <p class="opacity-75 mb-3">Complete your purchase with confidence</p>
-        </div>
-        <div class="checkout-steps">
-            <div class="step-item completed">
-                <div class="step-number"><i class="fas fa-check"></i></div>
-                <span class="step-label">Cart</span>
-            </div>
-            <i class="fas fa-arrow-right text-white-50"></i>
-            <div class="step-item active">
-                <div class="step-number">2</div>
-                <span class="step-label">Information</span>
-            </div>
-            <i class="fas fa-arrow-right text-white-50"></i>
-            <div class="step-item">
-                <div class="step-number">3</div>
-                <span class="step-label">Confirmation</span>
-            </div>
+<!-- Subheader Steps bar -->
+<div class="steps-subheader">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <ul class="steps-nav">
+            <li>Review</li>
+            <li class="separator">→</li>
+            <li class="active">Shipping & Payment</li>
+            <li class="separator">→</li>
+            <li>Complete Order</li>
+        </ul>
+        <div class="verified-user-box">
+            <i class="far fa-user-circle fa-lg"></i>
+            <span>Account verified</span>
+            <i class="fas fa-chevron-down ms-1" style="font-size: 0.7rem;"></i>
         </div>
     </div>
+</div>
 
-    <div class="row g-4">
-        <!-- LEFT: Shipping & Payment Form -->
-        <div class="col-lg-7">
-            <div class="checkout-card" data-aos="fade-right">
-                <div class="checkout-card-header">
-                    <h5><i class="fas fa-truck text-primary"></i> Shipping Information</h5>
-                </div>
-                <div class="checkout-card-body">
-                    <form method="post" action="{% url 'orders:create' %}" id="checkoutForm">
-                        {% csrf_token %}
-                        
-                        <!-- Address Fields -->
-                        <div class="form-group-modern">
-                            <label>Full Address <span class="required-star">*</span></label>
-                            <textarea name="shipping_address" class="form-control-modern" rows="3" required placeholder="Street address, apartment, building, etc."></textarea>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group-modern">
-                                    <label>City <span class="required-star">*</span></label>
-                                    <input type="text" name="shipping_city" class="form-control-modern" required placeholder="e.g., Lahore">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group-modern">
-                                    <label>State/Province <span class="required-star">*</span></label>
-                                    <input type="text" name="shipping_state" class="form-control-modern" required placeholder="e.g., Punjab">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group-modern">
-                                    <label>Country <span class="required-star">*</span></label>
-                                    <select name="shipping_country" class="form-control-modern" required>
-                                        <option value="">Select Country</option>
-                                        <option value="Pakistan">Pakistan</option>
-                                        <option value="United States">United States</option>
-                                        <option value="United Kingdom">United Kingdom</option>
-                                        <option value="Canada">Canada</option>
-                                        <option value="Australia">Australia</option>
-                                        <option value="UAE">United Arab Emirates</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group-modern">
-                                    <label>Postal Code <span class="required-star">*</span></label>
-                                    <input type="text" name="shipping_postal_code" class="form-control-modern" required placeholder="e.g., 54000">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group-modern">
-                            <label>Phone Number <span class="required-star">*</span></label>
-                            <input type="tel" name="shipping_phone" class="form-control-modern" required placeholder="+92 300 1234567">
-                        </div>
-                        
-                        <!-- Payment Methods -->
-                        <div class="mt-4">
-                            <label class="fw-bold mb-3"><i class="fas fa-credit-card me-2 text-primary"></i>Select Payment Method <span class="required-star">*</span></label>
-                            
-                            <div class="payment-method-card" data-method="cod">
-                                <input type="radio" name="payment_method" value="cod" id="payment_cod" checked>
-                                <div class="payment-icon"><i class="fas fa-money-bill-wave fa-2x text-success"></i></div>
-                                <div class="payment-info">
-                                    <div class="payment-title">Cash on Delivery</div>
-                                    <div class="payment-desc">Pay when you receive your order</div>
-                                </div>
-                            </div>
-                            
-                            <div class="payment-method-card" data-method="card">
-                                <input type="radio" name="payment_method" value="card" id="payment_card">
-                                <div class="payment-icon">
-                                    <i class="fab fa-cc-visa fa-2x text-blue-600"></i>
-                                    <i class="fab fa-cc-mastercard fa-2x text-red-600"></i>
-                                </div>
-                                <div class="payment-info">
-                                    <div class="payment-title">Credit / Debit Card</div>
-                                    <div class="payment-desc">Visa, Mastercard, American Express</div>
-                                </div>
-                            </div>
-                            
-                            <div class="payment-method-card" data-method="bank">
-                                <input type="radio" name="payment_method" value="bank" id="payment_bank">
-                                <div class="payment-icon"><i class="fas fa-university fa-2x text-primary"></i></div>
-                                <div class="payment-info">
-                                    <div class="payment-title">Bank Transfer</div>
-                                    <div class="payment-desc">Direct bank wire transfer</div>
-                                </div>
-                            </div>
-                            
-                            <div class="payment-method-card" data-method="mobile">
-                                <input type="radio" name="payment_method" value="mobile" id="payment_mobile">
-                                <div class="payment-icon"><i class="fas fa-mobile-alt fa-2x text-purple-600"></i></div>
-                                <div class="payment-info">
-                                    <div class="payment-title">Mobile Payment</div>
-                                    <div class="payment-desc">JazzCash, EasyPaisa, etc.</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Notes -->
-                        <div class="form-group-modern mt-4">
-                            <label><i class="fas fa-pen me-2 text-muted"></i>Order Notes (Optional)</label>
-                            <textarea name="notes" class="form-control-modern" rows="2" placeholder="Special instructions for delivery, gift message, etc."></textarea>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <!-- RIGHT: Order Summary -->
-        <div class="col-lg-5">
-            <div class="order-summary-card" data-aos="fade-left">
-                <div class="order-summary-header">
-                    <h5 class="mb-0 fw-bold"><i class="fas fa-receipt me-2"></i>Order Summary</h5>
-                </div>
-                <div class="order-summary-body">
-                    <div class="mb-3">
-                        <span class="text-muted"><i class="fas fa-box me-1"></i> {{ cart.get_total_items }} item(s) in cart</span>
-                    </div>
-                    
-                    <!-- Cart Items -->
-                    <div class="cart-items-list mb-3" style="max-height: 300px; overflow-y: auto;">
+<div class="container pb-5">
+    <h2 class="fw-bold mb-4" style="letter-spacing: -0.5px;">Checkout ({{ cart.get_total_items }} Items)</h2>
+
+    <form method="post" action="{% url 'orders:create' %}" id="checkoutForm" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row g-4">
+            <!-- COLUMN 1: Step 1: Order Details & Review -->
+            <div class="col-lg-4">
+                <div class="step-col-header">Step 1: Order Details & Review</div>
+                <div class="checkout-step-card">
+                    <div class="checkout-items-list mb-3" style="max-height: 400px; overflow-y: auto;">
                         {% for item in cart.items.all %}
-                            <div class="cart-item">
-                                {% if item.product.images.first %}
-                                    <img src="{{ item.product.images.first.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
+                            <div class="checkout-item-row">
+                                {% with first_image=item.product.images.all.0 %}
+                                {% if first_image %}
+                                    <img src="{{ first_image.image.url }}" class="checkout-item-img" alt="{{ item.product.name }}">
                                 {% else %}
-                                    <div class="cart-item-img d-flex align-items-center justify-content-center bg-light">
+                                    <div class="checkout-item-img d-flex align-items-center justify-content-center bg-light">
                                         <i class="fas fa-box text-muted"></i>
                                     </div>
                                 {% endif %}
-                                <div class="cart-item-details">
-                                    <div class="cart-item-name">{{ item.product.name|truncatechars:30 }}</div>
-                                    <div class="cart-item-meta">Quantity: {{ item.quantity }}</div>
+                                {% endwith %}
+                                <div class="checkout-item-info">
+                                    <div class="checkout-item-name" title="{{ item.product.name }}">{{ item.product.name }}</div>
+                                    <div class="checkout-item-meta">
+                                        {% if item.product.compare_price %}
+                                            <span class="text-danger fw-bold">{{ item.product.discount_percentage }}% OFF</span>
+                                        {% else %}
+                                            In Stock
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <div class="cart-item-price">${{ item.get_subtotal|floatformat:2 }}</div>
+                                <div class="checkout-item-price-qty">
+                                    <div class="checkout-item-price">{{ item.product.price|currency_format:request }}</div>
+                                    <div class="checkout-item-qty">Qty: {{ item.quantity }}</div>
+                                </div>
                             </div>
                         {% empty %}
                             <div class="text-center py-4">
-                                <i class="fas fa-shopping-cart fa-3x text-muted mb-2"></i>
-                                <p>Your cart is empty</p>
-                                <a href="{% url 'products:list' %}" class="btn btn-sm btn-primary">Start Shopping</a>
+                                <p class="text-muted">Your cart is empty</p>
                             </div>
                         {% endfor %}
                     </div>
-                    
-                    <!-- Price Summary -->
-                    <div class="summary-row">
+
+                    <div class="info-row pt-2 border-top">
+                        <span>Total Count</span>
+                        <strong>{{ cart.get_total_items }} Items</strong>
+                    </div>
+                    <div class="info-row">
                         <span>Subtotal</span>
-                        <strong>${{ cart.get_total|floatformat:2 }}</strong>
-                    </div>
-                    <div class="summary-row">
-                        <span>Shipping</span>
-                        <span class="text-muted" id="shippingEstimate">Calculated at checkout</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Tax (Estimated)</span>
-                        <span class="text-muted" id="taxEstimate">To be calculated</span>
-                    </div>
-                    <div class="summary-total">
-                        <span class="fw-bold">Total</span>
-                        <span class="fw-bold text-primary" id="orderTotal">${{ cart.get_total|floatformat:2 }}</span>
-                    </div>
-                    
-                    <!-- Place Order Button -->
-                    <button type="submit" form="checkoutForm" class="btn-place-order mt-3" {% if not cart.items.all %}disabled{% endif %}>
-                        <i class="fas fa-check-circle me-2"></i> Place Order
-                    </button>
-                    
-                    <!-- Secure Badges -->
-                    <div class="secure-badge">
-                        <span><i class="fas fa-lock text-success"></i> Secure Payment</span>
-                        <span><i class="fas fa-shield-alt text-primary"></i> Buyer Protection</span>
-                        <span><i class="fas fa-undo-alt text-warning"></i> 30-Day Returns</span>
+                        <strong>{{ cart.get_total|currency_format:request }}</strong>
                     </div>
                 </div>
             </div>
-            
-            <!-- Help Card -->
-            <div class="mt-3 p-3 bg-light rounded-4 text-center">
-                <i class="fas fa-headset text-primary mb-2"></i>
-                <p class="small mb-0">Need help? <a href="{% url 'core:contact' %}" class="text-decoration-none">Contact Support</a></p>
+
+            <!-- COLUMN 2: Step 2: Shipping & Payment -->
+            <div class="col-lg-4">
+                <div class="step-col-header">Step 2: Shipping & Payment</div>
+                
+                <!-- Shipping Card -->
+                <div class="checkout-step-card">
+                    <h5>Shipping Address</h5>
+                    
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <input type="text" name="shipping_name" class="checkout-form-input" required placeholder="Full Name" value="{{ user.get_full_name }}">
+                        </div>
+                        <div class="col-6">
+                            <input type="text" name="shipping_address" class="checkout-form-input" required placeholder="Street Address">
+                        </div>
+                    </div>
+                    
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <input type="text" name="shipping_city" class="checkout-form-input" required placeholder="City">
+                        </div>
+                        <div class="col-6">
+                            <input type="text" name="shipping_state" class="checkout-form-input" required placeholder="State/Province">
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <input type="text" name="shipping_postal_code" class="checkout-form-input" required placeholder="Zip">
+                        </div>
+                        <div class="col-6">
+                            <select name="shipping_country" id="shippingCountry" class="checkout-form-input" required>
+                                <option value="">Select Country</option>
+                                <option value="Pakistan">Pakistan</option>
+                                <option value="United States">United States</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Australia">Australia</option>
+                                <option value="UAE">United Arab Emirates</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <input type="tel" name="shipping_phone" id="shippingPhone" class="checkout-form-input" required placeholder="Phone Number">
+                    </div>
+
+                    <div>
+                        <textarea name="notes" class="checkout-form-input" rows="2" placeholder="Order notes (Optional)"></textarea>
+                    </div>
+                </div>
+
+                <!-- Payment Card -->
+                <div class="checkout-step-card">
+                    <h5>Payment Method</h5>
+                    
+                    <!-- Tabs for selector -->
+                    <div class="payment-tab-row">
+                        <div class="payment-tab-btn active" data-method="card">Card</div>
+                        <div class="payment-tab-btn" data-method="cod">COD</div>
+                        <div class="payment-tab-btn" data-method="bank">Bank / Mobile</div>
+                    </div>
+
+                    <!-- Hidden input to store selected value -->
+                    <input type="hidden" name="payment_method" id="selectedPaymentMethod" value="card">
+
+                    <!-- Credit Card Details Form -->
+                    <div id="creditCardFormSection">
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <input type="text" id="ccNumber" class="checkout-form-input" placeholder="Card Number" maxlength="19">
+                            </div>
+                            <div class="col-3">
+                                <input type="text" id="ccExpiry" class="checkout-form-input" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div class="col-3">
+                                <input type="password" id="ccCvv" class="checkout-form-input" placeholder="CVV" maxlength="4">
+                            </div>
+                        </div>
+                        <div>
+                            <input type="text" id="ccName" class="checkout-form-input" placeholder="Name on Card">
+                        </div>
+                    </div>
+
+                    <!-- COD Section -->
+                    <div id="codSection" style="display: none;">
+                        <p class="text-muted small mb-0"><i class="fas fa-info-circle text-success me-1"></i>You will pay in cash upon delivery of your products.</p>
+                    </div>
+
+                    <!-- Bank Transfer Section -->
+                    <div id="bankSection" style="display: none;">
+                        <p class="text-muted small mb-2"><i class="fas fa-university text-primary me-1"></i>Please transfer funds to Bank Alfalah (Ac: 0100-3342-998) or EasyPaisa (0305-4246898).</p>
+                        <label class="small fw-bold text-dark mb-1">Upload Receipt</label>
+                        <input type="file" name="payment_receipt" id="paymentReceiptFile" class="checkout-form-input" accept="image/*">
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMN 3: Step 3: Order Summary & Finalization -->
+            <div class="col-lg-4">
+                <div class="step-col-header">Step 3: Order Summary & Finalization</div>
+                
+                <!-- Order Summary Card -->
+                <div class="checkout-step-card">
+                    <h5>Order Summary</h5>
+                    <div class="info-row">
+                        <span>Subtotal</span>
+                        <strong id="summarySubtotal">{{ cart.get_total|currency_format:request }}</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Estimated Shipping</span>
+                        <strong id="summaryShipping">Calculated at checkout</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Tax</span>
+                        <strong id="summaryTax">To be calculated</strong>
+                    </div>
+                </div>
+
+                <!-- Checkout Summary Coupon -->
+                <div class="checkout-step-card">
+                    <h5>Checkout Summary</h5>
+                    <div class="coupon-group mb-2">
+                        <input type="text" id="couponCodeInput" class="checkout-form-input" placeholder="Coupon Code">
+                        <button type="button" class="coupon-btn" onclick="applyPromoCode()">Apply</button>
+                    </div>
+                    <div class="text-muted" style="font-size: 0.72rem;">
+                        <i class="fas fa-tag text-primary me-1"></i>Try code <strong class="text-primary">VENDORA10</strong> to get 10% discount!
+                    </div>
+                </div>
+
+                <!-- Order Total & Submit -->
+                <div class="checkout-step-card">
+                    <h5>Order Total</h5>
+                    <div class="info-row">
+                        <span>Order Total</span>
+                        <strong id="orderTotalPlain">{{ cart.get_total|currency_format:request }}</strong>
+                    </div>
+                    
+                    <div id="couponDiscountRow" style="display: none;">
+                        <div class="info-row text-success">
+                            <span>Coupon Discount (10%)</span>
+                            <strong id="couponDiscountAmount">-$0.00</strong>
+                        </div>
+                        <div class="info-row text-muted">
+                            <span>Old Total</span>
+                            <span id="oldOrderTotal" style="text-decoration: line-through;">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="total-row">
+                        <span>New Total</span>
+                        <span class="text-primary" id="finalOrderTotal">{{ cart.get_total|currency_format:request }}</span>
+                    </div>
+
+                    <button type="submit" class="btn-complete-checkout mt-2">
+                        <i class="fas fa-lock me-2"></i> Complete Order &amp; Pay
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 
-<!-- Loading Overlay -->
-<div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-spinner">
-        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
-        <p class="mt-3 mb-0 fw-semibold">Processing your order...</p>
+<!-- Loader overlay -->
+<div id="checkoutLoadingOverlay" class="checkout-loader">
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 fw-bold text-dark">Processing payment and creating order...</p>
     </div>
 </div>
 
 <script>
-    // Payment method selection styling
-    document.querySelectorAll('.payment-method-card').forEach(card => {
-        const radio = card.querySelector('input[type="radio"]');
-        
-        card.addEventListener('click', () => {
-            radio.checked = true;
-            document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
+    const subtotal = {{ cart.get_total }};
+    const activeRate = parseFloat("{{ active_currency_rate|default:1.0 }}");
+    const activeSymbol = "{{ active_currency_symbol|default:'$' }}";
+    
+    let appliedDiscount = 0.0;
+    let shippingCost = 0.0;
+    let taxAmount = 0.0;
+
+    // Handle payment method button selection
+    document.querySelectorAll('.payment-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.payment-tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const method = this.getAttribute('data-method');
+            document.getElementById('selectedPaymentMethod').value = method;
+
+            // Toggle sections
+            document.getElementById('creditCardFormSection').style.display = method === 'card' ? 'block' : 'none';
+            document.getElementById('codSection').style.display = method === 'cod' ? 'block' : 'none';
+            document.getElementById('bankSection').style.display = method === 'bank' ? 'block' : 'none';
+
+            // Mark inputs required/not required
+            const ccInputs = ['ccNumber', 'ccExpiry', 'ccCvv', 'ccName'];
+            ccInputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.required = (method === 'card');
+            });
         });
-        
-        if (radio.checked) {
-            card.classList.add('selected');
+    });
+
+    // Formatting Inputs
+    const phoneInput = document.getElementById('shippingPhone');
+    phoneInput?.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^0-9+]/g, '');
+    });
+
+    const ccNumberInput = document.getElementById('ccNumber');
+    ccNumberInput?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/g, '');
+        let formatted = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) formatted += ' ';
+            formatted += value[i];
+        }
+        e.target.value = formatted;
+    });
+
+    const ccExpiryInput = document.getElementById('ccExpiry');
+    ccExpiryInput?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length > 2) {
+            e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        } else {
+            e.target.value = value;
         }
     });
-    
-    // Calculate shipping and tax based on country selection
-    const countrySelect = document.querySelector('select[name="shipping_country"]');
-    const shippingEstimateSpan = document.getElementById('shippingEstimate');
-    const taxEstimateSpan = document.getElementById('taxEstimate');
-    const orderTotalSpan = document.getElementById('orderTotal');
-    const subtotal = {{ cart.get_total|floatformat:2 }};
-    
+
+    const ccCvvInput = document.getElementById('ccCvv');
+    ccCvvInput?.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
+
+    // Shipping and Tax Calculator based on country
+    const countrySelect = document.getElementById('shippingCountry');
     function calculateShippingAndTax() {
         const country = countrySelect?.value || '';
-        let shipping = 0;
-        let tax = 0;
+        if (!country) return;
         
-        // Simple shipping logic based on country
         switch(country) {
             case 'Pakistan':
-                shipping = 2.99;
-                tax = subtotal * 0.05; // 5% tax
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                shippingCost = 2.99;
+                taxAmount = subtotal * 0.05;
                 break;
             case 'United States':
-                shipping = 5.99;
-                tax = subtotal * 0.08;
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                shippingCost = 5.99;
+                taxAmount = subtotal * 0.08;
                 break;
             case 'United Kingdom':
-                shipping = 6.99;
-                tax = subtotal * 0.07;
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                shippingCost = 6.99;
+                taxAmount = subtotal * 0.07;
                 break;
             case 'Canada':
-                shipping = 7.99;
-                tax = subtotal * 0.09;
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                shippingCost = 7.99;
+                taxAmount = subtotal * 0.09;
                 break;
             default:
-                shipping = 9.99;
-                tax = subtotal * 0.1;
-                shippingEstimateSpan.innerHTML = `$${shipping.toFixed(2)}`;
+                shippingCost = 9.99;
+                taxAmount = subtotal * 0.10;
         }
+
+        document.getElementById('summaryShipping').innerText = `${activeSymbol}${(shippingCost * activeRate).toFixed(2)}`;
+        document.getElementById('summaryTax').innerText = `${activeSymbol}${(taxAmount * activeRate).toFixed(2)}`;
         
-        taxEstimateSpan.innerHTML = `$${tax.toFixed(2)}`;
-        const total = subtotal + shipping + tax;
-        orderTotalSpan.innerHTML = `$${total.toFixed(2)}`;
-        
-        // Add hidden fields to form for shipping and tax
-        let shippingInput = document.querySelector('input[name="shipping_cost"]');
-        let taxInput = document.querySelector('input[name="tax_amount"]');
-        
-        if (!shippingInput) {
-            shippingInput = document.createElement('input');
-            shippingInput.type = 'hidden';
-            shippingInput.name = 'shipping_cost';
-            document.getElementById('checkoutForm').appendChild(shippingInput);
-        }
-        if (!taxInput) {
-            taxInput = document.createElement('input');
-            taxInput.type = 'hidden';
-            taxInput.name = 'tax_amount';
-            document.getElementById('checkoutForm').appendChild(taxInput);
-        }
-        
-        shippingInput.value = shipping;
-        taxInput.value = tax;
+        updateTotalDisplay();
     }
-    
-    // Calculate on country change
-    if (countrySelect) {
-        countrySelect.addEventListener('change', calculateShippingAndTax);
-        // Initial calculation
-        calculateShippingAndTax();
+
+    countrySelect?.addEventListener('change', calculateShippingAndTax);
+
+    // Apply Coupon Promo Code
+    function applyPromoCode() {
+        const promo = document.getElementById('couponCodeInput').value.trim().toUpperCase();
+        const discountRow = document.getElementById('couponDiscountRow');
+        
+        if (promo === 'VENDORA10') {
+            appliedDiscount = subtotal * 0.10; // 10% discount
+            
+            discountRow.style.display = 'block';
+            document.getElementById('couponDiscountAmount').innerText = `-${activeSymbol}${(appliedDiscount * activeRate).toFixed(2)}`;
+            
+            showCheckoutToast('Coupon code applied successfully (10% Off)!', 'success');
+            updateTotalDisplay();
+        } else {
+            appliedDiscount = 0.0;
+            discountRow.style.display = 'none';
+            showCheckoutToast('Invalid coupon code.', 'error');
+            updateTotalDisplay();
+        }
     }
-    
-    // Form submission with loading state
+
+    function updateTotalDisplay() {
+        const subtotalConverted = subtotal;
+        const totalAmount = subtotalConverted + shippingCost + taxAmount - appliedDiscount;
+        
+        const finalTotalStr = `${activeSymbol}${(totalAmount * activeRate).toFixed(2)}`;
+        const plainTotalStr = `${activeSymbol}${( (subtotalConverted + shippingCost + taxAmount) * activeRate).toFixed(2)}`;
+
+        document.getElementById('orderTotalPlain').innerText = plainTotalStr;
+        document.getElementById('oldOrderTotal').innerText = plainTotalStr;
+        document.getElementById('finalOrderTotal').innerText = finalTotalStr;
+
+        // Add inputs to form dynamically to post additional costs
+        let shInput = document.querySelector('input[name="shipping_cost"]');
+        let txInput = document.querySelector('input[name="tax_amount"]');
+        let dcInput = document.querySelector('input[name="discount_amount"]');
+
+        if (!shInput) {
+            shInput = document.createElement('input'); shInput.type = 'hidden'; shInput.name = 'shipping_cost';
+            document.getElementById('checkoutForm').appendChild(shInput);
+        }
+        if (!txInput) {
+            txInput = document.createElement('input'); txInput.type = 'hidden'; txInput.name = 'tax_amount';
+            document.getElementById('checkoutForm').appendChild(txInput);
+        }
+        if (!dcInput) {
+            dcInput = document.createElement('input'); dcInput.type = 'hidden'; dcInput.name = 'discount_amount';
+            document.getElementById('checkoutForm').appendChild(dcInput);
+        }
+
+        shInput.value = shippingCost;
+        txInput.value = taxAmount;
+        dcInput.value = appliedDiscount;
+    }
+
+    // Submit form handler
     const checkoutForm = document.getElementById('checkoutForm');
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('.btn-place-order');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            
-            // Validate required fields
-            const requiredFields = this.querySelectorAll('[required]');
-            let isValid = true;
-            
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    field.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    field.classList.remove('is-invalid');
-                }
-            });
-            
-            if (!isValid) {
+    checkoutForm?.addEventListener('submit', function(e) {
+        // Form validations
+        const reqFields = this.querySelectorAll('[required]');
+        let valid = true;
+        
+        reqFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                valid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            showCheckoutToast('Please fill in all required fields.', 'error');
+            return;
+        }
+
+        const method = document.getElementById('selectedPaymentMethod').value;
+        if (method === 'card') {
+            const ccNum = document.getElementById('ccNumber').value.replace(/\s/g, '');
+            const ccExp = document.getElementById('ccExpiry').value.trim();
+            const ccCvv = document.getElementById('ccCvv').value.trim();
+            const ccName = document.getElementById('ccName').value.trim();
+
+            if (ccNum.length < 15 || ccExp.length < 5 || ccCvv.length < 3 || !ccName) {
                 e.preventDefault();
-                showToast('Please fill in all required fields', 'error');
+                showCheckoutToast('Please enter valid credit card details.', 'error');
                 return;
             }
-            
-            // Show loading overlay
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'flex';
-            }
-            
-            // Disable submit button
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
-            }
-        });
-    }
-    
-    // Show toast function
-    function showToast(message, type = 'error') {
-        const toastHtml = `
-            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-                <div class="bg-${type === 'error' ? 'danger' : 'success'} text-white p-3 rounded-4 shadow-lg d-flex align-items-center gap-3">
-                    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} fa-lg"></i>
-                    <span>${message}</span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="btn-close btn-close-white"></button>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', toastHtml);
-        setTimeout(() => {
-            const toast = document.querySelector('.position-fixed.bottom-0.end-0');
-            if (toast) toast.remove();
-        }, 3000);
-    }
-    
-    // Add invalid styling
-    const style = document.createElement('style');
-    style.textContent = `
-        .is-invalid {
-            border-color: #ef4444 !important;
-            background-color: #fef2f2 !important;
         }
-        .form-control-modern.is-invalid:focus {
-            box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Initialize AOS if available
-    if (typeof AOS !== 'undefined') {
-        AOS.refresh();
-    }
-</script>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    // Additional validation for phone number
-    const phoneInput = document.querySelector('input[name="shipping_phone"]');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9+]/g, '');
-            e.target.value = value;
-        });
-    }
-    
-    // Postal code validation (simple)
-    const postalInput = document.querySelector('input[name="shipping_postal_code"]');
-    if (postalInput) {
-        postalInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^a-zA-Z0-9-]/g, '');
-            e.target.value = value;
-        });
+        // Show loading spinner
+        document.getElementById('checkoutLoadingOverlay').style.display = 'flex';
+    });
+
+    // Toast
+    function showCheckoutToast(message, type = 'error') {
+        const toast = document.createElement('div');
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '10000';
+        toast.style.background = type === 'success' ? '#10b981' : '#ef4444';
+        toast.style.color = '#fff';
+        toast.style.padding = '0.8rem 1.4rem';
+        toast.style.borderRadius = '8px';
+        toast.style.fontWeight = 'bold';
+        toast.style.boxShadow = '0 10px 20px rgba(0,0,0,0.15)';
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}`;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
 </script>
 {% endblock %}

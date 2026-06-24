@@ -18,16 +18,16 @@
                 ">
                     <div class="position-relative d-inline-block mb-3">
                         {% if user.profile_image %}
-                            <img src="{{ user.profile_image.url }}" id="profilePreviewImg"
-                                 style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; object-fit: cover;">
+                        <img src="{{ user.profile_image.url }}" id="profilePreviewImg"
+                            style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; object-fit: cover;">
                         {% else %}
-                            <div id="profilePreviewImg" style="
+                        <div id="profilePreviewImg" style="
                                 width: 100px; height: 100px; border-radius: 50%; border: 4px solid white;
                                 background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;
                                 font-size: 2.5rem;
                             ">
-                                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                            </div>
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        </div>
                         {% endif %}
                     </div>
                     <h5 class="fw-bold mb-1">{{ user.get_full_name|default:user.email }}</h5>
@@ -59,28 +59,25 @@
         <!-- Edit Profile Form -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-                <div style="
-                    background: #f8f9fc;
-                    padding: 1.25rem 1.5rem;
-                    border-bottom: 1px solid #e5e5e5;
-                ">
+                <div style="background: #f8f9fc; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e5e5;">
                     <h5 class="fw-bold mb-0" style="color: #171717;">
                         <i class="fas fa-user-edit me-2" style="color: #5b5fe3;"></i>Edit Profile
                     </h5>
                 </div>
-                
+
                 <div class="card-body p-4">
                     {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} border-0 rounded-3 py-2 px-3 mb-3" style="font-size: 0.85rem;">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} border-0 rounded-3 py-2 px-3 mb-3"
+                        style="font-size: 0.85rem;">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
                     {% endif %}
-                    
+
                     <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
-                        
+
                         <!-- First Name & Last Name -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -96,7 +93,7 @@
                                 {{ form.last_name }}
                             </div>
                         </div>
-                        
+
                         <!-- Email -->
                         <div class="mb-3">
                             <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
@@ -105,7 +102,7 @@
                             {{ form.email }}
                             <small class="text-muted">Email cannot be changed.</small>
                         </div>
-                        
+
                         <!-- Phone -->
                         <div class="mb-3">
                             <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
@@ -113,7 +110,7 @@
                             </label>
                             {{ form.phone }}
                         </div>
-                        
+
                         <!-- Profile Image -->
                         <div class="mb-3">
                             <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
@@ -121,8 +118,134 @@
                             </label>
                             {{ form.profile_image }}
                         </div>
-                        
-                        <!-- Submit -->
+
+                        <!-- Bio / About -->
+                        {% if form.bio %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
+                                About Me
+                            </label>
+                            {{ form.bio }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Address -->
+                        {% if form.address %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
+                                Address
+                            </label>
+                            {{ form.address }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Company Settings Form -->
+                        {% if company_form %}
+                        <hr class="my-4" style="border-top: 2px dashed #cbd5e1;">
+                        <h5 class="mb-4 text-primary d-flex align-items-center gap-2">
+                            <i class="fas fa-building text-primary"></i>
+                            <span>Company Settings & Currency Manager</span>
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-briefcase me-1 text-primary"></i> Company Name
+                                </label>
+                                {{ company_form.name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-coins me-1 text-primary"></i> Default Store Currency
+                                </label>
+                                {{ company_form.currency }}
+                                <small class="text-muted d-block mt-1">Products listed by your sellers will use this
+                                    currency as base.</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-envelope me-1 text-primary"></i> Company Email
+                                </label>
+                                {{ company_form.email }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-phone me-1 text-primary"></i> Company Phone
+                                </label>
+                                {{ company_form.phone }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-globe me-1 text-primary"></i> Company Website
+                                </label>
+                                {{ company_form.website }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-file-contract me-1 text-primary"></i> Registration Number
+                                </label>
+                                {{ company_form.registration_number }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-file-invoice me-1 text-primary"></i> Tax / NTN Number
+                                </label>
+                                {{ company_form.tax_number }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-city me-1 text-primary"></i> City
+                                </label>
+                                {{ company_form.city }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-map me-1 text-primary"></i> State
+                                </label>
+                                {{ company_form.state }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-flag me-1 text-primary"></i> Country
+                                </label>
+                                {{ company_form.country }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold text-dark">
+                                    <i class="fas fa-mail-bulk me-1 text-primary"></i> Postal Code
+                                </label>
+                                {{ company_form.postal_code }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">
+                                <i class="fas fa-map-marked me-1 text-primary"></i> Physical Address
+                            </label>
+                            {{ company_form.address }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-dark">
+                                <i class="fas fa-image me-1 text-primary"></i> Company Logo
+                            </label>
+                            {{ company_form.logo }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Submit Buttons -->
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn" style="
                                 background: #5b5fe3; color: white; border-radius: 50px;
@@ -130,7 +253,8 @@
                             ">
                                 <i class="fas fa-save me-2"></i>Save Changes
                             </button>
-                            <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary rounded-pill px-4" style="padding: 12px 28px;">
+                            <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary rounded-pill px-4"
+                                style="padding: 12px 28px;">
                                 <i class="fas fa-arrow-left me-2"></i>Back
                             </a>
                         </div>
@@ -142,34 +266,47 @@
 </div>
 
 <style>
-    form input, form select, form textarea {
+    form input:not([type="file"]),
+    form select,
+    form textarea {
         border: 2px solid #e5e5e5 !important;
         border-radius: 12px !important;
         padding: 10px 14px !important;
         font-size: 0.9rem !important;
         width: 100% !important;
     }
-    form input:focus, form select:focus, form textarea:focus {
+
+    form input:not([type="file"]):focus,
+    form select:focus,
+    form textarea:focus {
         border-color: #5b5fe3 !important;
-        box-shadow: 0 0 0 4px rgba(91,95,227,0.08) !important;
+        box-shadow: 0 0 0 4px rgba(91, 95, 227, 0.08) !important;
         outline: none !important;
     }
+
     form input[readonly] {
         background: #f8f9fc !important;
         cursor: not-allowed;
+    }
+
+    /* Style for file input */
+    form input[type="file"] {
+        border: 2px solid #e5e5e5 !important;
+        border-radius: 12px !important;
+        padding: 8px 12px !important;
     }
 </style>
 
 <script>
     // Image preview
-    document.addEventListener('DOMContentLoaded', function() {
-        const imageInput = document.querySelector('input[type="file"]');
+    document.addEventListener('DOMContentLoaded', function () {
+        const imageInput = document.querySelector('input[name="profile_image"]');
         if (imageInput) {
-            imageInput.addEventListener('change', function(e) {
+            imageInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(event) {
+                    reader.onload = function (event) {
                         const preview = document.getElementById('profilePreviewImg');
                         if (preview) {
                             if (preview.tagName === 'IMG') {
@@ -190,4 +327,4 @@
         }
     });
 </script>
-{% endblock %}  
+{% endblock %}

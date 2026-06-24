@@ -1,443 +1,323 @@
-{% extends 'base.html' %}
+{% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
-{% block title %}Sales Report - Vendora{% endblock %}
+{% block dashboard_title %}Sales Report{% endblock %}
+{% block mobile_dashboard_title %}Sales Report{% endblock %}
 
-{% block content %}
+{% block dashboard_content %}
+<!-- Reports Banner -->
 <style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    @keyframes livePulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
-
-    .report-wrapper {
-        background: #f8f9fc;
-        min-height: 100vh;
-        padding: 2rem 0;
-    }
-
-    /* Page Header */
-    .page-header {
-        background: var(--primary-gradient);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    .page-header::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -5%;
-        width: 200px;
-        height: 200px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    /* Stats Cards */
-    .stat-card {
-        border: none;
-        border-radius: 20px;
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    }
-
-    .stat-card .card-body {
-        padding: 1.5rem;
-        position: relative;
-    }
-
-    .stat-icon {
-        position: absolute;
-        right: 20px;
-        top: 20px;
-        font-size: 3rem;
-        opacity: 0.2;
-    }
-
-    /* Filter Section */
-    .filter-section {
-        background: white;
-        border-radius: 20px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    }
-
-    /* Chart Container */
-    .chart-container {
-        background: white;
-        border-radius: 20px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    }
-
-    /* Table Styles */
-    .data-table {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    }
-
-    .data-table thead th {
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .data-table tbody tr {
-        transition: all 0.3s ease;
-    }
-
-    .data-table tbody tr:hover {
-        background: #f8f9fc;
-        transform: scale(1.01);
-    }
-
-    .data-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-    }
-
-    /* Export Buttons */
-    .export-buttons {
-        display: flex;
-        gap: 10px;
-    }
-
-    .btn-export {
-        padding: 8px 20px;
-        border-radius: 10px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .btn-export:hover {
-        transform: translateY(-2px);
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animated {
-        animation: fadeInUp 0.6s ease forwards;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .report-wrapper {
-            padding: 1rem;
-        }
-        
-        .export-buttons {
-            flex-direction: column;
-        }
-        
-        .stat-card h2 {
-            font-size: 1.5rem;
-        }
+    .live-pulse-active {
+        background-color: #10b981 !important;
+        animation: livePulse 2s infinite;
     }
 </style>
-
-<div class="report-wrapper">
-    <div class="container">
-        <!-- Page Header -->
-        <div class="page-header animated" style="animation-delay: 0.1s;">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="display-6 mb-2">
-                        <i class="fas fa-chart-line"></i> Sales Report
-                    </h1>
-                    <p class="mb-0 opacity-75">Track and analyze your sales performance</p>
+<div class="welcome-banner animated mb-4" style="animation-delay: 0.1s;">
+    <div class="row align-items-center">
+        <div class="col-md-7">
+            <h1 class="display-6 mb-2">
+                <i class="fas fa-chart-bar"></i> Reports & Analytics
+            </h1>
+            <p class="mb-0 opacity-75">Track sales revenue, product performance, and user accounts in real time.</p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+            <div class="d-inline-flex align-items-center gap-2 flex-wrap justify-content-md-end">
+                <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2" id="syncBtn" onclick="syncData()">
+                    <i class="fas fa-sync" id="syncIcon"></i> Sync
+                </button>
+                <div class="form-check form-switch text-white bg-dark bg-opacity-25 py-1.5 px-3 rounded-pill d-inline-flex align-items-center gap-2 border border-light border-opacity-10" style="margin-bottom: 0;">
+                    <input class="form-check-input ms-0 mt-0" type="checkbox" id="liveModeToggle" onchange="toggleLiveMode()">
+                    <label class="form-check-label text-white small fw-bold" for="liveModeToggle" style="cursor: pointer; user-select: none;">
+                        <span class="live-dot d-inline-block me-1 rounded-circle bg-secondary" style="width: 8px; height: 8px; transition: 0.3s; vertical-align: middle;"></span>Live
+                    </label>
                 </div>
-                <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    <div class="export-buttons">
-                        <button class="btn btn-light btn-export" onclick="exportReport('csv')">
-                            <i class="fas fa-file-csv"></i> Export CSV
-                        </button>
-                        <button class="btn btn-light btn-export" onclick="exportReport('excel')">
-                            <i class="fas fa-file-excel"></i> Export Excel
-                        </button>
-                    </div>
+                <button class="btn btn-light btn-sm d-flex align-items-center gap-2" onclick="exportReport('csv')">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+                <button class="btn btn-light btn-sm d-flex align-items-center gap-2" onclick="exportReport('excel')">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reports Sub-Navigation -->
+<div class="row mb-4 animated" style="animation-delay: 0.15s;">
+    <div class="col-12">
+        <div class="card p-2 border-0 shadow-sm" style="background: var(--bg-card); border-radius: var(--radius-md);">
+            <ul class="nav nav-pills gap-2 border-0">
+                <li class="nav-item">
+                    <a class="nav-link active px-4 py-2 rounded-3" href="{% url 'reports:sales' %}">
+                        <i class="fas fa-chart-line me-2"></i> Sales Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-4 py-2 rounded-3 text-secondary" href="{% url 'reports:products' %}">
+                        <i class="fas fa-box me-2"></i> Product Performance
+                    </a>
+                </li>
+                {% if user.role == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link px-4 py-2 rounded-3 text-secondary" href="{% url 'reports:users' %}">
+                        <i class="fas fa-users me-2"></i> User Accounts
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4 animated" style="animation-delay: 0.2s;">
+    <div class="col-md-4 col-sm-6">
+        <div class="stat-card-compact h-100">
+            <div class="stat-card-inner">
+                <div class="stat-icon-wrapper bg-primary-subtle">
+                    <i class="fas fa-shopping-cart text-primary"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Orders</span>
+                    <h3 class="stat-value text-dark">{{ total_orders }}</h3>
+                    <small class="text-muted">Total processed orders</small>
                 </div>
             </div>
         </div>
-
-        <!-- Stats Cards -->
-        <div class="row mb-4 animated" style="animation-delay: 0.2s;">
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card bg-primary text-white">
-                    <div class="card-body">
-                        <div class="stat-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <h6 class="card-title opacity-75">Total Orders</h6>
-                        <h2 class="mb-0">{{ total_orders }}</h2>
-                        <small class="opacity-75 mt-2 d-block">
-                            <i class="fas fa-chart-line"></i> All time
-                        </small>
-                    </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="stat-card-compact h-100">
+            <div class="stat-card-inner">
+                <div class="stat-icon-wrapper bg-success-subtle">
+                    <i class="fas fa-coins text-success"></i>
                 </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card bg-success text-white">
-                    <div class="card-body">
-                        <div class="stat-icon">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                        <h6 class="card-title opacity-75">Total Revenue</h6>
-                        <h2 class="mb-0">${{ total_revenue|floatformat:2 }}</h2>
-                        <small class="opacity-75 mt-2 d-block">
-                            <i class="fas fa-trending-up"></i> Gross sales
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card bg-info text-white">
-                    <div class="card-body">
-                        <div class="stat-icon">
-                            <i class="fas fa-receipt"></i>
-                        </div>
-                        <h6 class="card-title opacity-75">Average Order Value</h6>
-                        <h2 class="mb-0">${{ average_order_value|floatformat:2 }}</h2>
-                        <small class="opacity-75 mt-2 d-block">
-                            <i class="fas fa-calculator"></i> Per order
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card bg-warning text-white">
-                    <div class="card-body">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h6 class="card-title opacity-75">Total Customers</h6>
-                        <h2 class="mb-0">{{ total_customers|default:0 }}</h2>
-                        <small class="opacity-75 mt-2 d-block">
-                            <i class="fas fa-user-plus"></i> Unique buyers
-                        </small>
-                    </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Revenue</span>
+                    <h3 class="stat-value text-dark">{{ total_revenue|currency_format:request }}</h3>
+                    <small class="text-muted">Gross sales revenue</small>
                 </div>
             </div>
         </div>
-
-        <!-- Filter Section -->
-        <div class="filter-section animated" style="animation-delay: 0.3s;">
-            <form method="get" id="filterForm">
-                <div class="row align-items-end">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label text-muted small">Date From</label>
-                        <input type="date" name="from" class="form-control" value="{{ date_from|date:'Y-m-d' }}">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label text-muted small">Date To</label>
-                        <input type="date" name="to" class="form-control" value="{{ date_to|date:'Y-m-d' }}">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label text-muted small">Quick Select</label>
-                        <select class="form-select" id="quickSelect">
-                            <option value="">Custom Range</option>
-                            <option value="today">Today</option>
-                            <option value="yesterday">Yesterday</option>
-                            <option value="week">Last 7 Days</option>
-                            <option value="month">Last 30 Days</option>
-                            <option value="quarter">Last 90 Days</option>
-                            <option value="year">Last 365 Days</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-chart-line"></i> Generate Report
-                        </button>
-                    </div>
+    </div>
+    <div class="col-md-4 col-sm-12">
+        <div class="stat-card-compact h-100">
+            <div class="stat-card-inner">
+                <div class="stat-icon-wrapper bg-info-subtle">
+                    <i class="fas fa-wallet text-info"></i>
                 </div>
-            </form>
-        </div>
-
-        <!-- Revenue Chart -->
-        <div class="chart-container animated" style="animation-delay: 0.4s;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">
-                    <i class="fas fa-chart-line text-primary"></i> Revenue Overview
-                </h5>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary active" onclick="changeChartType('line')">Line</button>
-                    <button class="btn btn-outline-primary" onclick="changeChartType('bar')">Bar</button>
-                </div>
-            </div>
-            <canvas id="revenueChart" height="100"></canvas>
-        </div>
-
-        <!-- Daily Sales Table -->
-        <div class="data-table animated" style="animation-delay: 0.5s;">
-            <div class="table-responsive">
-                <table class="table mb-0">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Orders</th>
-                            <th>Revenue</th>
-                            <th>Average Order Value</th>
-                            <th>Growth</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for day in daily_sales %}
-                        <tr>
-                            <td>
-                                <strong>{{ day.day|date:"M d, Y" }}</strong>
-                                <br>
-                                <small class="text-muted">{{ day.day|date:"l" }}</small>
-                            </td>
-                            <td>
-                                <span class="badge bg-primary">{{ day.count }} orders</span>
-                            </td>
-                            <td>
-                                <strong class="text-success">${{ day.total|floatformat:2 }}</strong>
-                            </td>
-                            <td>
-                                ${{ day.total|floatformat:2|default:"0" }}
-                            </td>
-                            <td>
-                                {% if day.growth > 0 %}
-                                    <span class="text-success">
-                                        <i class="fas fa-arrow-up"></i> +{{ day.growth }}%
-                                    </span>
-                                {% elif day.growth < 0 %}
-                                    <span class="text-danger">
-                                        <i class="fas fa-arrow-down"></i> {{ day.growth }}%
-                                    </span>
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-5">
-                                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">No sales data available for the selected period</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Summary Section -->
-        <div class="row mt-4 animated" style="animation-delay: 0.6s;">
-            <div class="col-md-6 mb-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-chart-pie text-primary"></i> Payment Method Breakdown
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="paymentChart" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-truck text-primary"></i> Order Status Distribution
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="statusChart" height="200"></canvas>
-                    </div>
+                <div class="stat-info">
+                    <span class="stat-label">Average Order Value</span>
+                    <h3 class="stat-value text-dark">{{ average_order_value|currency_format:request }}</h3>
+                    <small class="text-muted">Value per purchase</small>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Filter Card -->
+<div class="card mb-4 border-0 shadow-sm animated" style="animation-delay: 0.25s; background: var(--bg-card); border-radius: var(--radius-md);">
+    <div class="card-body">
+        <form method="get" id="filterForm">
+            <div class="row align-items-end g-3">
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-semibold">Date From</label>
+                    <input type="date" name="from" class="form-control" value="{{ date_from|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-semibold">Date To</label>
+                    <input type="date" name="to" class="form-control" value="{{ date_to|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-semibold">Quick Select</label>
+                    <select class="form-select" id="quickSelect">
+                        <option value="">Custom Range</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="week">Last 7 Days</option>
+                        <option value="month">Last 30 Days</option>
+                        <option value="quarter">Last 90 Days</option>
+                        <option value="year">Last 365 Days</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="fas fa-sync-alt me-2"></i> Update Report
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sales Revenue Overview Chart -->
+<div class="card border-0 shadow-sm mb-4 animated" style="animation-delay: 0.3s; background: var(--bg-card); border-radius: var(--radius-md);">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 text-dark">
+                <i class="fas fa-chart-line text-primary me-2"></i> Sales Revenue Overview
+            </h5>
+            <div class="btn-group btn-group-sm">
+                <button id="btnLineChart" class="btn btn-outline-primary active" onclick="changeChartType('line')">Line</button>
+                <button id="btnBarChart" class="btn btn-outline-primary" onclick="changeChartType('bar')">Bar</button>
+            </div>
+        </div>
+        <div class="chart-wrapper" style="height: 300px; position: relative; width: 100%;">
+            <canvas id="revenueReportChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Sales Table Card -->
+<div class="card mb-4 border-0 shadow-sm animated" style="animation-delay: 0.35s; background: var(--bg-card); border-radius: var(--radius-md);">
+    <div class="card-header bg-transparent border-0 pt-3 pb-0">
+        <h5 class="mb-0 text-dark">
+            <i class="fas fa-table text-primary me-2"></i> Daily Sales Details
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Orders</th>
+                        <th>Revenue</th>
+                        <th>Average Order Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily_sales %}
+                    <tr>
+                        <td>
+                            <strong>{{ day.day|date:"M d, Y" }}</strong>
+                            <br>
+                            <small class="text-muted">{{ day.day|date:"l" }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary rounded-pill px-3">{{ day.count }} orders</span>
+                        </td>
+                        <td>
+                            <strong class="text-success">{{ day.total|currency_format:request }}</strong>
+                        </td>
+                        <td>
+                            {{ day.average|currency_format:request }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="fas fa-chart-line fa-3x mb-3 text-muted opacity-50"></i>
+                            <p class="mb-0">No sales data available for the selected period</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Breakdown Charts Section -->
+<div class="row animated" style="animation-delay: 0.4s;">
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100" style="background: var(--bg-card); border-radius: var(--radius-md);">
+            <div class="card-header bg-transparent border-bottom border-secondary border-opacity-10 py-3">
+                <h6 class="mb-0 text-dark">
+                    <i class="fas fa-chart-pie text-primary me-2"></i> Payment Method Breakdown
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper" style="height: 250px; position: relative; width: 100%;">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100" style="background: var(--bg-card); border-radius: var(--radius-md);">
+            <div class="card-header bg-transparent border-bottom border-secondary border-opacity-10 py-3">
+                <h6 class="mb-0 text-dark">
+                    <i class="fas fa-truck text-primary me-2"></i> Order Status Distribution
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper" style="height: 250px; position: relative; width: 100%;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
 <script>
-    let revenueChart;
+    let reportChart;
     let paymentChart;
     let statusChart;
+    let liveInterval = null;
+    window.activeCurrencySymbol = "{{ active_currency_symbol|default:'$' }}";
 
-    // Initialize charts
     document.addEventListener('DOMContentLoaded', function() {
         initRevenueChart();
         initPaymentChart();
         initStatusChart();
         setupQuickSelect();
+        
+        // Populate initial charts and stats from API
+        syncData(false);
     });
 
     function initRevenueChart() {
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        const dates = [{% for day in daily_sales %}'{{ day.day|date:"M d" }}',{% endfor %}];
-        const revenues = [{% for day in daily_sales %}{{ day.total|default:0 }},{% endfor %}];
-        
-        revenueChart = new Chart(ctx, {
+        const ctx = document.getElementById('revenueReportChart')?.getContext('2d');
+        if (!ctx) return;
+
+        // Is dark mode?
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f5f5f5';
+        const labelColor = isDark ? '#94a3b8' : '#64748b';
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.15)');
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0)');
+
+        reportChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: dates,
+                labels: [],
                 datasets: [{
                     label: 'Revenue',
-                    data: revenues,
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                    tension: 0.4,
-                    fill: true
+                    data: [],
+                    borderColor: '#4f46e5',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4f46e5',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'top',
+                        display: false
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return '$' + context.raw.toLocaleString();
+                                return (window.activeCurrencySymbol || '$') + ' ' + context.raw.toLocaleString(undefined, {minimumFractionDigits: 2});
                             }
                         }
                     }
@@ -445,11 +325,15 @@
                 scales: {
                     y: {
                         beginAtZero: true,
+                        grid: { color: gridColor },
                         ticks: {
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            }
+                            color: labelColor,
+                            callback: value => (window.activeCurrencySymbol || '$') + ' ' + value.toLocaleString()
                         }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: labelColor }
                     }
                 }
             }
@@ -457,55 +341,32 @@
     }
 
     function initPaymentChart() {
-        const ctx = document.getElementById('paymentChart').getContext('2d');
+        const ctx = document.getElementById('paymentChart')?.getContext('2d');
+        if (!ctx) return;
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const labelColor = isDark ? '#94a3b8' : '#64748b';
+
         paymentChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Credit Card', 'PayPal', 'Cash on Delivery', 'Bank Transfer'],
+                labels: ['Cash on Delivery', 'Credit/Debit Card', 'Bank Transfer', 'Mobile Payment'],
                 datasets: [{
-                    data: [45, 25, 20, 10],
-                    backgroundColor: ['#667eea', '#764ba2', '#f6d365', '#84fab0'],
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#f59e0b', '#4f46e5', '#10b981', '#06b6d4'],
                     borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'bottom',
-                    }
-                }
-            }
-        });
-    }
-
-    function initStatusChart() {
-        const ctx = document.getElementById('statusChart').getContext('2d');
-        statusChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
-                datasets: [{
-                    label: 'Orders',
-                    data: [12, 8, 15, 45, 5],
-                    backgroundColor: '#667eea',
-                    borderRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
+                        position: 'right',
+                        labels: {
+                            color: labelColor,
+                            usePointStyle: true,
+                            font: { size: 11 }
                         }
                     }
                 }
@@ -513,16 +374,210 @@
         });
     }
 
-    function changeChartType(type) {
-        if (revenueChart) {
-            revenueChart.config.type = type;
-            revenueChart.update();
-            
-            // Update button states
-            document.querySelectorAll('.btn-group .btn').forEach(btn => {
-                btn.classList.remove('active');
+    function initStatusChart() {
+        const ctx = document.getElementById('statusChart')?.getContext('2d');
+        if (!ctx) return;
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f5f5f5';
+        const labelColor = isDark ? '#94a3b8' : '#64748b';
+
+        statusChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+                datasets: [{
+                    label: 'Orders',
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: 'rgba(79, 70, 229, 0.85)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor },
+                        ticks: {
+                            color: labelColor,
+                            stepSize: 5
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: labelColor }
+                    }
+                }
+            }
+        });
+    }
+
+    function syncData(showToastMsg = true) {
+        const syncIcon = document.getElementById('syncIcon');
+        if (syncIcon) syncIcon.classList.add('fa-spin');
+
+        const fromDate = document.querySelector('input[name="from"]')?.value || '';
+        const toDate = document.querySelector('input[name="to"]')?.value || '';
+        
+        fetch(`/reports/api/sales/?from=${fromDate}&to=${toDate}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    updateDashboardUI(data);
+                    if (showToastMsg) {
+                        showNotification('Data synced successfully', 'success');
+                    }
+                } else {
+                    if (showToastMsg) showNotification('Failed to sync data', 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (showToastMsg) showNotification('Network error during sync', 'danger');
+            })
+            .finally(() => {
+                if (syncIcon) syncIcon.classList.remove('fa-spin');
             });
-            event.target.classList.add('active');
+    }
+
+    function updateDashboardUI(data) {
+        // 0. Update global currency symbol
+        window.activeCurrencySymbol = data.currency_symbol || '$';
+
+        // 1. Update stats elements
+        const statsVals = document.querySelectorAll('.stat-value');
+        if (statsVals.length >= 3) {
+            animateElementText(statsVals[0], data.summary.total_orders.toLocaleString());
+            animateElementText(statsVals[1], (data.currency_symbol || '$') + ' ' + data.summary.total_revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            animateElementText(statsVals[2], (data.currency_symbol || '$') + ' ' + data.summary.average_order_value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        }
+
+        // 2. Update Daily Revenue Chart
+        if (reportChart) {
+            const labels = data.daily_sales.map(d => {
+                const parts = d.day.split('-');
+                if (parts.length === 3) {
+                    const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
+                    return dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+                }
+                return d.day;
+            });
+            const values = data.daily_sales.map(d => d.total);
+            reportChart.data.labels = labels;
+            reportChart.data.datasets[0].data = values;
+            reportChart.update();
+        }
+
+        // 3. Update Payment Method Chart
+        if (paymentChart) {
+            const cod = data.method_distribution.cod || 0;
+            const card = data.method_distribution.card || 0;
+            const bank = data.method_distribution.bank || 0;
+            const mobile = data.method_distribution.mobile || 0;
+            paymentChart.data.datasets[0].data = [cod, card, bank, mobile];
+            paymentChart.update();
+        }
+
+        // 4. Update Status Distribution Chart
+        if (statusChart) {
+            const pending = data.status_distribution.pending || 0;
+            const approved = data.status_distribution.approved || 0;
+            const processing = data.status_distribution.processing || 0;
+            const shipped = data.status_distribution.shipped || 0;
+            const delivered = data.status_distribution.delivered || 0;
+            const cancelled = data.status_distribution.cancelled || 0;
+            
+            // Group approved/processing together or keep separate, let's keep separate: pending, approved+processing, shipped, delivered, cancelled
+            statusChart.data.datasets[0].data = [pending, approved + processing, shipped, delivered, cancelled];
+            statusChart.update();
+        }
+
+        // 5. Update Daily Sales Details Table
+        const tbody = document.querySelector('.premium-table tbody');
+        if (tbody) {
+            if (data.daily_sales.length > 0) {
+                let html = '';
+                data.daily_sales.forEach(day => {
+                    const parts = day.day.split('-');
+                    let formattedDate = day.day;
+                    let dayName = '';
+                    if (parts.length === 3) {
+                        const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
+                        formattedDate = dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+                        dayName = dateObj.toLocaleDateString('en-US', {weekday: 'long'});
+                    }
+                    const aov = day.count > 0 ? (day.total / day.count) : 0;
+                    html += `
+                        <tr>
+                            <td>
+                                <strong>${formattedDate}</strong>
+                                <br>
+                                <small class="text-muted">${dayName}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary rounded-pill px-3">${day.count} orders</span>
+                            </td>
+                            <td>
+                                <strong class="text-success">${data.currency_symbol || '$'} ${day.total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+                            </td>
+                            <td>
+                                ${data.currency_symbol || '$'} ${aov.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="fas fa-chart-line fa-3x mb-3 text-muted opacity-50"></i>
+                            <p class="mb-0">No sales data available for the selected period</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    }
+
+    function animateElementText(el, newText) {
+        if (el.innerText === newText) return;
+        el.style.transition = 'opacity 0.2s';
+        el.style.opacity = 0;
+        setTimeout(() => {
+            el.innerText = newText;
+            el.style.opacity = 1;
+        }, 200);
+    }
+
+    function changeChartType(type) {
+        if (!reportChart) return;
+        
+        reportChart.config.type = type;
+        
+        // Adjust chart-specific settings for display
+        if (type === 'bar') {
+            reportChart.data.datasets[0].fill = false;
+        } else {
+            reportChart.data.datasets[0].fill = true;
+        }
+        
+        reportChart.update();
+        
+        // Update active class on buttons
+        const btnLine = document.getElementById('btnLineChart');
+        const btnBar = document.getElementById('btnBarChart');
+        if (type === 'line') {
+            btnLine?.classList.add('active');
+            btnBar?.classList.remove('active');
+        } else {
+            btnBar?.classList.add('active');
+            btnLine?.classList.remove('active');
         }
     }
 
@@ -574,10 +629,54 @@
         return date.toISOString().split('T')[0];
     }
 
+    function toggleLiveMode() {
+        const toggle = document.getElementById('liveModeToggle');
+        const dot = document.querySelector('.live-dot');
+        
+        if (toggle.checked) {
+            dot.classList.add('live-pulse-active');
+            dot.classList.remove('bg-secondary');
+            
+            // Poll every 5 seconds
+            liveInterval = setInterval(() => {
+                syncData(false);
+            }, 5000);
+            
+            showNotification('Live Mode enabled. Syncing in background.', 'success');
+        } else {
+            dot.classList.remove('live-pulse-active');
+            dot.classList.add('bg-secondary');
+            
+            if (liveInterval) {
+                clearInterval(liveInterval);
+                liveInterval = null;
+            }
+            showNotification('Live Mode disabled.', 'info');
+        }
+    }
+
+    function showNotification(message, type = 'success') {
+        const toastHtml = `
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+                <div class="bg-${type === 'success' ? 'success' : type === 'danger' ? 'danger' : 'info'} text-white p-3 rounded-4 shadow-lg d-flex align-items-center gap-3">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} fa-lg"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="btn-close btn-close-white"></button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        setTimeout(() => {
+            const toast = document.querySelector('.position-fixed.bottom-0.end-0');
+            if (toast) toast.remove();
+        }, 3000);
+    }
+
     function exportReport(format) {
         const params = new URLSearchParams(window.location.search);
+        params.set('type', 'sales');
         params.set('format', format);
-        window.location.href = `/reports/download/?${params.toString()}`;
+        window.location.href = `{% url 'reports:download' %}?${params.toString()}`;
     }
 </script>
 {% endblock %}

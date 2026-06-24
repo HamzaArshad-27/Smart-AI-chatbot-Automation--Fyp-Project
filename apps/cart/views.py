@@ -11,7 +11,10 @@ from .models import Cart, CartItem, Product
 @login_required
 def cart_view(request):
     """Display shopping cart"""
-    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart, created = Cart.objects.prefetch_related(
+        'items__product__images',
+        'items__product__company'
+    ).get_or_create(user=request.user)
     context = {
         'cart': cart,
     }
@@ -159,3 +162,57 @@ def clear_cart(request):
             cart.items.all().delete()
             messages.success(request, 'Cart cleared successfully.')
         return redirect('cart:view')
+
+@login_required
+def cart_json(request):
+    """Get cart details in JSON format with proper active currency conversion"""
+    from apps.core.currency import get_active_currency, convert_currency, format_currency
+    
+    cart, created = Cart.objects.prefetch_related(
+        'items__product__images',
+        'items__product__company'
+    ).get_or_create(user=request.user)
+    
+    active_curr = get_active_currency(request)
+    
+    items_data = []
+    for item in cart.items.all():
+        product = item.product
+        images = list(product.images.all())
+        image_url = images[0].image.url if images else 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&h=100&fit=crop'
+        
+        # Convert prices
+        converted_price = convert_currency(product.price, active_curr, 'USD')
+        formatted_price = format_currency(converted_price, active_curr)
+        
+        converted_subtotal = convert_currency(item.get_subtotal(), active_curr, 'USD')
+        formatted_subtotal = format_currency(converted_subtotal, active_curr)
+        
+        items_data.append({
+            'id': item.id,
+            'product_id': product.id,
+            'product_name': product.name,
+            'product_slug': product.slug,
+            'product_price': float(product.price),
+            'product_price_formatted': formatted_price,
+            'product_image_url': image_url,
+            'quantity': item.quantity,
+            'stock_quantity': product.stock_quantity,
+            'subtotal': float(item.get_subtotal()),
+            'subtotal_formatted': formatted_subtotal,
+        })
+    
+    total_val = cart.get_total()
+    converted_total = convert_currency(total_val, active_curr, 'USD')
+    formatted_total = format_currency(converted_total, active_curr)
+    
+    return JsonResponse({
+        'success': True,
+        'items': items_data,
+        'cart_count': cart.get_total_items(),
+        'subtotal': float(total_val),
+        'subtotal_formatted': formatted_total,
+        'shipping_formatted': 'Free',
+        'taxes_formatted': 'Calculated at checkout',
+        'total_formatted': formatted_total,
+    })

@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from decouple import config, Csv
+from decouple import config
 import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,7 +12,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here'
 DEBUG = True
 # Site URL for emails
 SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost',  '192.168.1.146']
 # For testing, you can also add test emails that auto-verify
 TEST_EMAILS = ['test@example.com', 'demo@vendora.com', 'admin@vendora.com']
 # Development Mode - Set to True to bypass email verification and auto-approve users
@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'apps.cart',
     'apps.reports',
     'apps.core',
-    
+    'apps.ai_assistant',
+    'apps.dashboard',
 ]
 
 MIDDLEWARE = [
@@ -73,8 +74,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.core.context_processors.cart_count',
-                'apps.core.context_processors.site_settings'
-
+                'apps.core.context_processors.site_settings',
+                'apps.core.context_processors.currency_settings'
             ],
         },
     },
@@ -167,6 +168,10 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# AI assistant (Ollama)
+OLLAMA_BASE_URL = config('OLLAMA_BASE_URL', default='http://localhost:11434')
+OLLAMA_MODEL = config('OLLAMA_MODEL', default='phi3:mini')
 
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'

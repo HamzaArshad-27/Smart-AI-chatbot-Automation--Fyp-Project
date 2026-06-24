@@ -1,489 +1,302 @@
-{% extends 'base.html' %}
+{% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
-{% block title %}Company Orders - Vendora{% endblock %}
+{% block dashboard_title %}Order Management - Vendora{% endblock %}
+{% block breadcrumb_active %}Order Management{% endblock %}
 
-{% block content %}
+{% block dashboard_content %}
+<!-- Custom Style overrides for glassmorphic order management -->
 <style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-        --warning-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    }
-
-    /* Page Header */
-    .page-header {
-        background: var(--primary-gradient);
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    .page-header::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -5%;
-        width: 200px;
-        height: 200px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    /* Stats Cards */
+    /* Stats & Cards */
     .stat-card-mini {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
+        background: var(--bg-card);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--border-light) !important;
+        border-radius: var(--radius-md);
+        padding: 1.25rem 1rem;
         text-align: center;
-        transition: all 0.3s ease;
+        transition: var(--transition);
         cursor: pointer;
-        border: 2px solid transparent;
+        box-shadow: var(--shadow-sm);
+        height: 100%;
     }
-
     .stat-card-mini:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
     }
-
     .stat-card-mini.active {
-        border-color: #667eea;
-        background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+        border-color: var(--primary) !important;
+        background: rgba(79, 70, 229, 0.08) !important;
     }
-
-    .stat-number {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-bottom: 0;
-    }
-
-    .stat-label {
-        font-size: 0.75rem;
-        color: #6c757d;
-        margin-bottom: 0;
-    }
-
-    /* Filter Section */
-    .filter-section {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-
-    .search-box {
-        position: relative;
-    }
-
-    .search-box input {
-        padding-left: 40px;
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
-        transition: all 0.3s ease;
-    }
-
-    .search-box input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
-    }
-
-    .search-box i {
-        position: absolute;
-        left: 15px;
-        top: 12px;
-        color: #6c757d;
-    }
-
-    /* Orders Table */
-    .orders-table {
-        border-radius: 15px;
+    
+    /* Table modifications */
+    .table-container {
+        background: var(--bg-card);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
         overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
-
-    .orders-table thead th {
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .orders-table tbody tr {
-        transition: all 0.3s ease;
+    
+    /* Hover Row Actions */
+    .order-row {
         cursor: pointer;
+        transition: var(--transition);
     }
-
-    .orders-table tbody tr:hover {
-        background: #f8f9fc;
-        transform: scale(1.01);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    .order-row:hover {
+        background: rgba(0, 0, 0, 0.02) !important;
     }
-
-    .orders-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
+    
+    /* Details Drawer styling */
+    .timeline-steps {
+        position: relative;
+        padding-left: 1.5rem;
     }
-
-    /* Status Badges */
-    .badge-status {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
+    .timeline-step {
+        position: relative;
+        padding-bottom: 1.5rem;
     }
-
-    .badge-status i {
-        font-size: 0.7rem;
+    .timeline-step::before {
+        content: '';
+        position: absolute;
+        left: -17px;
+        top: 6px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        border: 2px solid white;
+        z-index: 2;
     }
-
-    .status-pending { background: #ffc107; color: #856404; }
-    .status-approved { background: #17a2b8; color: white; }
-    .status-processing { background: #007bff; color: white; }
-    .status-shipped { background: #6f42c1; color: white; }
-    .status-delivered { background: #28a745; color: white; }
-    .status-cancelled { background: #dc3545; color: white; }
-
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 5px;
-        flex-wrap: wrap;
+    .timeline-step.completed::before {
+        background: var(--success);
     }
-
-    .btn-action {
-        padding: 5px 10px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        transition: all 0.3s ease;
+    .timeline-step.active::before {
+        background: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
     }
-
-    .btn-action:hover {
-        transform: translateY(-2px);
+    .timeline-step::after {
+        content: '';
+        position: absolute;
+        left: -12px;
+        top: 12px;
+        bottom: 0;
+        width: 2px;
+        background: #e2e8f0;
+        z-index: 1;
     }
-
-    /* Order Items Preview */
-    .items-preview {
-        max-width: 200px;
-    }
-
-    .item-tag {
-        background: #f8f9fc;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 0.7rem;
-        display: inline-block;
-        margin: 2px;
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animated {
-        animation: fadeInUp 0.5s ease forwards;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .page-header {
-            padding: 1rem;
-        }
-        
-        .action-buttons {
-            flex-direction: column;
-        }
-        
-        .btn-action {
-            width: 100%;
-        }
-    }
-
-    /* Bulk Actions */
-    .bulk-actions {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1rem;
+    .timeline-step:last-child::after {
         display: none;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .bulk-actions.show {
-        display: block;
-        animation: fadeInUp 0.3s ease;
-    }
-
-    /* Export Button */
-    .export-btn {
-        background: rgba(255,255,255,0.2);
-        border: 1px solid rgba(255,255,255,0.3);
-        color: white;
-        transition: all 0.3s ease;
-    }
-
-    .export-btn:hover {
-        background: rgba(255,255,255,0.3);
-        color: white;
-        transform: translateY(-2px);
     }
 </style>
 
-<div class="container-fluid mt-4">
-    <!-- Page Header -->
-    <div class="page-header animated" style="animation-delay: 0.1s;">
+<div class="container-fluid px-0">
+    <!-- Welcome Header Banner -->
+    <div class="welcome-banner animated" style="animation-delay: 0.1s;">
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h1 class="display-6 mb-2">Order Management</h1>
-                <p class="mb-0 opacity-75">Manage and track all customer orders in one place</p>
+                <p class="mb-0 opacity-75">Track, process, and manage your incoming orders in real-time.</p>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <button class="btn export-btn" onclick="exportOrders()">
-                    <i class="fas fa-download"></i> Export Report
+                <button class="btn btn-primary" onclick="exportOrders()">
+                    <i class="fas fa-download me-2"></i> Export Report
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="row mb-4 animated" style="animation-delay: 0.2s;">
-        <div class="col-md-2 col-sm-4 col-6 mb-2">
+    <!-- Quick Stats Filters -->
+    <div class="row mb-4 g-3 animated" style="animation-delay: 0.2s;">
+        <div class="col-md-2 col-sm-4 col-6">
             <div class="stat-card-mini {% if not status_filter %}active{% endif %}" onclick="filterStatus('')">
-                <div class="stat-number">{{ total_orders }}</div>
+                <div class="stat-number text-dark" id="count-all">{{ total_orders }}</div>
                 <div class="stat-label">Total Orders</div>
             </div>
         </div>
-        <div class="col-md-2 col-sm-4 col-6 mb-2">
+        <div class="col-md-2 col-sm-4 col-6">
             <div class="stat-card-mini {% if status_filter == 'pending' %}active{% endif %}" onclick="filterStatus('pending')">
-                <div class="stat-number text-warning">{{ pending_count }}</div>
+                <div class="stat-number text-warning" id="count-pending">{{ pending_count }}</div>
                 <div class="stat-label">Pending</div>
             </div>
         </div>
-        <div class="col-md-2 col-sm-4 col-6 mb-2">
+        <div class="col-md-2 col-sm-4 col-6">
             <div class="stat-card-mini {% if status_filter == 'approved' %}active{% endif %}" onclick="filterStatus('approved')">
-                <div class="stat-number text-info">{{ approved_count }}</div>
+                <div class="stat-number text-info" id="count-approved">{{ approved_count }}</div>
                 <div class="stat-label">Approved</div>
             </div>
         </div>
-        <div class="col-md-2 col-sm-4 col-6 mb-2">
+        <div class="col-md-2 col-sm-4 col-6">
             <div class="stat-card-mini {% if status_filter == 'processing' %}active{% endif %}" onclick="filterStatus('processing')">
-                <div class="stat-number text-primary">{{ processing_count }}</div>
+                <div class="stat-number text-primary" id="count-processing">{{ processing_count }}</div>
                 <div class="stat-label">Processing</div>
             </div>
         </div>
-        <div class="col-md-2 col-sm-4 col-6 mb-2">
+        <div class="col-md-2 col-sm-4 col-6">
             <div class="stat-card-mini {% if status_filter == 'shipped' %}active{% endif %}" onclick="filterStatus('shipped')">
-                <div class="stat-number text-info">{{ shipped_count }}</div>
+                <div class="stat-number text-info" id="count-shipped">{{ shipped_count }}</div>
                 <div class="stat-label">Shipped</div>
             </div>
         </div>
-        <div class="col-md-2 col-sm-4 col-6 mb-2">
+        <div class="col-md-2 col-sm-4 col-6">
             <div class="stat-card-mini {% if status_filter == 'delivered' %}active{% endif %}" onclick="filterStatus('delivered')">
-                <div class="stat-number text-success">{{ delivered_count }}</div>
+                <div class="stat-number text-success" id="count-delivered">{{ delivered_count }}</div>
                 <div class="stat-label">Delivered</div>
             </div>
         </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="filter-section animated" style="animation-delay: 0.3s;">
-        <div class="row align-items-center">
-            <div class="col-md-4 mb-3 mb-md-0">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search by order #, customer, or product...">
+    <!-- Filter Control Card -->
+    <div class="card mb-4 animated" style="animation-delay: 0.3s;">
+        <div class="card-body py-3">
+            <div class="row align-items-center g-3">
+                <div class="col-md-4">
+                    <div class="position-relative">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search orders, customers, or items...">
+                        <i class="fas fa-search text-muted position-absolute" style="right: 16px; top: 16px;"></i>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="dateFilter" class="form-select">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="year">This Year</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="paymentFilter" class="form-select">
+                        <option value="">All Payments</option>
+                        <option value="cod">Cash on Delivery</option>
+                        <option value="card">Credit Card/Debit Card</option>
+                        <option value="bank">Bank Transfer</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-light w-100" onclick="resetFilters()">
+                        <i class="fas fa-redo me-2"></i> Reset
+                    </button>
                 </div>
             </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <select id="dateFilter" class="form-select">
-                    <option value="">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                    <option value="year">This Year</option>
-                </select>
+        </div>
+    </div>
+
+    <!-- Bulk Action Alert Bar -->
+    <div class="alert alert-secondary py-3 px-4 mb-3 border-0 rounded-4 shadow-sm d-none" id="bulkActions" style="background: var(--bg-card); backdrop-filter: blur(16px);">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="fw-semibold text-dark">
+                <i class="fas fa-info-circle text-primary me-2"></i>
+                <span id="selectedCount">0</span> order(s) selected
             </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <select id="paymentFilter" class="form-select">
-                    <option value="">All Payment Methods</option>
-                    <option value="cod">Cash on Delivery</option>
-                    <option value="card">Credit Card</option>
-                    <option value="paypal">PayPal</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
-                    <i class="fas fa-redo"></i> Reset
+            <div class="d-flex gap-2">
+                <button class="btn btn-success btn-sm px-3" onclick="bulkApprove()">
+                    <i class="fas fa-check me-1"></i> Bulk Approve
+                </button>
+                <button class="btn btn-danger btn-sm px-3" onclick="bulkCancel()">
+                    <i class="fas fa-times me-1"></i> Bulk Cancel
+                </button>
+                <button class="btn btn-light btn-sm px-3" onclick="clearSelection()">
+                    Clear Selection
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Bulk Actions -->
-    <div class="bulk-actions" id="bulkActions">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <strong><span id="selectedCount">0</span> orders selected</strong>
-            </div>
-            <div class="col-md-6 text-md-end">
-                <button class="btn btn-success btn-sm" onclick="bulkApprove()">
-                    <i class="fas fa-check"></i> Bulk Approve
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="bulkCancel()">
-                    <i class="fas fa-times"></i> Bulk Cancel
-                </button>
-                <button class="btn btn-secondary btn-sm" onclick="clearSelection()">
-                    <i class="fas fa-close"></i> Clear
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Orders Table -->
-    <div class="orders-table animated" style="animation-delay: 0.4s;">
+    <!-- Main Orders Table -->
+    <div class="table-container animated" style="animation-delay: 0.4s;">
         <div class="table-responsive">
-            <table class="table mb-0">
+            <table class="table premium-table mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 30px;">
-                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                        <th style="width: 45px;" class="ps-4">
+                            <input type="checkbox" id="selectAll" class="form-check-input" onchange="toggleSelectAll()">
                         </th>
-                        <th>Order Details</th>
-                        <th>Customer Info</th>
-                        <th>Items</th>
-                        <th>Amount</th>
+                        <th>Order details</th>
+                        <th>Customer</th>
+                        <th>Items Summary</th>
+                        <th>Total Price</th>
                         <th>Status</th>
-                        <th>Date</th>
-                        <th>Actions</th>
+                        <th>Date Placed</th>
+                        <th class="pe-4 text-end">Action controls</th>
                     </tr>
                 </thead>
                 <tbody id="ordersTableBody">
                     {% for order in orders %}
-                    <tr class="order-row" data-order-id="{{ order.id }}" data-status="{{ order.status }}">
-                        <td>
-                            <input type="checkbox" class="order-checkbox" value="{{ order.id }}" onchange="updateBulkActions()">
+                    <tr class="order-row align-middle" data-order-id="{{ order.id }}" data-status="{{ order.status }}">
+                        <td class="ps-4" onclick="event.stopPropagation();">
+                            <input type="checkbox" class="order-checkbox form-check-input" value="{{ order.id }}" onchange="updateBulkActions()">
                         </td>
-                        <td>
-                            <strong>{{ order.order_number }}</strong>
-                            <br>
-                            <small class="text-muted">#{{ order.id }}</small>
+                        <td onclick="openOrderDrawer({{ order.id }})">
+                            <strong class="text-dark">{{ order.order_number }}</strong>
+                            <div class="text-muted" style="font-size: 0.75rem;">ID: #{{ order.id }}</div>
                         </td>
-                        <td>
-                            <div>
-                                <i class="fas fa-user text-primary"></i> {{ order.user.get_full_name|default:order.user.email }}
-                            </div>
-                            <div class="mt-1">
-                                <i class="fas fa-phone text-muted"></i> 
-                                <small>{{ order.shipping_phone }}</small>
-                            </div>
-                            <div class="mt-1">
-                                <i class="fas fa-envelope text-muted"></i> 
-                                <small>{{ order.user.email|truncatechars:20 }}</small>
-                            </div>
+                        <td onclick="openOrderDrawer({{ order.id }})">
+                            <div class="fw-bold">{{ order.user.get_full_name|default:order.user.email }}</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">{{ order.shipping_phone }}</small>
                         </td>
-                        <td>
-                            <div class="items-preview">
+                        <td onclick="openOrderDrawer({{ order.id }})">
+                            <div class="d-flex flex-wrap gap-1" style="max-width: 230px;">
                                 {% for item in order.items.all|slice:":2" %}
-                                    <span class="item-tag">
-                                        {{ item.product.name|truncatechars:20 }} x{{ item.quantity }}
-                                    </span>
+                                <span class="badge bg-secondary" style="font-size: 0.7rem; font-weight: 500;">
+                                    {{ item.product.name|truncatechars:18 }} x{{ item.quantity }}
+                                </span>
                                 {% endfor %}
                                 {% if order.items.count > 2 %}
-                                    <span class="item-tag text-primary">
-                                        +{{ order.items.count|add:"-2" }} more
-                                    </span>
+                                <span class="badge bg-primary" style="font-size: 0.7rem;">+{{ order.items.count|add:"-2" }} more</span>
                                 {% endif %}
                             </div>
                         </td>
-                        <td>
-                            <strong class="text-primary">${{ order.total_amount }}</strong>
-                            <br>
-                            <small class="badge bg-{% if order.payment_status == 'paid' %}success{% else %}warning{% endif %}">
-                                {{ order.get_payment_status_display }}
-                            </small>
+                        <td onclick="openOrderDrawer({{ order.id }})">
+                            <strong class="text-primary">{{ order.total_amount|order_currency_format:order }}</strong>
+                            <div style="font-size: 0.72rem;">
+                                <span class="badge bg-{% if order.payment_status == 'paid' %}success{% else %}warning{% endif %}" id="payment-badge-{{ order.id }}">
+                                    {{ order.get_payment_status_display }}
+                                </span>
+                            </div>
                         </td>
-                        <td>
-                            <span class="badge-status status-{{ order.status }}">
+                        <td onclick="openOrderDrawer({{ order.id }})">
+                            <span class="badge-status status-{{ order.status }}" id="badge-{{ order.id }}">
                                 <i class="fas {% if order.status == 'pending' %}fa-clock{% elif order.status == 'delivered' %}fa-check-circle{% elif order.status == 'shipped' %}fa-truck{% elif order.status == 'processing' %}fa-cogs{% else %}fa-box{% endif %}"></i>
-                                {{ order.get_status_display }}
+                                <span class="status-text">{{ order.get_status_display }}</span>
                             </span>
                         </td>
-                        <td>
-                            <div>{{ order.created_at|date:"M d, Y" }}</div>
-                            <small class="text-muted">{{ order.created_at|time:"h:i A" }}</small>
+                        <td onclick="openOrderDrawer({{ order.id }})">
+                            <div class="text-dark">{{ order.created_at|date:"M d, Y" }}</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">{{ order.created_at|time:"g:i A" }}</small>
                         </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="{% url 'orders:detail' order.id %}" class="btn btn-info btn-action" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                
+                        <td class="pe-4 text-end" onclick="event.stopPropagation();">
+                            <div class="d-inline-flex gap-1" id="actions-{{ order.id }}">
                                 {% if order.status == 'pending' %}
-                                    <a href="{% url 'orders:approve_order' order.id %}" 
-                                       class="btn btn-success btn-action"
-                                       onclick="return confirm('Approve this order?')">
-                                        <i class="fas fa-check"></i> Approve
-                                    </a>
+                                <button onclick="triggerQuickAction({{ order.id }}, 'approve')" class="btn btn-success btn-sm py-1.5 px-3">
+                                    <i class="fas fa-check me-1"></i> Approve
+                                </button>
                                 {% elif order.status == 'approved' %}
-                                    <a href="{% url 'orders:process_order' order.id %}" 
-                                       class="btn btn-primary btn-action"
-                                       onclick="return confirm('Start processing this order?')">
-                                        <i class="fas fa-cogs"></i> Process
-                                    </a>
+                                <button onclick="triggerQuickAction({{ order.id }}, 'process')" class="btn btn-primary btn-sm py-1.5 px-3">
+                                    <i class="fas fa-cogs me-1"></i> Process
+                                </button>
                                 {% elif order.status == 'processing' %}
-                                    <a href="{% url 'orders:ship_order' order.id %}" 
-                                       class="btn btn-info btn-action">
-                                        <i class="fas fa-truck"></i> Ship
-                                    </a>
+                                <button onclick="promptShipOrder({{ order.id }})" class="btn btn-info btn-sm py-1.5 px-3 text-white">
+                                    <i class="fas fa-truck me-1"></i> Ship
+                                </button>
                                 {% elif order.status == 'shipped' %}
-                                    <a href="{% url 'orders:deliver_order' order.id %}" 
-                                       class="btn btn-success btn-action"
-                                       onclick="return confirm('Mark this order as delivered?')">
-                                        <i class="fas fa-check-circle"></i> Deliver
-                                    </a>
+                                <button onclick="triggerQuickAction({{ order.id }}, 'deliver')" class="btn btn-success btn-sm py-1.5 px-3">
+                                    <i class="fas fa-check-circle me-1"></i> Deliver
+                                </button>
+                                {% else %}
+                                <span class="text-muted small">None</span>
                                 {% endif %}
-                                
-                                    
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
                         <td colspan="8" class="text-center py-5">
-                            <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
-                            <h4>No Orders Found</h4>
-                            <p class="text-muted">No orders are available in this category.</p>
+                            <div class="text-muted mb-3"><i class="fas fa-shopping-basket fa-3x"></i></div>
+                            <h5 class="fw-bold">No orders found</h5>
+                            <p class="text-muted mb-0">There are no orders in this category at the moment.</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -491,35 +304,33 @@
             </table>
         </div>
         
-        <!-- Pagination -->
+        <!-- Paged Navigation -->
         {% if orders.has_other_pages %}
-        <div class="p-3 bg-light">
-                            <nav aria-label="Page navigation">
+        <div class="p-3 border-top border-opacity-10">
+            <nav aria-label="Order navigation">
                 <ul class="pagination justify-content-center mb-0">
                     {% if orders.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
-                                <i class="fas fa-chevron-left"></i> Previous
-                            </a>
-                        </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    </li>
                     {% endif %}
-                    
                     {% for i in orders.paginator.page_range %}
-                        {% if orders.number == i %}
-                            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
-                        {% elif i > orders.number|add:'-3' and i < orders.number|add:'3' %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a>
-                            </li>
-                        {% endif %}
+                    {% if orders.number == i %}
+                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% elif i > orders.number|add:'-3' and i < orders.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a>
+                    </li>
+                    {% endif %}
                     {% endfor %}
-                    
                     {% if orders.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
-                                Next <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
             </nav>
@@ -528,28 +339,67 @@
     </div>
 </div>
 
+<!-- Dynamic Offcanvas Detailed Order Drawer (Shopify Style) -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="orderDetailDrawer" aria-labelledby="orderDetailDrawerLabel" style="width: 520px; border-left: 1px solid var(--border-light); background: var(--bg-white); backdrop-filter: blur(24px);">
+    <div class="offcanvas-header border-bottom border-opacity-10 py-3">
+        <h5 class="offcanvas-title fw-bold text-dark" id="orderDetailDrawerLabel">Order Info</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body" id="drawerBody">
+        <!-- Dynamically populated via JS -->
+    </div>
+</div>
+
+<!-- Ship Order Modal (Tracking prompt) -->
+<div class="modal fade" id="shipOrderModal" tabindex="-1" aria-labelledby="shipOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="shipOrderModalLabel">Ship Order Tracking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="shipOrderId">
+                <div class="mb-3">
+                    <label class="form-label">Courier Carrier</label>
+                    <select id="courierCarrier" class="form-select mb-3">
+                        <option value="Leopards Courier">Leopards Courier</option>
+                        <option value="TCS Express">TCS Express</option>
+                        <option value="M&P Express">M&P Express</option>
+                        <option value="Pakistan Post">Pakistan Post</option>
+                        <option value="Standard Cargo">Standard Courier</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tracking Number</label>
+                    <input type="text" id="shipTrackingNumber" class="form-control" placeholder="Enter tracking code (e.g. TRAK987654)">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm px-4" onclick="confirmShipOrder()">Ship Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Filter by status
+    // Filters & Pagination parameters
     function filterStatus(status) {
         window.location.href = '?status=' + status;
     }
-    
-    // Search functionality
+
+    // Search Filtering (Client-side fast search)
     document.getElementById('searchInput')?.addEventListener('keyup', function() {
-        const searchTerm = this.value.toLowerCase();
+        const query = this.value.toLowerCase();
         const rows = document.querySelectorAll('.order-row');
-        
         rows.forEach(row => {
             const text = row.innerText.toLowerCase();
-            if (text.includes(searchTerm)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            row.style.display = text.includes(query) ? '' : 'none';
         });
     });
-    
-    // Date filter
+
+    // Date Filter
     document.getElementById('dateFilter')?.addEventListener('change', function() {
         const filter = this.value;
         const rows = document.querySelectorAll('.order-row');
@@ -558,12 +408,11 @@
         rows.forEach(row => {
             const dateText = row.cells[6].innerText;
             const rowDate = new Date(dateText);
-            
             let show = true;
             if (filter === 'today') {
                 show = rowDate.toDateString() === today.toDateString();
             } else if (filter === 'week') {
-                const weekAgo = new Date(today.setDate(today.getDate() - 7));
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
                 show = rowDate >= weekAgo;
             } else if (filter === 'month') {
                 const monthAgo = new Date(today.setMonth(today.getMonth() - 1));
@@ -572,118 +421,419 @@
                 const yearAgo = new Date(today.setFullYear(today.getFullYear() - 1));
                 show = rowDate >= yearAgo;
             }
-            
             row.style.display = show ? '' : 'none';
         });
     });
-    
-    // Payment filter
+
+    // Payment Filter
     document.getElementById('paymentFilter')?.addEventListener('change', function() {
-        const filter = this.value;
+        const val = this.value.toLowerCase();
         const rows = document.querySelectorAll('.order-row');
-        
         rows.forEach(row => {
-            const paymentCell = row.cells[4];
-            if (filter === '') {
-                row.style.display = '';
-            } else {
-                const paymentText = paymentCell.innerText.toLowerCase();
-                row.style.display = paymentText.includes(filter) ? '' : 'none';
-            }
+            const text = row.cells[4].innerText.toLowerCase();
+            row.style.display = text.includes(val) ? '' : 'none';
         });
     });
-    
-    // Reset filters
+
     function resetFilters() {
         document.getElementById('searchInput').value = '';
         document.getElementById('dateFilter').value = '';
         document.getElementById('paymentFilter').value = '';
-        location.reload();
+        window.location.href = '?';
     }
-    
-    // Bulk actions
+
+    // Bulk selection controls
     let selectedOrders = [];
-    
+
     function updateBulkActions() {
         const checkboxes = document.querySelectorAll('.order-checkbox:checked');
         selectedOrders = Array.from(checkboxes).map(cb => cb.value);
-        
-        const bulkActions = document.getElementById('bulkActions');
-        const selectedCount = document.getElementById('selectedCount');
+        const bar = document.getElementById('bulkActions');
+        const count = document.getElementById('selectedCount');
         
         if (selectedOrders.length > 0) {
-            bulkActions.classList.add('show');
-            selectedCount.innerText = selectedOrders.length;
+            bar.classList.remove('d-none');
+            count.innerText = selectedOrders.length;
         } else {
-            bulkActions.classList.remove('show');
+            bar.classList.add('d-none');
         }
     }
-    
+
     function toggleSelectAll() {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.order-checkbox');
-        
-        checkboxes.forEach(cb => {
-            cb.checked = selectAll.checked;
+        const state = document.getElementById('selectAll').checked;
+        document.querySelectorAll('.order-checkbox').forEach(cb => {
+            cb.checked = state;
         });
-        
         updateBulkActions();
     }
-    
+
     function clearSelection() {
-        const checkboxes = document.querySelectorAll('.order-checkbox');
-        checkboxes.forEach(cb => {
+        document.getElementById('selectAll').checked = false;
+        document.querySelectorAll('.order-checkbox').forEach(cb => {
             cb.checked = false;
         });
         updateBulkActions();
     }
-    
+
+    // Bulk action AJAX posts
     function bulkApprove() {
         if (selectedOrders.length === 0) return;
-        
-        if (confirm(`Approve ${selectedOrders.length} order(s)?`)) {
-            // Implement bulk approve via AJAX
-            fetch('/orders/bulk-approve/', {
+        if (confirm(`Approve all ${selectedOrders.length} selected order(s)?`)) {
+            fetch("{% url 'orders:bulk_approve' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({order_ids: selectedOrders})
-            }).then(response => {
-                if (response.ok) {
-                    location.reload();
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.error || 'Bulk approve failed', 'danger');
                 }
             });
         }
     }
-    
+
     function bulkCancel() {
         if (selectedOrders.length === 0) return;
-        
-        if (confirm(`Cancel ${selectedOrders.length} order(s)?`)) {
-            // Implement bulk cancel via AJAX
-            fetch('/orders/bulk-cancel/', {
+        if (confirm(`Cancel all ${selectedOrders.length} selected order(s)?`)) {
+            fetch("{% url 'orders:bulk_cancel' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({order_ids: selectedOrders})
-            }).then(response => {
-                if (response.ok) {
-                    location.reload();
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.error || 'Bulk cancel failed', 'danger');
                 }
             });
         }
     }
-    
-    // Export orders
+
+    // CSV report export
     function exportOrders() {
-        window.location.href = '/orders/export/?status={{ status_filter }}';
+        window.location.href = "{% url 'orders:export_orders' %}{% if status_filter %}?status={{ status_filter }}{% endif %}";
     }
-    
-    // Get CSRF token
+
+    // AJAX Action Handlers
+    function triggerQuickAction(orderId, action, extraData = {}) {
+        const bodyData = { action: action, ...extraData };
+        fetch(`/orders/company/api/update-status/${orderId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(bodyData)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Action failed');
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(`Order status updated successfully to ${data.status_display}!`, 'success');
+                
+                // 1. Update status badge
+                const badge = document.getElementById(`badge-${orderId}`);
+                if (badge) {
+                    badge.className = `badge-status status-${data.new_status}`;
+                    badge.querySelector('.status-text').innerText = data.status_display;
+                    
+                    // Update icon class
+                    const icon = badge.querySelector('i');
+                    if (data.new_status === 'approved') icon.className = 'fas fa-check-circle';
+                    else if (data.new_status === 'processing') icon.className = 'fas fa-cogs';
+                    else if (data.new_status === 'shipped') icon.className = 'fas fa-truck';
+                    else if (data.new_status === 'delivered') icon.className = 'fas fa-check-circle';
+                }
+
+                // 2. Update payment status badge if modified
+                if (data.payment_status) {
+                    const payBadge = document.getElementById(`payment-badge-${orderId}`);
+                    if (payBadge) {
+                        payBadge.className = `badge bg-${data.payment_status === 'paid' ? 'success' : 'warning'}`;
+                        payBadge.innerText = data.payment_status_display || data.payment_status;
+                    }
+                }
+
+                // 3. Update action controls on order row
+                const ctrl = document.getElementById(`actions-${orderId}`);
+                if (ctrl) {
+                    if (data.new_status === 'approved') {
+                        ctrl.innerHTML = `<button onclick="triggerQuickAction(${orderId}, 'process')" class="btn btn-primary btn-sm py-1.5 px-3"><i class="fas fa-cogs me-1"></i> Process</button>`;
+                    } else if (data.new_status === 'processing') {
+                        ctrl.innerHTML = `<button onclick="promptShipOrder(${orderId})" class="btn btn-info btn-sm py-1.5 px-3 text-white"><i class="fas fa-truck me-1"></i> Ship</button>`;
+                    } else if (data.new_status === 'shipped') {
+                        ctrl.innerHTML = `<button onclick="triggerQuickAction(${orderId}, 'deliver')" class="btn btn-success btn-sm py-1.5 px-3"><i class="fas fa-check-circle me-1"></i> Deliver</button>`;
+                    } else {
+                        ctrl.innerHTML = `<span class="text-muted small">None</span>`;
+                    }
+                }
+
+                // Update drawer if currently open for this order
+                const drawerEl = document.getElementById('orderDetailDrawer');
+                if (drawerEl.classList.contains('show')) {
+                    openOrderDrawer(orderId);
+                }
+                
+                // Reload stats count dynamically
+                refreshStatsCount();
+            } else {
+                showToast(data.error || 'Operation failed', 'danger');
+            }
+        })
+        .catch(err => {
+            showToast(err.message || 'Operation failed', 'danger');
+        });
+    }
+
+    // Courier shipment modal handlers
+    function promptShipOrder(orderId) {
+        document.getElementById('shipOrderId').value = orderId;
+        document.getElementById('shipTrackingNumber').value = 'TRAK' + Math.floor(100000 + Math.random() * 900000);
+        const modal = new bootstrap.Modal(document.getElementById('shipOrderModal'));
+        modal.show();
+    }
+
+    function confirmShipOrder() {
+        const orderId = document.getElementById('shipOrderId').value;
+        const tracking = document.getElementById('shipTrackingNumber').value;
+        const carrier = document.getElementById('courierCarrier').value;
+        
+        if (!tracking.trim()) {
+            showToast('Tracking number cannot be empty', 'danger');
+            return;
+        }
+
+        // Close Modal
+        const modalEl = document.getElementById('shipOrderModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
+
+        triggerQuickAction(orderId, 'ship', { tracking_number: `${carrier} - ${tracking}` });
+    }
+
+    // Dynamic stats recount from DOM
+    function refreshStatsCount() {
+        const rows = document.querySelectorAll('.order-row');
+        let counts = { pending: 0, approved: 0, processing: 0, shipped: 0, delivered: 0 };
+        rows.forEach(row => {
+            const status = row.dataset.status;
+            if (counts[status] !== undefined) {
+                counts[status]++;
+            }
+        });
+        
+        document.getElementById('count-pending').innerText = counts.pending;
+        document.getElementById('count-approved').innerText = counts.approved;
+        document.getElementById('count-processing').innerText = counts.processing;
+        document.getElementById('count-shipped').innerText = counts.shipped;
+        document.getElementById('count-delivered').innerText = counts.delivered;
+    }
+
+    // Open Shopify style slide-out drawer
+    function openOrderDrawer(orderId) {
+        const drawerBody = document.getElementById('drawerBody');
+        drawerBody.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+
+        const drawer = new bootstrap.Offcanvas(document.getElementById('orderDetailDrawer'));
+        drawer.show();
+
+        fetch(`/orders/company/api/detail/${orderId}/`)
+        .then(res => res.json())
+        .then(order => {
+            // Render detailed info inside drawer
+            let itemsHtml = '';
+            order.items.forEach(item => {
+                itemsHtml += `
+                    <div class="d-flex align-items-center gap-3 py-2 border-bottom border-light">
+                        <img src="${item.image_url || '/static/images/placeholder.png'}" style="width: 45px; height: 45px; object-fit: cover; border-radius: var(--radius-xs); border: 1px solid var(--border-light);" onerror="this.src='/static/images/placeholder.png'">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark" style="font-size: 0.88rem;">${item.name}</div>
+                            <small class="text-muted">${item.price} x ${item.quantity}</small>
+                        </div>
+                        <div class="fw-bold text-dark">${item.total}</div>
+                    </div>
+                `;
+            });
+
+            // Action section in drawer
+            let actionBtnHtml = '';
+            if (order.status === 'pending') {
+                actionBtnHtml = `<button onclick="triggerQuickAction(${order.id}, 'approve')" class="btn btn-success w-100 mb-2"><i class="fas fa-check me-2"></i>Approve Order</button>`;
+            } else if (order.status === 'approved') {
+                actionBtnHtml = `<button onclick="triggerQuickAction(${order.id}, 'process')" class="btn btn-primary w-100 mb-2"><i class="fas fa-cogs me-2"></i>Prepare Packaging</button>`;
+            } else if (order.status === 'processing') {
+                actionBtnHtml = `<button onclick="promptShipOrder(${order.id})" class="btn btn-info text-white w-100 mb-2"><i class="fas fa-truck me-2"></i>Mark Shipped</button>`;
+            } else if (order.status === 'shipped') {
+                actionBtnHtml = `<button onclick="triggerQuickAction(${order.id}, 'deliver')" class="btn btn-success w-100 mb-2"><i class="fas fa-check-circle me-2"></i>Complete Delivery</button>`;
+            }
+
+            // Payment Receipt/Verification HTML
+            let receiptHtml = '';
+            if (order.payment_method === 'bank' || order.payment_method === 'mobile') {
+                receiptHtml = `
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">Payment Verification</h6>
+                    <div class="card border-0 bg-light p-3 rounded-4">
+                        ${order.payment_receipt_url ? `
+                        <div class="text-center mb-3">
+                            <label class="d-block text-start text-dark fw-bold mb-2" style="font-size: 0.8rem;">Uploaded Receipt Image</label>
+                            <a href="${order.payment_receipt_url}" target="_blank" class="d-inline-block position-relative rounded overflow-hidden border border-secondary border-opacity-10" style="max-width: 100%; height: 150px;">
+                                <img src="${order.payment_receipt_url}" style="max-height: 100%; object-fit: contain;" alt="Payment Receipt">
+                                <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-70 text-white text-center py-1" style="font-size: 0.7rem;">
+                                    <i class="fas fa-search-plus me-1"></i> View Full Image
+                                </div>
+                            </a>
+                            <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">Uploaded: ${order.payment_receipt_uploaded_at}</small>
+                        </div>
+                        ` : `
+                        <div class="alert alert-warning py-2 px-3 rounded-3 small mb-3">
+                            <i class="fas fa-exclamation-triangle me-1"></i> No payment receipt uploaded yet.
+                        </div>
+                        `}
+                        
+                        <form method="post" action="/orders/verify-payment/${order.id}/" class="mt-2">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+                            <div class="mb-3">
+                                <label class="small text-muted mb-1">Verify Clearance Status</label>
+                                <select name="payment_status" class="form-select form-select-sm">
+                                    <option value="pending" ${order.payment_status === 'pending' ? 'selected' : ''}>Pending Verification</option>
+                                    <option value="partial" ${order.payment_status === 'partial' ? 'selected' : ''}>Partially Paid</option>
+                                    <option value="paid" ${order.payment_status === 'paid' ? 'selected' : ''}>Fully Paid</option>
+                                    <option value="failed" ${order.payment_status === 'failed' ? 'selected' : ''}>Failed / Invalid Receipt</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill py-2 fw-semibold">
+                                <i class="fas fa-check-double me-1"></i> Apply Status
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                `;
+            }
+
+            drawerBody.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-light">
+                    <div>
+                        <h4 class="fw-bold text-dark mb-0">${order.order_number}</h4>
+                        <small class="text-muted">Placed on ${order.created_at}</small>
+                    </div>
+                    <span class="badge-status status-${order.status}">
+                        <i class="fas ${order.status === 'pending' ? 'fa-clock' : order.status === 'delivered' ? 'fa-check-circle' : order.status === 'shipped' ? 'fa-truck' : order.status === 'processing' ? 'fa-cogs' : 'fa-box'}"></i>
+                        ${order.status_display}
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">Customer Information</h6>
+                    <div class="card border-0 bg-light p-3 rounded-4">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">${order.customer_name}</div>
+                                <small class="text-muted">${order.customer_email}</small>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-muted" style="font-size: 0.82rem;">
+                            <i class="fas fa-phone me-2"></i>${order.shipping_phone}
+                        </div>
+                    </div>
+                </div>
+
+                ${receiptHtml}
+
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">Shipping Address</h6>
+                    <p class="text-dark bg-light p-3 rounded-4" style="font-size: 0.85rem; line-height: 1.5;">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                        ${order.shipping_address}, ${order.shipping_city}, ${order.shipping_state}, ${order.shipping_country} (${order.shipping_postal_code})
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">Items Ordered</h6>
+                    <div class="pe-1" style="max-height: 200px; overflow-y: auto;">
+                        ${itemsHtml}
+                    </div>
+                </div>
+
+                <div class="mb-4 p-3 bg-light rounded-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">Billing Summary</h6>
+                    <div class="d-flex justify-content-between mb-2 text-muted" style="font-size: 0.85rem;">
+                        <span>Subtotal</span>
+                        <span>${order.subtotal}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 text-muted" style="font-size: 0.85rem;">
+                        <span>Shipping Cost</span>
+                        <span>${order.shipping_cost}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 text-muted" style="font-size: 0.85rem;">
+                        <span>Tax</span>
+                        <span>${order.tax_amount}</span>
+                    </div>
+                    ${parseFloat(order.discount_amount) > 0 ? `
+                    <div class="d-flex justify-content-between mb-2 text-success" style="font-size: 0.85rem;">
+                        <span>Discount</span>
+                        <span>-${order.discount_amount}</span>
+                    </div>` : ''}
+                    <hr class="my-2" style="border-style: dashed;">
+                    <div class="d-flex justify-content-between fw-bold text-dark">
+                        <span>Total Amount</span>
+                        <span class="text-primary">${order.total_amount}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-3 text-muted align-items-center" style="font-size: 0.82rem;">
+                        <span>Payment Method: <strong class="text-dark">${order.payment_method_display}</strong></span>
+                        <span class="badge bg-${order.payment_status === 'paid' ? 'success' : order.payment_status === 'partial' ? 'info' : 'warning'}">${order.payment_status_display}</span>
+                    </div>
+                </div>
+
+                ${order.notes ? `
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.8px;">Operator/Order Notes</h6>
+                    <p class="text-muted bg-warning bg-opacity-10 p-3 rounded-4" style="font-size: 0.82rem;">
+                        <i class="far fa-edit me-2"></i>${order.notes}
+                    </p>
+                </div>` : ''}
+
+                ${order.tracking_number ? `
+                <div class="mb-4 p-3 bg-light rounded-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.8px;">Logistics & Tracking</h6>
+                    <div class="d-flex justify-content-between align-items-center text-dark" style="font-size: 0.85rem;">
+                        <span>Carrier Tracking Code</span>
+                        <span class="font-monospace fw-bold text-primary">${order.tracking_number}</span>
+                    </div>
+                </div>` : ''}
+
+                <div class="mt-4 pt-3 border-top border-light">
+                    ${actionBtnHtml}
+                </div>
+            `;
+        });
+    }
+
+    // Helper functions
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -698,15 +848,23 @@
         }
         return cookieValue;
     }
-    
-    // Add row click handler
-    document.querySelectorAll('.order-row').forEach(row => {
-        row.addEventListener('click', function(e) {
-            if (e.target.type !== 'checkbox' && !e.target.classList.contains('btn')) {
-                const orderId = this.dataset.orderId;
-                window.location.href = `/orders/${orderId}/`;
-            }
-        });
-    });
+
+    function showToast(message, type = 'success') {
+        const id = 'toast-' + Math.floor(Math.random() * 10000);
+        const toastHtml = `
+            <div id="${id}" class="position-fixed bottom-0 end-0 p-3" style="z-index: 10000;">
+                <div class="bg-${type === 'success' ? 'success' : 'danger'} text-white p-3 rounded-4 shadow-lg d-flex align-items-center gap-3" style="min-width: 250px;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} fa-lg"></i>
+                    <div class="flex-grow-1">${message}</div>
+                    <button onclick="document.getElementById('${id}').remove()" class="btn-close btn-close-white"></button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }, 4000);
+    }
 </script>
 {% endblock %}

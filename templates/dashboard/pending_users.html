@@ -23,46 +23,42 @@
 </div>
 
 <!-- Stats Cards Row -->
-<div class="row mb-4">
-    <div class="col-md-4 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.2s;">
-            <div class="card-body bg-primary text-white">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Total Pending</h6>
-                <h2 class="mb-0">{{ total_pending }}</h2>
-                <div class="growth-indicator growth-up mt-2">
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Total Pending</span>
+                <h3 class="metric-value">{{ total_pending }}</h3>
+                <span class="metric-subtext text-danger">
                     <i class="fas fa-exclamation-circle"></i> Needs attention
-                </div>
+                </span>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-primary">
+                <i class="fas fa-clock"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.3s;">
-            <div class="card-body bg-warning text-white">
-                <div class="stat-icon">
-                    <i class="fas fa-building"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Pending Companies</h6>
-                <h2 class="mb-0">{{ pending_companies|default:0 }}</h2>
-                <div class="growth-indicator growth-up mt-2">
-                    <i class="fas fa-building"></i> Company accounts
-                </div>
+    <div class="col-md-4">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Pending Companies</span>
+                <h3 class="metric-value">{{ pending_companies|default:0 }}</h3>
+                <span class="metric-subtext text-muted">Company accounts</span>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-warning">
+                <i class="fas fa-building"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card stat-card animated" style="animation-delay: 0.4s;">
-            <div class="card-body bg-info text-white">
-                <div class="stat-icon">
-                    <i class="fas fa-store"></i>
-                </div>
-                <h6 class="card-title opacity-75 mb-2">Pending Sellers</h6>
-                <h2 class="mb-0">{{ pending_sellers|default:0 }}</h2>
-                <div class="growth-indicator growth-up mt-2">
-                    <i class="fas fa-store"></i> Seller accounts
-                </div>
+    <div class="col-md-4">
+        <div class="metric-card">
+            <div class="metric-content">
+                <span class="metric-label">Pending Sellers</span>
+                <h3 class="metric-value">{{ pending_sellers|default:0 }}</h3>
+                <span class="metric-subtext text-muted">Seller accounts</span>
+            </div>
+            <div class="metric-icon-wrapper metric-icon-info">
+                <i class="fas fa-store"></i>
             </div>
         </div>
     </div>

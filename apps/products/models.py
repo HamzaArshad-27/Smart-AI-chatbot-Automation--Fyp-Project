@@ -43,7 +43,7 @@ class Product(models.Model):
     stock_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     low_stock_threshold = models.IntegerField(default=5)
     
-    sku = models.CharField(max_length=50, unique=True)
+    sku = models.CharField(max_length=50, unique=True, blank=True)
     barcode = models.CharField(max_length=50, blank=True)
     
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -75,6 +75,12 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
+        if not self.sku:
+            import uuid
+            unique_sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+            while Product.objects.filter(sku=unique_sku).exists():
+                unique_sku = f"SKU-{uuid.uuid4().hex[:8].upper()}"
+            self.sku = unique_sku
         super().save(*args, **kwargs)
     
     @property
@@ -85,6 +91,12 @@ class Product(models.Model):
     def discount_percentage(self):
         if self.compare_price and self.compare_price > self.price:
             return round(((self.compare_price - self.price) / self.compare_price) * 100)
+        return 0
+    
+    @property
+    def discount_savings(self):
+        if self.compare_price and self.compare_price > self.price:
+            return self.compare_price - self.price
         return 0
     
     def update_stock(self, quantity):
@@ -126,3 +138,17 @@ class ProductReview(models.Model):
         db_table = 'product_reviews'
         unique_together = ['product', 'user']
         ordering = ['-created_at']
+
+
+class Wishlist(models.Model):
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='wishlists')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlists')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'wishlists'
+        unique_together = ['user', 'product']
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.product.name}"

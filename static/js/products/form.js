@@ -45,7 +45,7 @@
     
     function deleteImage(imageId) {
         if (confirm('Delete this image?')) {
-            fetch(`/products/delete-image/${imageId}/`, {
+            fetch(`/products/image-delete/${imageId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')

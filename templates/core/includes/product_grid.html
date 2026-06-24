@@ -1,22 +1,27 @@
+{% load currency_tags %}
 {% if products %}
 <div class="row g-3">
     {% for product in products|slice:":8" %}
     <div class="col-lg-3 col-md-4 col-6">
         <div class="product-card-compact">
-            <div class="product-img-compact">
-                {% with first_image=product.images.first %}
-                    {% if first_image %}
-                        <img src="{{ first_image.image.url }}" alt="{{ product.name }}" loading="lazy">
-                    {% else %}
-                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop" alt="{{ product.name }}" loading="lazy">
+            <a href="{% url 'products:detail' product.slug %}" class="text-decoration-none text-dark d-block">
+                <div class="product-img-compact">
+                    {% with first_image=product.images.all.0 %}
+                        {% if first_image %}
+                            <img src="{{ first_image.image.url }}" alt="{{ product.name }}" loading="lazy">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop" alt="{{ product.name }}" loading="lazy">
+                        {% endif %}
+                    {% endwith %}
+                    {% if product.discount_percentage %}
+                        <span class="discount-badge">-{{ product.discount_percentage }}%</span>
                     {% endif %}
-                {% endwith %}
-                {% if product.discount_percentage %}
-                    <span class="discount-badge">-{{ product.discount_percentage }}%</span>
-                {% endif %}
-            </div>
+                </div>
+            </a>
             <div class="product-info-compact">
-                <div class="product-title-compact">{{ product.name }}</div>
+                <a href="{% url 'products:detail' product.slug %}" class="text-decoration-none text-dark d-block">
+                    <div class="product-title-compact" title="{{ product.name }}">{{ product.name }}</div>
+                </a>
                 <div class="product-rating-compact">
                     {% for i in "12345" %}
                         {% if forloop.counter <= product.average_rating|default:0 %}
@@ -30,9 +35,9 @@
                     <span>({{ product.total_reviews|default:0 }})</span>
                 </div>
                 <div class="product-price-compact">
-                    ${{ product.price }}
+                    {{ product.price|currency_format:request }}
                     {% if product.compare_price %}
-                        <span class="product-old-price-compact">${{ product.compare_price }}</span>
+                        <span class="product-old-price-compact">{{ product.compare_price|currency_format:request }}</span>
                     {% endif %}
                 </div>
                 <button class="btn btn-primary btn-sm add-cart-btn add-to-cart" data-product-id="{{ product.id }}">

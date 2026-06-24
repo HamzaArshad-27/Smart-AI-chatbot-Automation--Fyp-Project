@@ -1,5 +1,6 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block dashboard_title %}User Details{% endblock %}
 
@@ -123,7 +124,7 @@
                     {% for order in orders %}
                     <tr>
                         <td>{{ order.order_number }}</td>
-                        <td><strong>${{ order.total_amount }}</strong></td>
+                        <td><strong>{{ order.total_amount|order_currency_format:order }}</strong></td>
                         <td>
                             <span class="badge-status {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% elif order.status == 'pending' %}bg-warning{% else %}bg-info{% endif %}">
                                 {{ order.get_status_display }}

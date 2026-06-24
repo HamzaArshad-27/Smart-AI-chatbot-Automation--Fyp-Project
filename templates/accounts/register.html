@@ -4,196 +4,318 @@
 
 {% block title %}Join Vendora — Create your account{% endblock %}
 
-{% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7 col-xl-6">
-            
-            <div class="card border-0 shadow-lg" style="
-                border-radius: 24px;
-                overflow: hidden;
-                animation: fadeInUp 0.5s ease forwards;
-            ">
-                <!-- Header -->
-                <div style="
-                    background: linear-gradient(135deg, #5b5fe3 0%, #7b7ef0 100%);
-                    padding: 1.75rem 2rem;
-                    color: white;
-                ">
-                    <h4 class="fw-bold mb-1">
-                        <i class="fas fa-user-plus me-2"></i>Create Account
-                    </h4>
-                    <p class="mb-0 opacity-75" style="font-size: 0.9rem;">
-                        Join Vendora and start your journey today
-                    </p>
-                </div>
-
-                <div class="card-body p-4">
-                    
-                    {% if dev_mode %}
-                    <div style="
-                        background: #fef3c7;
-                        border: 1px solid #fcd34d;
-                        border-radius: 14px;
-                        padding: 12px 16px;
-                        margin-bottom: 20px;
-                        font-size: 0.85rem;
-                        color: #92400e;
-                    ">
-                        <i class="fas fa-flask me-2"></i>
-                        <strong>Dev Mode:</strong> Register with any email. OTP auto-verified.
-                    </div>
-                    {% endif %}
-
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} border-0 rounded-3 py-2 px-3 mb-3" style="font-size: 0.85rem;">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-
-                    <form method="post" enctype="multipart/form-data" novalidate>
-                        {% csrf_token %}
-                        
-                        <!-- ✅ First Name & Last Name Row -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
-                                    First Name <span class="text-danger">*</span>
-                                </label>
-                                {{ form.first_name }}
-                                {% if form.first_name.errors %}
-                                    <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
-                                    Last Name <span class="text-danger">*</span>
-                                </label>
-                                {{ form.last_name }}
-                                {% if form.last_name.errors %}
-                                    <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
-                                Email Address <span class="text-danger">*</span>
-                            </label>
-                            {{ form.email }}
-                            {% if form.email.errors %}
-                                <div class="text-danger small mt-1">{{ form.email.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Phone & Role Row -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
-                                    Phone
-                                </label>
-                                {{ form.phone }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
-                                    Account Type <span class="text-danger">*</span>
-                                </label>
-                                {{ form.role }}
-                            </div>
-                        </div>
-
-                        <!-- Password Row -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
-                                    Password <span class="text-danger">*</span>
-                                </label>
-                                {{ form.password }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
-                                    Confirm Password <span class="text-danger">*</span>
-                                </label>
-                                {{ form.confirm_password }}
-                            </div>
-                        </div>
-
-                        <!-- Profile Image -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" style="font-size: 0.85rem; color: #171717;">
-                                Profile Image (Optional)
-                            </label>
-                            {{ form.profile_image }}
-                        </div>
-
-                        <!-- ============ COMPANY FIELDS ============ -->
-                        <div id="companySection" style="display: none;">
-                            <div style="
-                                background: #f8f9fc;
-                                border-radius: 16px;
-                                padding: 1.25rem;
-                                margin: 0.5rem 0 1rem;
-                                border: 2px solid #e5e5e5;
-                            ">
-                                <h6 style="font-weight: 700; color: #171717; margin-bottom: 1rem;">
-                                    <i class="fas fa-building me-2" style="color: #5b5fe3;"></i>Company Information
-                                    <small class="text-muted fw-normal" style="font-size: 0.75rem;">(Optional)</small>
-                                </h6>
-                                
-                                {{ form.company_name|as_crispy_field }}
-                                {{ form.company_address|as_crispy_field }}
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        {{ form.company_phone|as_crispy_field }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form.company_website|as_crispy_field }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Submit -->
-                        <button type="submit" class="btn w-100 mt-2" style="
-                            background: #5b5fe3;
-                            color: white;
-                            border-radius: 50px;
-                            padding: 13px;
-                            font-weight: 600;
-                            font-size: 0.95rem;
-                            border: none;
-                            transition: all 0.2s;
-                        " onmouseover="this.style.background='#484bc9'; this.style.transform='translateY(-1px)';" 
-                           onmouseout="this.style.background='#5b5fe3'; this.style.transform='translateY(0)';">
-                            <i class="fas fa-user-plus me-2"></i>Create Account
-                        </button>
-                    </form>
-
-                    <!-- Login Link -->
-                    <div class="text-center mt-4">
-                        <p style="color: #737373; font-size: 0.9rem;">
-                            Already have an account? 
-                            <a href="{% url 'accounts:login' %}" style="color: #5b5fe3; text-decoration: none; font-weight: 600;">
-                                Sign in <i class="fas fa-arrow-right ms-1"></i>
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
 <style>
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(25px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    form input, form select, form textarea {
+
+    .auth-section {
+        min-height: calc(100vh - 100px);
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+    }
+
+    .auth-card {
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        width: 100%;
+        max-width: 1100px;
+    }
+
+    .auth-sidebar {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 3.5rem 3rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #ffffff;
+        min-height: 100%;
+    }
+
+    .auth-sidebar::before {
+        content: '';
+        position: absolute;
+        top: -20%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .auth-sidebar::after {
+        content: '';
+        position: absolute;
+        bottom: -20%;
+        left: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .auth-sidebar-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .auth-brand {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin-bottom: 3.5rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .auth-brand i {
+        color: #3b82f6;
+    }
+
+    .auth-title {
+        font-size: 1.85rem;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 1.5rem;
+    }
+
+    .auth-features {
+        list-style: none;
+        padding: 0;
+        margin: 2.5rem 0 0;
+    }
+
+    .auth-features li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1.25rem;
+        font-size: 0.95rem;
+        color: #cbd5e1;
+    }
+
+    .auth-features li i {
+        color: #3b82f6;
+        font-size: 1.1rem;
+    }
+
+    .auth-sidebar-footer {
+        position: relative;
+        z-index: 2;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 1.5rem;
+        margin-top: 3rem;
+    }
+
+    .auth-form-container {
+        padding: 3.5rem 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .auth-form-header {
+        margin-bottom: 2rem;
+    }
+
+    .auth-form-header h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-form-header p {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    /* Modern form styling */
+    .form-modern .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-modern label {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #475569;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-modern .form-control,
+    .form-modern .form-select {
+        border-radius: 12px !important;
+        border: 1.5px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        background: #f8fafc;
+    }
+
+    .form-modern .form-control:focus,
+    .form-modern .form-select:focus {
+        border-color: #3b82f6;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #94a3b8;
+        background: transparent;
+        z-index: 5;
+        font-size: 0.95rem;
+    }
+
+    .btn-auth-submit {
+        background: linear-gradient(105deg, #3b82f6, #2563eb);
+        color: #ffffff;
+        font-weight: 600;
+        padding: 0.8rem 1.5rem;
+        border-radius: 12px;
+        border: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-auth-submit:hover {
+        background: linear-gradient(105deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+    }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .auth-divider::before {
+        margin-right: 1rem;
+    }
+
+    .auth-divider::after {
+        margin-left: 1rem;
+    }
+
+    .auth-footer-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 0.85rem;
+        text-align: center;
+    }
+
+    .auth-footer-card a {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .auth-footer-card a:hover {
+        text-decoration: underline;
+    }
+
+    /* Company Fields Section */
+    .company-section {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px dashed #3b82f6;
+        margin-top: 1.5rem;
+        display: none;
+        animation: fadeSlideUp 0.3s ease-out;
+    }
+
+    .company-section h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .company-section h4 i {
+        color: #3b82f6;
+    }
+
+    .alert-dev {
+        background: linear-gradient(105deg, #fef3c7, #fffbeb);
+        border-left: 4px solid #f59e0b;
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-modern input[type="file"] {
+        padding: 8px;
+        background: #f1f5f9;
+        border-radius: 12px;
+    }
+
+    form input,
+    form select,
+    form textarea {
         border: 2px solid #e5e5e5 !important;
         border-radius: 12px !important;
         padding: 11px 16px !important;
@@ -201,31 +323,299 @@
         width: 100% !important;
         transition: all 0.2s !important;
     }
-    form input:focus, form select:focus, form textarea:focus {
+
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
         border-color: #5b5fe3 !important;
-        box-shadow: 0 0 0 4px rgba(91,95,227,0.08) !important;
+        box-shadow: 0 0 0 4px rgba(91, 95, 227, 0.08) !important;
         outline: none !important;
+    }
+
+    @media (max-width: 991px) {
+        .auth-form-container {
+            padding: 3rem 1.5rem;
+        }
+        .auth-sidebar {
+            padding: 2rem 1.5rem;
+        }
+        .auth-title {
+            font-size: 1.5rem;
+        }
+        .auth-form-header h2 {
+            font-size: 1.5rem;
+        }
+        .company-section {
+            padding: 1.2rem;
+        }
+    }
+    
+    /* Mobile Responsiveness */
+    @media (max-width: 767px) {
+        .auth-section {
+            min-height: auto;
+            padding: 1.5rem 1rem;
+        }
+        .auth-card {
+            border-radius: 16px;
+        }
+        .auth-sidebar {
+            padding: 2rem 1.5rem !important;
+            display: none !important;
+        }
+        .auth-form-container {
+            padding: 2rem 1.5rem;
+        }
+        .auth-form-header h2 {
+            font-size: 1.25rem;
+        }
+        .auth-form-header p {
+            font-size: 0.85rem;
+        }
+        .form-modern label {
+            font-size: 0.75rem;
+        }
+        .form-modern .form-control,
+        .form-modern .form-select {
+            font-size: 0.9rem;
+            padding: 0.6rem 0.8rem;
+        }
+        .btn-auth-submit {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.9rem;
+        }
+        .auth-divider {
+            font-size: 0.7rem;
+            margin: 1.25rem 0;
+        }
+        .auth-footer-card {
+            padding: 0.7rem;
+            font-size: 0.85rem;
+        }
+        .auth-footer-card a {
+            font-size: 0.85rem;
+        }
+        .company-section {
+            padding: 1rem;
+            margin-top: 1.2rem;
+        }
+        .company-section h4 {
+            font-size: 0.9rem;
+        }
+        form input,
+        form select,
+        form textarea {
+            padding: 0.6rem 0.8rem !important;
+            font-size: 0.85rem !important;
+        }
+    }
+    
+    /* Extra Small Devices */
+    @media (max-width: 480px) {
+        .auth-section {
+            padding: 1rem;
+        }
+        .auth-card {
+            border-radius: 12px;
+        }
+        .auth-form-container {
+            padding: 1.5rem 1rem;
+        }
+        .auth-form-header h2 {
+            font-size: 1.1rem;
+        }
+        .auth-form-header p {
+            font-size: 0.8rem;
+        }
+        .form-modern .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-modern .form-control,
+        .form-modern .form-select {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.7rem;
+            border-radius: 8px !important;
+        }
+        .btn-auth-submit {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+        .company-section {
+            padding: 0.8rem;
+            margin-top: 1rem;
+        }
+        .company-section h4 {
+            font-size: 0.85rem;
+        }
+        form input,
+        form select,
+        form textarea {
+            padding: 0.5rem 0.6rem !important;
+            font-size: 0.8rem !important;
+        }
     }
 </style>
 {% endblock %}
 
+{% block content %}
+<section class="auth-section">
+    <div class="auth-card">
+        <div class="row g-0">
+            <!-- Sidebar column (Desktop only) -->
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="auth-sidebar h-100">
+                    <div class="auth-sidebar-content">
+                        <div class="auth-brand">
+                            <i class="fas fa-cubes"></i> Vendora
+                        </div>
+                        <h2 class="auth-title">Create your partner profile today.</h2>
+                        <ul class="auth-features">
+                            <li><i class="fas fa-check-circle"></i> <span>Join as Vendor or Customer</span></li>
+                            <li><i class="fas fa-check-circle"></i> <span>Access dedicated dashboards</span></li>
+                            <li><i class="fas fa-check-circle"></i> <span>List products instantly</span></li>
+                        </ul>
+                    </div>
+                    <div class="auth-sidebar-footer">
+                        <i class="fas fa-shield-alt"></i> SSL Encrypted Connection
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form column -->
+            <div class="col-lg-8">
+                <div class="auth-form-container">
+                    <div class="auth-form-header">
+                        <h2>Create your account</h2>
+                        <p>Fill out the details below to join Vendora</p>
+                    </div>
+
+                    <div class="form-modern">
+                        {% if dev_mode %}
+                        <div class="alert-dev d-flex align-items-start gap-3">
+                            <i class="fas fa-code fa-2x text-warning"></i>
+                            <div>
+                                <strong>Development Mode Active</strong>
+                                <small class="text-secondary d-block mt-1">✨ Any email works • Use dummy OTP (123456) •
+                                    Auto‑approval enabled.</small>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} border-0 rounded-3 py-2 px-3 mb-3"
+                            style="font-size: 0.85rem;">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+
+                        <form method="post" enctype="multipart/form-data" novalidate>
+                            {% csrf_token %}
+
+                            <!-- First Name & Last Name Row -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ form.first_name|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.last_name|as_crispy_field }}
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {{ form.email|as_crispy_field }}
+                                </div>
+                            </div>
+
+                            <!-- Phone & Role Row -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ form.phone|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.role|as_crispy_field }}
+                                </div>
+                            </div>
+
+                            <!-- Password Row -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ form.password|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.confirm_password|as_crispy_field }}
+                                </div>
+                            </div>
+
+                            <!-- Profile Image -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {{ form.profile_image|as_crispy_field }}
+                                </div>
+                            </div>
+
+                            <!-- Company Fields -->
+                            <div id="company-section" class="company-section">
+                                <h4><i class="fas fa-building"></i> Business profile</h4>
+                                <div id="company-fields">
+                                    {{ form.company_name|as_crispy_field }}
+                                    {{ form.company_address|as_crispy_field }}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ form.company_phone|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.company_website|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-auth-submit text-white">
+                                    Register & Continue <i class="fas fa-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="auth-divider">
+                            <span>Already have an account?</span>
+                        </div>
+
+                        <div class="auth-footer-card">
+                            <a href="{% url 'accounts:login' %}">
+                                <i class="fas fa-sign-in-alt"></i> Sign in to your dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const roleSelect = document.getElementById('id_role');
-        const companySection = document.getElementById('companySection');
-        
+        const companySection = document.getElementById('company-section');
+        const companyFields = document.getElementById('company-fields');
+
         // ============================================
         // 🎯 CONTROL WHICH ROLES SHOW IN DROPDOWN
         // Just add/remove from this array!
         // ============================================
         const allowedRoles = [
-            'superadmin', // 👑 Super Admin - HIDDEN (uncomment to show)
+            // 'superadmin', // 👑 Super Admin - HIDDEN (uncomment to show)
             'customer',   // 👤 Customer - Always show
             'company',    // 🏢 Company - Always show
-            'seller',   // 🛍️ Seller - HIDDEN (uncomment to show)
+            // 'seller',   // 🛍️ Seller - HIDDEN (uncomment to show)
         ];
-        
+
         // Filter the dropdown options
         if (roleSelect) {
             const options = roleSelect.querySelectorAll('option');
@@ -241,25 +631,62 @@
                 }
             });
         }
-        
+
         // ============================================
         // TOGGLE COMPANY FIELDS
         // ============================================
         function toggleCompanyFields() {
             if (roleSelect && roleSelect.value === 'company') {
-                companySection.style.display = 'block';
-                setTimeout(() => {
-                    companySection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
+                if (companySection) {
+                    companySection.style.display = 'block';
+                    setTimeout(() => {
+                        companySection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+                if (companyFields) {
+                    const requiredInputs = companyFields.querySelectorAll('input, select, textarea');
+                    requiredInputs.forEach(input => {
+                        input.setAttribute('data-required-on-company', 'true');
+                        input.required = true;
+                    });
+                }
             } else {
-                companySection.style.display = 'none';
+                if (companySection) {
+                    companySection.style.display = 'none';
+                }
+                if (companyFields) {
+                    const optionalInputs = companyFields.querySelectorAll('input, select, textarea');
+                    optionalInputs.forEach(input => {
+                        input.required = false;
+                    });
+                }
             }
         }
-        
+
         toggleCompanyFields();  // Run on page load
         if (roleSelect) {
             roleSelect.addEventListener('change', toggleCompanyFields);
         }
+
+        // Setup password toggles for password and confirm_password
+        const passwordFields = document.querySelectorAll('#id_password, #id_confirm_password');
+        passwordFields.forEach(field => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'password-wrapper';
+            field.parentNode.insertBefore(wrapper, field);
+            wrapper.appendChild(field);
+
+            const toggleBtn = document.createElement('i');
+            toggleBtn.className = 'fas fa-eye toggle-password';
+            wrapper.appendChild(toggleBtn);
+
+            toggleBtn.addEventListener('click', function () {
+                const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+                field.setAttribute('type', type);
+                toggleBtn.classList.toggle('fa-eye');
+                toggleBtn.classList.toggle('fa-eye-slash');
+            });
+        });
     });
 </script>
 {% endblock %}
