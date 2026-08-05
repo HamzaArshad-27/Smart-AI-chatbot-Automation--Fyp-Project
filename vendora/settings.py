@@ -12,7 +12,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here'
 DEBUG = True
 # Site URL for emails
 SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost',  '192.168.1.146']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost',  '192.168.1.146' ,'192.168.0.112']
 # For testing, you can also add test emails that auto-verify
 TEST_EMAILS = ['test@example.com', 'demo@vendora.com', 'admin@vendora.com']
 # Development Mode - Set to True to bypass email verification and auto-approve users
