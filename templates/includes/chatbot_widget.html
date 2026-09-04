@@ -1,4 +1,5 @@
 <style>
+  /* ===== BASE STYLES ===== */
   .vendora-chatbot {
     position: fixed;
     right: 16px;
@@ -17,51 +18,166 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 24px;
+  }
+
+  .vendora-chat-toggle:hover {
+    transform: scale(1.05);
+    background: #1d4ed8;
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
   }
 
   .vendora-chat-window {
     position: absolute;
     right: 0;
     bottom: 72px;
-    width: 350px;
-    height: 500px;
+    width: 380px;
+    height: 550px;
     background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
     border: 1px solid #e2e8f0;
     overflow: hidden;
     display: none;
     flex-direction: column;
+    transition: all 0.3s ease;
   }
 
   .vendora-chat-window.open {
     display: flex;
   }
 
+  /* ===== FULL SCREEN MODE ===== */
+  .vendora-chat-window.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    z-index: 9999;
+    bottom: 0;
+    right: 0;
+  }
+
+  .vendora-chat-window.fullscreen .vendora-chat-messages {
+    height: calc(100vh - 130px) !important;
+  }
+
+  .vendora-chat-window.fullscreen .vendora-chat-input {
+    padding: 15px 20px;
+  }
+
+  .vendora-chat-window.fullscreen .vendora-chat-header {
+    padding: 15px 20px;
+  }
+
+  /* ===== HEADER ===== */
   .vendora-chat-header {
     background: #0f172a;
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px;
+    padding: 12px 14px;
+    flex-shrink: 0;
   }
 
+  .vendora-chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .vendora-chat-header-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .vendora-chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .vendora-chat-header-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+  }
+
+  .vendora-chat-header-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .vendora-chat-header-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.3);
+  }
+
+  /* ===== MESSAGES ===== */
   .vendora-chat-messages {
     flex: 1;
     overflow-y: auto;
     background: #f8fafc;
-    padding: 12px;
+    padding: 12px 14px;
+    height: 100%;
+    scroll-behavior: smooth;
   }
 
+  .vendora-chat-messages::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .vendora-chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .vendora-chat-messages::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  .vendora-chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* ===== BUBBLES ===== */
   .vendora-chat-bubble {
-    max-width: 86%;
+    max-width: 88%;
     margin-bottom: 10px;
-    padding: 8px 10px;
-    border-radius: 12px;
+    padding: 10px 14px;
+    border-radius: 14px;
     font-size: 0.9rem;
-    line-height: 1.35;
+    line-height: 1.5;
     white-space: pre-line;
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .vendora-chat-bubble.user {
@@ -79,115 +195,345 @@
     border-bottom-left-radius: 4px;
   }
 
-  .vendora-chat-links {
-    margin: 8px 0 0;
-    display: grid;
-    gap: 8px;
+  .vendora-chat-bubble.bot .typing-dots {
+    display: inline-flex;
+    gap: 4px;
   }
 
+  .vendora-chat-bubble.bot .typing-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #94a3b8;
+    animation: typing 1.4s infinite;
+  }
+
+  .vendora-chat-bubble.bot .typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .vendora-chat-bubble.bot .typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.4;
+    }
+    30% {
+      transform: translateY(-8px);
+      opacity: 1;
+    }
+  }
+
+  /* ===== PRODUCT CARDS ===== */
   .vendora-chat-product {
     border: 1px solid #dbeafe;
     background: #eff6ff;
     border-radius: 10px;
-    padding: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .vendora-chat-product:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    transform: translateX(4px);
   }
 
   .vendora-chat-product strong {
     display: block;
     color: #0f172a;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
+    font-weight: 600;
   }
 
   .vendora-chat-product .price {
     color: #1e40af;
-    font-size: 0.82rem;
-    margin: 2px 0 4px;
-  }
-
-  .vendora-chat-links a {
-    text-decoration: none;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 600;
+    margin: 3px 0 6px;
   }
 
+  .vendora-chat-product .product-link {
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    color: #2563eb;
+    transition: color 0.2s ease;
+  }
+
+  .vendora-chat-product .product-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+
+  .vendora-chat-links {
+    margin: 8px 0 0;
+    display: grid;
+    gap: 6px;
+  }
+
+  /* ===== INPUT ===== */
   .vendora-chat-input {
     border-top: 1px solid #e2e8f0;
-    padding: 10px;
+    padding: 10px 14px;
     background: #fff;
+    flex-shrink: 0;
   }
 
+  .vendora-chat-input .input-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .vendora-chat-input input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .vendora-chat-input input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .vendora-chat-input input:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+  }
+
+  .vendora-chat-input button {
+    padding: 8px 16px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .vendora-chat-input button:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: scale(1.02);
+  }
+
+  .vendora-chat-input button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* ===== GUEST MODE ===== */
   .vendora-chat-guest {
-    width: 300px;
+    width: 320px;
     background: #fff;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
-    padding: 12px;
+    padding: 20px;
     display: none;
     position: absolute;
     right: 0;
     bottom: 72px;
   }
 
+  .vendora-chat-guest h5 {
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+
+  .vendora-chat-guest p {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+
+  .vendora-chat-guest .btn-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .vendora-chat-guest .btn {
+    padding: 8px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .vendora-chat-guest .btn-primary {
+    background: #2563eb;
+    color: #fff;
+    border: 1px solid #2563eb;
+  }
+
+  .vendora-chat-guest .btn-primary:hover {
+    background: #1d4ed8;
+  }
+
+  .vendora-chat-guest .btn-outline {
+    background: transparent;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+  }
+
+  .vendora-chat-guest .btn-outline:hover {
+    background: #eff6ff;
+  }
+
+  /* ===== STATUS INDICATOR ===== */
+  .vendora-chat-status {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    padding: 4px 12px;
+    text-align: center;
+    border-top: 1px solid #f1f5f9;
+    flex-shrink: 0;
+  }
+
+  .vendora-chat-status.online {
+    color: #22c55e;
+  }
+
+  .vendora-chat-status.online::before {
+    content: "● ";
+  }
+
+  /* ===== RESPONSIVE ===== */
   @media (max-width: 576px) {
     .vendora-chatbot {
-      right: 16px;
-      bottom: 16px;
+      right: 12px;
+      bottom: 12px;
       left: auto;
     }
 
     .vendora-chat-window {
-      width: calc(100vw - 32px);
+      width: calc(100vw - 24px);
+      height: calc(100vh - 100px);
       right: 0;
       left: auto;
-      height: min(500px, calc(100vh - 100px));
+      bottom: 68px;
+      border-radius: 12px;
+    }
+
+    .vendora-chat-window.fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+      border-radius: 0 !important;
+      bottom: 0;
+      right: 0;
+    }
+
+    .vendora-chat-header {
+      padding: 10px 12px;
+    }
+
+    .vendora-chat-messages {
+      padding: 10px 12px;
+    }
+
+    .vendora-chat-guest {
+      width: calc(100vw - 40px);
+      right: 0;
     }
   }
 </style>
 
+<!-- ===== CHATBOT HTML ===== -->
 <div id="vendoraChatbot" class="vendora-chatbot">
   <div id="vendoraChatWindow" class="vendora-chat-window">
+    <!-- Header -->
     <div class="vendora-chat-header">
-      <strong><i class="fas fa-robot me-2"></i>AI Shopping Assistant</strong>
-      <button type="button" id="vendoraChatClose" class="btn btn-sm btn-light">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div id="vendoraChatMessages" class="vendora-chat-messages"></div>
-    <div class="vendora-chat-input">
-      <div class="input-group">
-        <input id="vendoraChatInput" type="text" class="form-control" placeholder="Ask about products..." />
-        <button id="vendoraChatSend" type="button" class="btn btn-primary">
-          <i class="fas fa-paper-plane"></i>
+      <div class="vendora-chat-header-left">
+        <i class="fas fa-robot" style="font-size: 18px;"></i>
+        <span class="vendora-chat-header-title">AI Shopping Assistant</span>
+        <span id="vendoraChatStatus" class="vendora-chat-status online" style="display: none;">Online</span>
+      </div>
+      <div class="vendora-chat-header-actions">
+        <!-- Clear Chat Button -->
+        <button type="button" id="vendoraChatClear" class="vendora-chat-header-btn danger" title="Clear Chat">
+          <i class="fas fa-trash"></i>
+        </button>
+        <!-- Full Screen Button -->
+        <button type="button" id="vendoraChatFullscreen" class="vendora-chat-header-btn" title="Full Screen">
+          <i class="fas fa-expand"></i>
+        </button>
+        <!-- Close Button -->
+        <button type="button" id="vendoraChatClose" class="vendora-chat-header-btn" title="Close">
+          <i class="fas fa-times"></i>
         </button>
       </div>
     </div>
+
+    <!-- Messages -->
+    <div id="vendoraChatMessages" class="vendora-chat-messages"></div>
+
+    <!-- Input -->
+    <div class="vendora-chat-input">
+      <div class="input-group">
+        <input id="vendoraChatInput" type="text" class="form-control" placeholder="Ask about products..." maxlength="500" autocomplete="off" />
+        <button id="vendoraChatSend" type="button">
+          <i class="fas fa-paper-plane"></i> Send
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="vendoraChatStatusBar" class="vendora-chat-status online">Online - Ready to help</div>
   </div>
 
+  <!-- Guest Mode -->
   <div id="vendoraChatGuest" class="vendora-chat-guest">
-    <p class="mb-2"><strong>AI Shopping Assistant</strong></p>
-    <p class="small text-muted mb-3">Please login or create an account to start chatting.</p>
-    <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login</a>
-    <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary btn-sm">Register</a>
+    <h5><i class="fas fa-robot" style="color: #2563eb;"></i> AI Shopping Assistant</h5>
+    <p>Please login or create an account to start chatting with our AI assistant.</p>
+    <div class="btn-group">
+      <a href="{% url 'accounts:login' %}" class="btn btn-primary">Login</a>
+      <a href="{% url 'accounts:register' %}" class="btn btn-outline">Register</a>
+    </div>
   </div>
 
+  <!-- Toggle Button -->
   <button type="button" id="vendoraChatToggle" class="vendora-chat-toggle">
     <i class="fas fa-comments"></i>
   </button>
 </div>
 
+<!-- ===== CHATBOT SCRIPT ===== -->
 <script>
-  (function () {
+  (function() {
+    'use strict';
+
     const isLoggedIn = {{ user.is_authenticated|yesno:"true,false" }};
     const windowEl = document.getElementById("vendoraChatWindow");
     const guestEl = document.getElementById("vendoraChatGuest");
     const toggleBtn = document.getElementById("vendoraChatToggle");
     const closeBtn = document.getElementById("vendoraChatClose");
+    const clearBtn = document.getElementById("vendoraChatClear");
+    const fullscreenBtn = document.getElementById("vendoraChatFullscreen");
     const sendBtn = document.getElementById("vendoraChatSend");
     const inputEl = document.getElementById("vendoraChatInput");
     const messagesEl = document.getElementById("vendoraChatMessages");
+    const statusBar = document.getElementById("vendoraChatStatusBar");
     const storageKey = "vendora_chat_history";
+    const chatIdKey = "vendora_chat_id";
+    let isProcessing = false;
+    let isFullscreen = false;
 
+    // ===== CSRF TOKEN =====
     function getCsrfToken() {
       const cookie = document.cookie
         .split(";")
@@ -196,73 +542,172 @@
       return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     }
 
-    function saveHistory(history) {
-      sessionStorage.setItem(storageKey, JSON.stringify(history));
+    // ===== CHAT ID MANAGEMENT =====
+    function getChatId() {
+      let chatId = sessionStorage.getItem(chatIdKey);
+      if (!chatId) {
+        chatId = 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem(chatIdKey, chatId);
+      }
+      return chatId;
     }
 
-    function loadHistory() {
+    function getChatHistory() {
       try {
-        return JSON.parse(sessionStorage.getItem(storageKey) || "[]");
-      } catch (error) {
+        const data = sessionStorage.getItem(storageKey);
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
         return [];
       }
     }
 
-    function renderMessage(role, text, suggestions) {
+    function saveChatHistory(history) {
+      try {
+        sessionStorage.setItem(storageKey, JSON.stringify(history));
+      } catch (e) {
+        console.warn('Failed to save chat history:', e);
+      }
+    }
+
+    function clearChatHistory() {
+      if (confirm('Are you sure you want to clear the chat history?')) {
+        saveChatHistory([]);
+        renderHistory();
+        updateStatus('Chat cleared', 'online');
+      }
+    }
+
+    // ===== RENDER MESSAGES =====
+    function renderMessage(role, text, suggestions, timestamp) {
       const bubble = document.createElement("div");
       bubble.className = "vendora-chat-bubble " + role;
-      bubble.textContent = text || "";
+
+      if (text) {
+        // Convert URLs to clickable links
+        let formattedText = text.replace(/\n/g, '<br>');
+        formattedText = formattedText.replace(
+          /(https?:\/\/[^\s]+)/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">$1</a>'
+        );
+        bubble.innerHTML = formattedText;
+      }
+
+      // Add timestamp
+      if (timestamp) {
+        const time = document.createElement("div");
+        time.style.cssText = 'font-size: 0.6rem; color: #94a3b8; margin-top: 4px;';
+        time.textContent = new Date(timestamp).toLocaleTimeString();
+        bubble.appendChild(time);
+      }
+
       messagesEl.appendChild(bubble);
 
-      if (role === "bot" && Array.isArray(suggestions) && suggestions.length) {
+      // Render product suggestions
+      if (role === "bot" && Array.isArray(suggestions) && suggestions.length > 0) {
         const list = document.createElement("div");
         list.className = "vendora-chat-links";
+
         suggestions.forEach((item) => {
           const card = document.createElement("div");
           card.className = "vendora-chat-product";
+
           const title = document.createElement("strong");
           title.textContent = item.name || "Product";
+
           const price = document.createElement("div");
           price.className = "price";
-          price.textContent = `$${Number(item.price || 0).toFixed(2)}`;
+          const priceVal = parseFloat(item.price || 0);
+          price.textContent = `$${priceVal.toFixed(2)}`;
+
           const link = document.createElement("a");
-          link.href = item.absolute_url || "#";
-          link.textContent = "View product";
+          const productUrl = item.absolute_url || item.url || "#";
+          link.href = productUrl;
+          link.textContent = "View Product →";
           link.target = "_blank";
           link.rel = "noopener noreferrer";
+          link.className = "product-link";
+
           card.appendChild(title);
           card.appendChild(price);
           card.appendChild(link);
           list.appendChild(card);
         });
+
         messagesEl.appendChild(list);
       }
 
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    function renderTyping() {
+      const bubble = document.createElement("div");
+      bubble.className = "vendora-chat-bubble bot";
+      bubble.id = "typingIndicator";
+      bubble.innerHTML = `
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      `;
+      messagesEl.appendChild(bubble);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function removeTyping() {
+      const typing = document.getElementById("typingIndicator");
+      if (typing) typing.remove();
+    }
+
     function renderHistory() {
       messagesEl.innerHTML = "";
-      const history = loadHistory();
-      history.forEach((entry) => renderMessage(entry.role, entry.text, entry.suggestions || []));
-      if (!history.length) {
-        renderMessage("bot", "Hi! I'm your Vendora shopping assistant. What are you looking for today?");
+      const history = getChatHistory();
+      if (history.length === 0) {
+        renderMessage(
+          "bot",
+          "👋 Hi! I'm your Vendora shopping assistant.\n\nI can help you find products, show you categories, and recommend trending items.\n\nTry asking:\n• 'show me laptops'\n• 'what are your categories'\n• 'trending products'"
+        );
+        return;
+      }
+      history.forEach((entry) => {
+        renderMessage(entry.role, entry.text, entry.suggestions || [], entry.timestamp);
+      });
+    }
+
+    // ===== STATUS UPDATE =====
+    function updateStatus(message, type) {
+      if (statusBar) {
+        statusBar.textContent = message;
+        statusBar.className = 'vendora-chat-status ' + (type || 'online');
       }
     }
 
+    // ===== SEND MESSAGE =====
     async function sendMessage() {
       const message = inputEl.value.trim();
-      if (!message || !isLoggedIn) {
+      if (!message || !isLoggedIn || isProcessing) {
         return;
       }
-      inputEl.value = "";
 
-      const history = loadHistory();
-      history.push({ role: "user", text: message });
-      saveHistory(history);
+      inputEl.value = "";
+      inputEl.disabled = true;
+      isProcessing = true;
+      sendBtn.disabled = true;
+      updateStatus('Typing...', 'online');
+
+      // Save user message
+      const history = getChatHistory();
+      history.push({
+        role: "user",
+        text: message,
+        timestamp: Date.now()
+      });
+      saveChatHistory(history);
       renderMessage("user", message);
 
-      sendBtn.disabled = true;
+      // Show typing indicator
+      renderTyping();
+
       try {
         const response = await fetch("/ai/chat/", {
           method: "POST",
@@ -274,53 +719,174 @@
           credentials: "same-origin",
         });
 
+        removeTyping();
+
         const data = await response.json();
         const replyText = data.response || "I could not generate a response right now.";
         const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
 
-        history.push({ role: "bot", text: replyText, suggestions });
-        saveHistory(history);
+        // Save bot response
+        history.push({
+          role: "bot",
+          text: replyText,
+          suggestions: suggestions,
+          timestamp: Date.now()
+        });
+        saveChatHistory(history);
         renderMessage("bot", replyText, suggestions);
+
+        updateStatus('Online - Ready to help', 'online');
+
       } catch (error) {
+        removeTyping();
+        console.error("Chat error:", error);
         const fallback = "Sorry, the assistant is currently unavailable. Please try again.";
-        history.push({ role: "bot", text: fallback, suggestions: [] });
-        saveHistory(history);
+        history.push({
+          role: "bot",
+          text: fallback,
+          suggestions: [],
+          timestamp: Date.now()
+        });
+        saveChatHistory(history);
         renderMessage("bot", fallback, []);
+        updateStatus('Error - Please try again', 'offline');
       } finally {
+        isProcessing = false;
+        inputEl.disabled = false;
         sendBtn.disabled = false;
+        inputEl.focus();
       }
     }
 
-    toggleBtn.addEventListener("click", function () {
+    // ===== TOGGLE FULLSCREEN =====
+    function toggleFullscreen() {
+      isFullscreen = !isFullscreen;
+      windowEl.classList.toggle('fullscreen', isFullscreen);
+
+      const icon = fullscreenBtn.querySelector('i');
+      if (isFullscreen) {
+        icon.className = 'fas fa-compress';
+        fullscreenBtn.title = 'Exit Full Screen';
+        document.body.style.overflow = 'hidden';
+      } else {
+        icon.className = 'fas fa-expand';
+        fullscreenBtn.title = 'Full Screen';
+        document.body.style.overflow = '';
+      }
+    }
+
+    // ===== TOGGLE CHAT WINDOW =====
+    function toggleChat() {
       if (isLoggedIn) {
-        windowEl.classList.add("open");
-        guestEl.style.display = "none";
-        renderHistory();
-        inputEl.focus();
+        const isOpen = windowEl.classList.contains('open');
+        if (!isOpen) {
+          windowEl.classList.add('open');
+          guestEl.style.display = "none";
+          renderHistory();
+          setTimeout(() => inputEl.focus(), 100);
+          toggleBtn.style.display = "none";
+        } else {
+          windowEl.classList.remove('open');
+          toggleBtn.style.display = "inline-flex";
+          // Exit fullscreen if open
+          if (isFullscreen) {
+            toggleFullscreen();
+          }
+        }
       } else {
         guestEl.style.display = guestEl.style.display === "block" ? "none" : "block";
+        toggleBtn.style.display = "none";
       }
-      toggleBtn.style.display = "none";
-    });
+    }
 
-    closeBtn.addEventListener("click", function () {
-      windowEl.classList.remove("open");
+    function closeChat() {
+      windowEl.classList.remove('open');
       toggleBtn.style.display = "inline-flex";
-    });
-
-    document.addEventListener("click", function (event) {
-      if (!isLoggedIn && guestEl.style.display === "block" && !document.getElementById("vendoraChatbot").contains(event.target)) {
-        guestEl.style.display = "none";
-        toggleBtn.style.display = "inline-flex";
+      if (isFullscreen) {
+        toggleFullscreen();
       }
-    });
+      document.body.style.overflow = '';
+    }
+
+    // ===== EVENT LISTENERS =====
+    toggleBtn.addEventListener("click", toggleChat);
+
+    closeBtn.addEventListener("click", closeChat);
+
+    clearBtn.addEventListener("click", clearChatHistory);
+
+    fullscreenBtn.addEventListener("click", toggleFullscreen);
 
     sendBtn.addEventListener("click", sendMessage);
-    inputEl.addEventListener("keydown", function (event) {
+
+    inputEl.addEventListener("keydown", function(event) {
       if (event.key === "Enter") {
         event.preventDefault();
         sendMessage();
       }
     });
+
+    // Click outside to close
+    document.addEventListener("click", function(event) {
+      const chatbot = document.getElementById("vendoraChatbot");
+      if (!chatbot) return;
+
+      if (!isLoggedIn && guestEl.style.display === "block" && !chatbot.contains(event.target)) {
+        guestEl.style.display = "none";
+        toggleBtn.style.display = "inline-flex";
+      }
+
+      // Close guest mode when clicking login/register links
+      if (guestEl.style.display === "block") {
+        const links = guestEl.querySelectorAll('a');
+        links.forEach(link => {
+          if (link.contains(event.target)) {
+            // Let the link work normally
+          }
+        });
+      }
+    });
+
+    // Keyboard shortcut: Escape to close fullscreen/chat
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Escape") {
+        if (isFullscreen) {
+          toggleFullscreen();
+        }
+        if (windowEl.classList.contains('open')) {
+          closeChat();
+        }
+      }
+    });
+
+    // Handle window resize for mobile
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (window.innerWidth > 576 && isFullscreen) {
+          // Exit fullscreen on desktop resize
+          if (isFullscreen) {
+            toggleFullscreen();
+          }
+        }
+      }, 300);
+    });
+
+    // ===== INITIALIZE =====
+    if (isLoggedIn) {
+      renderHistory();
+      updateStatus('Online - Ready to help', 'online');
+    }
+
+    // Update chat ID on page load
+    console.log('Chat ID:', getChatId());
+
+    // Clean up on page unload
+    window.addEventListener('beforeunload', function() {
+      // Save the current state
+      saveChatHistory(getChatHistory());
+    });
+
   })();
 </script>

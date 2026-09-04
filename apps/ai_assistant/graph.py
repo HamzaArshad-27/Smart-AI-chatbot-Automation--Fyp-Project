@@ -56,14 +56,19 @@ def classify_intent_node(state: AssistantState):
         user_row = state["messages"][i]
         bot_row = state["messages"][i + 1] if i + 1 < len(state["messages"]) else {"content": ""}
         history_rows.append({"message": user_row.get("content", ""), "response": bot_row.get("content", "")})
+    
     result = classify_user_intent(
         message=latest,
         history=history_rows[-5:],
         awaiting_category=(state.get("step") == "awaiting_category"),
     )
+    
+    # If intent is SEARCH_PRODUCTS and we have a keyword, make sure it's stored
+    keyword = result.get("keyword") or latest
+    
     return {
         "intent": result["intent"],
-        "last_search_keyword": result.get("keyword") or latest,
+        "last_search_keyword": keyword,
     }
 
 
@@ -84,10 +89,32 @@ def show_categories_node(state: AssistantState):
     }
 
 
+def search_products_node(state: AssistantState):
+    # Get keyword from state or from user message
+    keyword = state.get("last_search_keyword") or _latest_user_message(state)
+    
+    # Search for products
+    products = search_products(keyword, limit=5)
+    
+    if not products:
+        return {
+            "last_response": f"I couldn't find any products matching '{keyword}'. Try another keyword or ask for categories.",
+            "step": "initial",
+            "products_found": [],
+        }
+    
+    return {
+        "last_response": f"Here are products matching '{keyword}':",
+        "step": "initial",
+        "products_found": products,
+    }
+
+
 def handle_category_selection_node(state: AssistantState):
     latest = _latest_user_message(state)
     categories = get_all_categories(limit=200)
     matched_category = extract_category_keyword(latest, categories)
+    
     if not matched_category:
         names = ", ".join([category["name"] for category in categories[:20]])
         return {
@@ -100,39 +127,19 @@ def handle_category_selection_node(state: AssistantState):
         }
 
     products = get_products_by_category(matched_category, limit=5)
+    
     if not products:
-        names = ", ".join([category["name"] for category in categories[:20]])
         return {
-            "last_response": (
-                f"No products found in {matched_category}. Would you like to try another category? "
-                f"Available categories: {names}."
-            ),
+            "last_response": f"No products found in {matched_category}. Would you like to try another category?",
             "step": "awaiting_category",
             "products_found": [],
         }
+    
     return {
-        "last_response": f"Great choice. Here are products in {matched_category}:",
+        "last_response": f"Great choice! Here are products in {matched_category}:",
         "step": "initial",
         "products_found": products,
     }
-
-
-def search_products_node(state: AssistantState):
-    keyword = state.get("last_search_keyword") or _latest_user_message(state)
-    products = search_products(keyword, limit=5)
-    if not products:
-        return {
-            "last_response": "I couldn't find matching products. Try another keyword or ask for categories.",
-            "step": "initial",
-            "products_found": [],
-        }
-    return {
-        "last_response": f"Here are matching products for '{keyword}':",
-        "step": "initial",
-        "products_found": products,
-    }
-
-
 def show_featured_node(state: AssistantState):
     products = get_featured_products(limit=5)
     if not products:
@@ -165,25 +172,26 @@ def ask_clarification_node(state: AssistantState):
         "products_found": [],
     }
 
-
 def handle_chitchat_node(state: AssistantState):
-    latest = _latest_user_message(state)
-    client = OllamaClient()
-    result = client.generate_conversation_json(
-        user_message=latest,
-        chat_history=[],
-        runtime_context=(
-            "Respond warmly to chitchat in one short sentence, then ask what products user wants."
-        ),
-    )
+    # For chitchat, just respond warmly
     return {
-        "last_response": result.get("reply") or "I'm great, thanks! What products are you looking for today?",
+        "last_response": "Hello! Welcome to Vendora. How can I help you shop today?",
         "step": "initial",
         "products_found": [],
     }
 
-
 def fallback_node(state: AssistantState):
+    # If we don't know what to do, try searching anyway
+    latest = _latest_user_message(state)
+    products = search_products(latest, limit=5)
+    
+    if products:
+        return {
+            "last_response": f"Here are products matching '{latest}':",
+            "step": "initial",
+            "products_found": products,
+        }
+    
     return {
         "last_response": "I can show categories, featured items, or search by keyword. What would you like?",
         "step": "initial",

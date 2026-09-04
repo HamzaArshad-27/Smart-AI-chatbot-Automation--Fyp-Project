@@ -12,7 +12,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here'
 DEBUG = True
 # Site URL for emails
 SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost',  '192.168.1.146' ,'192.168.0.112']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost',  '192.168.1.146' ,'192.168.0.112' ,'192.168.1.100']
 # For testing, you can also add test emails that auto-verify
 TEST_EMAILS = ['test@example.com', 'demo@vendora.com', 'admin@vendora.com']
 # Development Mode - Set to True to bypass email verification and auto-approve users
@@ -170,9 +170,10 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
 # AI assistant (Ollama)
-OLLAMA_BASE_URL = config('OLLAMA_BASE_URL', default='http://localhost:11434')
-OLLAMA_MODEL = config('OLLAMA_MODEL', default='phi3:mini')
-
+OLLAMA_BASE_URL = "http://localhost:11434"
+OLLAMA_MODEL = "tinyllama"  # Using lightweight model
+# AI Assistant Settings
+AI_DATA_REFRESH_INTERVAL = 3600  # 1 hour
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 24 hours
