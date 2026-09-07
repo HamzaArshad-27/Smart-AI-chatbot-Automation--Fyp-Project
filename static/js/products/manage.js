@@ -9,7 +9,7 @@ let currentView = 'grid';
         const listBtn = document.getElementById('listViewBtn');
         
         if (view === 'grid') {
-            gridView.style.display = 'grid';
+            gridView.style.display = '';
             listView.style.display = 'none';
             gridBtn.classList.add('active');
             listBtn.classList.remove('active');
@@ -36,7 +36,7 @@ let currentView = 'grid';
         const statusFilter = document.getElementById('statusFilter').value;
         const stockFilter = document.getElementById('stockFilter').value;
         
-        const items = document.querySelectorAll('.product-card, .product-row');
+        const items = document.querySelectorAll('.product-card-col, .product-row');
         
         items.forEach(item => {
             const name = item.dataset.productName || '';
@@ -56,7 +56,7 @@ let currentView = 'grid';
             if (stockFilter === 'out' && stock > 0) show = false;
             if (stockFilter === 'in' && stock === 0) show = false;
             
-            item.style.display = show ? (item.tagName === 'TR' ? 'table-row' : 'block') : 'none';
+            item.style.display = show ? (item.tagName === 'TR' ? 'table-row' : '') : 'none';
         });
     }
     
