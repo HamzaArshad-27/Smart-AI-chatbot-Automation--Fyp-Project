@@ -52,6 +52,7 @@ def chat_api(request):
         {
             "response": result.get("response", ""),
             "suggestions": result.get("suggestions", []),
+            "quick_replies": result.get("quick_replies", []), 
         },
         status=200,
     )

@@ -169,11 +169,19 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-# AI assistant (Ollama)
-OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_MODEL = "tinyllama"  # Using lightweight model
+OLLAMA_BASE_URL = config('OLLAMA_BASE_URL', default="http://localhost:11434")
+OLLAMA_MODEL = config('OLLAMA_MODEL', default="qwen2.5:3b")
+OLLAMA_TIMEOUT = config('OLLAMA_TIMEOUT', default=60, cast=int)
+
 # AI Assistant Settings
 AI_DATA_REFRESH_INTERVAL = 3600  # 1 hour
+AI_EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+AI_EMBEDDING_INDEX_PATH = BASE_DIR / "ai_embeddings"
+AI_EMBEDDING_DIMENSION = 384
+OLLAMA_CHITCHAT_TEMPERATURE = 0.6
+OLLAMA_FACTUAL_TEMPERATURE = 0.2
+OLLAMA_MAX_TOKENS_CHITCHAT = 100
+OLLAMA_MAX_TOKENS_FACTUAL = 160
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 24 hours

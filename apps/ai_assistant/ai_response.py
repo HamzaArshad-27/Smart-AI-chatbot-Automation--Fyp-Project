@@ -5,6 +5,9 @@ import random
 from apps.ai_assistant.json_trainer import trainer
 from typing import Dict
 
+from apps.ai_assistant.models import UserChatPreference
+from apps.products.models import Product
+
 class AIResponseGenerator:
     """Generate natural AI responses using trained data"""
     
@@ -156,7 +159,60 @@ class AIResponseGenerator:
             return random.choice(responses["bye"])
         
         return random.choice(responses["hello"])
+    
+    @staticmethod
+    def get_personalized_recommendations(user, limit=5):
+        """Get personalized recommendations based on user preferences"""
+        if not user or not user.is_authenticated:
+            return []
+        
+        # Get user preferences
+        preferences = UserChatPreference.objects.filter(user=user).order_by('-updated_at').first()
+        
+        if preferences:
+            # Get products based on category preference
+            if preferences.category:
+                products = trainer.get_products_by_category(preferences.category)
+                if products:
+                    return products[:limit]
+            
+            # Get products based on keyword preference
+            if preferences.keyword:
+                results = trainer.search(preferences.keyword, limit)
+                if results:
+                    return results
+        
+        # Fallback: Return trending products
+        return trainer.get_trending(limit)
 
+    @staticmethod
+    def track_user_interest(user, product_id=None, category=None, keyword=None):
+        """Track user interests for personalization"""
+        if not user or not user.is_authenticated:
+            return
+        
+        preference, created = UserChatPreference.objects.get_or_create(
+            user=user,
+            defaults={'interest_score': 1.0}
+        )
+        
+        if category:
+            preference.category = category
+            preference.interest_score += 0.5
+        
+        if keyword and preference.keyword != keyword:
+            preference.keyword = keyword
+            preference.interest_score += 0.3
+        
+        if product_id:
+            try:
+                product = Product.objects.get(id=product_id)
+                preference.viewed_products.add(product)
+                preference.interest_score += 0.2
+            except Product.DoesNotExist:
+                pass
+        
+        preference.save()
 
 # Singleton instance
 ai_response = AIResponseGenerator()

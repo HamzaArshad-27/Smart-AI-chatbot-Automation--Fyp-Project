@@ -1,3 +1,9 @@
+# apps/ai_assistant/services/ollama_client.py
+"""
+Ollama LLM client for the Vendora AI Assistant.
+Handles model warmup, JSON generation, classification, and context-aware generation.
+"""
+
 import json
 import logging
 import time
@@ -7,60 +13,70 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+
 class OllamaClientError(Exception):
     pass
 
 
 class OllamaClient:
-    def __init__(self, base_url=None, model=None, timeout=30):
-        self.base_url = (base_url or getattr(settings, "OLLAMA_BASE_URL", "http://localhost:11434")).rstrip("/")
-        # Use tinyllama as default (lightweight model)
-        self.model = model or getattr(settings, "OLLAMA_MODEL", "tinyllama")
-        self.timeout = timeout
+    def __init__(self, base_url=None, model=None, timeout=None):
+        self.base_url = (
+            base_url or getattr(settings, "OLLAMA_BASE_URL", "http://localhost:11434")
+        ).rstrip("/")
+        self.model = model or getattr(settings, "OLLAMA_MODEL", "qwen2.5:3b")
+        # Keep timeout reasonable (default 15s) so the chatbot never hangs the user
+        # Allow enough time for Qwen 2.5 3B running on CPU
+        configured_timeout = getattr(settings, "OLLAMA_TIMEOUT", 60)
+        self.timeout = timeout or configured_timeout
         self._warmed_up = False
-        
-    def _ensure_warm(self):
-        """Warm up the model if not already loaded"""
-        if not self._warmed_up:
-            try:
-                print("🔄 Warming up TinyLlama model...")
-                response = requests.post(
-                    f"{self.base_url}/api/generate",
-                    json={
-                        "model": self.model,
-                        "prompt": "Hello",
-                        "stream": False,
-                        "options": {"num_predict": 5}
-                    },
-                    timeout=10
-                )
-                if response.status_code == 200:
-                    self._warmed_up = True
-                    print("✅ Model warmed up successfully")
-                else:
-                    print("⚠️ Model warmup failed")
-            except Exception as e:
-                print(f"⚠️ Model warmup error: {e}")
+        self._circuit_broken_until = 0.0
 
-    def _post_generate(self, prompt, format_json=True, options=None, max_retries=2):
-        """Generate with retry logic and timeout - optimized for TinyLlama"""
-        
-        # Warm up if not done
-        if not self._warmed_up:
-            self._ensure_warm()
-            
-        # Optimized options for TinyLlama
-# In _post_generate method, update default_options:
+    def is_circuit_open(self) -> bool:
+        """Check if circuit breaker is tripped due to recent failure/timeout."""
+        return time.time() < self._circuit_broken_until
+
+    def trip_circuit(self, duration_seconds: int = 60):
+        """Trip circuit breaker to prevent repeated timeouts."""
+        self._circuit_broken_until = time.time() + duration_seconds
+        logger.warning(f"Ollama circuit breaker tripped for {duration_seconds}s")
+
+    # ─── Warmup ───
+    def _ensure_warm(self):
+        """Quick health-check probe to verify Ollama is alive without heavy blocking."""
+        if self._warmed_up or self.is_circuit_open():
+            return
+
+        try:
+            # Fast ping (2s timeout) to see if server is responsive
+            resp = requests.get(f"{self.base_url}/api/tags", timeout=2)
+            if resp.status_code == 200:
+                self._warmed_up = True
+            else:
+                self.trip_circuit(30)
+        except Exception as e:
+            logger.warning(f"Ollama unreachable: {e}")
+            self.trip_circuit(45)
+
+    # ─── Core generation ───
+    def _post_generate(self, prompt, format_json=True, options=None, max_retries=1):
+        """Generate with circuit breaker protection and reasonable timeout."""
+        if self.is_circuit_open():
+            raise OllamaClientError("Ollama circuit breaker is currently active (service down or slow).")
+
+        self._ensure_warm()
+        if self.is_circuit_open():
+            raise OllamaClientError("Ollama service unreachable.")
+
         default_options = {
             "temperature": 0.3,
-            "num_predict": 60,  # Reduced from 100 for faster responses
-            "top_k": 30,
+            "num_predict": 100,
+            "top_k": 40,
             "top_p": 0.9,
             "repeat_penalty": 1.1,
         }
         if options:
             default_options.update(options)
-            
+
         payload = {
             "model": self.model,
             "prompt": prompt,
@@ -69,12 +85,10 @@ class OllamaClient:
         }
         if format_json:
             payload["format"] = "json"
-            
+
         for attempt in range(max_retries):
             try:
                 start_time = time.time()
-                print(f"⏳ Sending to {self.model}...")
-                
                 response = requests.post(
                     f"{self.base_url}/api/generate",
                     json=payload,
@@ -83,263 +97,168 @@ class OllamaClient:
                 response.raise_for_status()
                 data = response.json()
                 elapsed = time.time() - start_time
-                print(f"⏱️ Response in {elapsed:.2f}s")
-                
+                logger.debug(f"Ollama response in {elapsed:.2f}s")
+
                 text = (data.get("response") or "").strip()
                 if not text:
-                    if attempt < max_retries - 1:
-                        continue
                     raise OllamaClientError("Ollama returned an empty response.")
-                    
-                # If we need JSON format, validate it
+
                 if format_json:
                     try:
-                        # Try to parse as JSON
-                        parsed = json.loads(text)
+                        json.loads(text)
                         return text
                     except json.JSONDecodeError:
-                        # Try to extract JSON from the response
                         json_match = re.search(r'\{.*\}', text, re.DOTALL)
                         if json_match:
                             try:
                                 json.loads(json_match.group())
                                 return json_match.group()
-                            except:
+                            except json.JSONDecodeError:
                                 pass
-                        # If not valid JSON, wrap it in a JSON object
-                        print(f"⚠️ Response not valid JSON, wrapping it")
-                        fallback = json.dumps({"response": text, "product_ids": []})
-                        return fallback
-                
+                        return json.dumps({"reply": text, "product_ids": []})
+
                 return text
-                
+
             except requests.Timeout:
-                print(f"⚠️ Timeout (attempt {attempt + 1})")
-                if attempt < max_retries - 1:
-                    time.sleep(1)
-                    continue
-                raise OllamaClientError("Request timed out. Please try again.")
+                logger.warning(f"Ollama request timed out after {self.timeout}s")
+                self.trip_circuit(60)  # Trip circuit breaker for 60 seconds
+                raise OllamaClientError("Request timed out. Falling back to local search.")
+
             except requests.RequestException as exc:
-                print(f"❌ Request error: {exc}")
-                if attempt < max_retries - 1:
-                    time.sleep(1)
-                    continue
+                logger.warning(f"Ollama request failed: {exc}")
+                self.trip_circuit(45)
                 raise OllamaClientError(f"Ollama error: {exc}")
 
-    def classify_intent(self, message, history):
-        """Classify intent with optimized prompts for TinyLlama"""
-        
-        # Quick classification first (instant)
-        quick_result = self._quick_classify(message)
-        
-        # If it's a simple intent, return immediately
-        if quick_result["intent"] in ["SHOW_CATEGORIES", "SHOW_FEATURED", "CHITCHAT"]:
-            print(f"⚡ Quick classification: {quick_result['intent']}")
-            return quick_result
-        
-        # Use TinyLlama for complex queries
-        try:
-            print("🧠 Classifying with TinyLlama...")
-            
-            # Short, clear prompt for TinyLlama
-            prompt = f"""Classify this shopping message.
-Options: SEARCH_PRODUCTS, ASK_CLARIFICATION, UNKNOWN.
-If product mentioned → SEARCH_PRODUCTS.
-If vague shopping → ASK_CLARIFICATION.
-Else → UNKNOWN.
-Return ONLY JSON: {{"intent":"...","keyword":"..."}}
-
-Message: {message[:100]}
-JSON:"""
-            
-            raw = self._post_generate(
-                prompt=prompt, 
-                format_json=True, 
-                options={"temperature": 0.1, "num_predict": 50}
-            )
-            print(f"📝 Raw: {raw}")
-            parsed = json.loads(raw)
-            print(f"✅ Parsed: {parsed}")
-            
-            intent = (parsed.get("intent") or "UNKNOWN").upper()
-            # Map to valid intents
-            if intent not in ["SEARCH_PRODUCTS", "ASK_CLARIFICATION", "UNKNOWN"]:
-                if "search" in intent.lower() or "product" in intent.lower():
-                    intent = "SEARCH_PRODUCTS"
-                else:
-                    intent = "UNKNOWN"
-            
-            return {
-                "intent": intent,
-                "keyword": (parsed.get("keyword") or message)[:50],
-                "category_hint": (parsed.get("category_hint") or "").strip(),
-            }
-        except Exception as e:
-            print(f"❌ Error, using fallback: {e}")
-            return quick_result
-    
-    def _quick_classify(self, message):
-        """Instant fallback classification using keywords"""
-        msg = message.lower() if message else ""
-        
-        # Specific product keywords
-        product_keywords = ["laptop", "phone", "shirt", "shoes", "bag", "watch", "headphone", 
-                           "speaker", "tv", "monitor", "keyboard", "mouse", "chair", "desk", 
-                           "book", "tablet", "nike", "adidas", "apple", "samsung", "dell", "hp"]
-        if any(w in msg for w in product_keywords):
-            return {"intent": "SEARCH_PRODUCTS", "keyword": message, "category_hint": ""}
-        
-        # Categories
-        if any(w in msg for w in ["category", "list", "browse", "what do you have", "show all"]):
-            return {"intent": "SHOW_CATEGORIES", "keyword": "", "category_hint": ""}
-        
-        # Featured
-        if any(w in msg for w in ["featured", "popular", "trending", "top", "best selling"]):
-            return {"intent": "SHOW_FEATURED", "keyword": "", "category_hint": ""}
-        
-        # Chitchat
-        if any(w in msg for w in ["hello", "hi", "hey", "good morning", "good evening", "how are you"]):
-            return {"intent": "CHITCHAT", "keyword": "", "category_hint": ""}
-        
-        # Clarification
-        if any(w in msg for w in ["gift", "suggest", "recommend", "help me", "what should"]):
-            return {"intent": "ASK_CLARIFICATION", "keyword": "", "category_hint": ""}
-        
-        # Default to search
-        return {"intent": "SEARCH_PRODUCTS", "keyword": message, "category_hint": ""}
-
-    def classify_with_prompt(self, prompt):
-        """For intent classifier - simplified for TinyLlama"""
-        # Extract user message
-        lines = prompt.split('\n')
-        user_msg = ""
-        for i, line in enumerate(lines):
-            if "Latest user message:" in line and i+1 < len(lines):
-                user_msg = lines[i+1].strip()
-                break
-        
-        if user_msg:
-            return self._quick_classify(user_msg)
-        
-        try:
-            raw = self._post_generate(
-                prompt=prompt, 
-                format_json=True, 
-                options={"temperature": 0.1, "num_predict": 50}
-            )
-            return json.loads(raw)
-        except:
-            return {"intent": "UNKNOWN"}
-
+    # ─── Conversation JSON generation ────────────────────────────────────────
     def generate_conversation_json(self, user_message, chat_history, runtime_context):
-        """Main conversation generator - optimized for TinyLlama"""
-        
-        # Quick response fallback
-        quick_response = self._quick_response(user_message)
-        
-        # Try TinyLlama for better responses
+        """Generate a conversation response as JSON with product_ids."""
         try:
-            print("💬 Generating with TinyLlama...")
-            
-            # Simple, clear prompt for TinyLlama
-            prompt = f"""You are a shopping assistant. Be helpful and concise.
-Don't invent products. Keep response under 2 sentences.
-End with a question.
+            prompt = f"""You are Vendora, a friendly shopping assistant.
+Keep responses short, warm, and conversational.
+Never invent product names or prices — only use data from the context.
 
-User: {user_message[:150]}
-Context: {runtime_context[:150] if runtime_context else "Shopping"}
+User: {user_message[:200]}
+Context: {runtime_context[:500] if runtime_context else "Shopping assistant"}
 
 Response JSON: {{"reply": "...", "product_ids": []}}"""
-            
+
             raw = self._post_generate(
-                prompt=prompt, 
-                format_json=True, 
-                options={"temperature": 0.4, "num_predict": 80}
+                prompt=prompt,
+                format_json=True,
+                options={"temperature": 0.4, "num_predict": 100},
             )
-            print(f"📝 Raw: {raw}")
             parsed = json.loads(raw)
-            print(f"✅ Parsed: {parsed}")
-            
+
             product_ids = parsed.get("product_ids", [])
             if not isinstance(product_ids, list):
                 product_ids = []
             product_ids = [int(pid) for pid in product_ids if str(pid).isdigit()][:5]
-            
+
             return {
-                "reply": (parsed.get("reply") or quick_response["reply"]).strip(),
+                "reply": (parsed.get("reply") or "Hello! 👋 How can I help you?").strip(),
                 "product_ids": product_ids,
                 "raw": parsed,
             }
         except Exception as e:
-            print(f"❌ Error, using fallback: {e}")
-            return quick_response
-    
-def _quick_response(self, message):
-    """Instant fallback response with natural language"""
-    msg = message.lower() if message else ""
-    
-    # Greetings
-    if any(w in msg for w in ["hello", "hi", "hey", "good morning", "good evening"]):
-        return {"reply": "Hello! 👋 How can I help you shop today?", "product_ids": []}
-    
-    if any(w in msg for w in ["how are you", "how r u", "how's it going"]):
-        return {"reply": "I'm doing great, thanks for asking! 😊 What products are you looking for?", "product_ids": []}
-    
-    if any(w in msg for w in ["what is your name", "who are you"]):
-        return {"reply": "I'm Vendora AI, your personal shopping assistant! 🤖 What can I help you find?", "product_ids": []}
-    
-    if any(w in msg for w in ["what can you do", "help"]):
-        return {"reply": "I can help you find products, show you categories, and recommend featured items! 🛍️ Just tell me what you're looking for.", "product_ids": []}
-    
-    if any(w in msg for w in ["thanks", "thank you"]):
-        return {"reply": "You're welcome! 😊 Anything else I can help you with?", "product_ids": []}
-    
-    if any(w in msg for w in ["bye", "goodbye", "see you"]):
-        return {"reply": "Goodbye! 👋 Have a great day and happy shopping!", "product_ids": []}
-    
-    # Products
-    if any(w in msg for w in ["category", "list", "what do you have"]):
-        return {"reply": "We have categories like Electronics, Clothing, Books, Home & Garden, and more. Which one interests you?", "product_ids": []}
-    
-    if any(w in msg for w in ["featured", "popular", "trending"]):
-        return {"reply": "Check out our featured products on the homepage! They're our most popular items.", "product_ids": []}
-    
-    if any(w in msg for w in ["gift", "suggest", "recommend"]):
-        return {"reply": "I'd love to help! 🎁 What's the occasion and who is it for?", "product_ids": []}
-    
-    if any(w in msg for w in ["laptop", "phone", "shirt", "shoes"]):
-        return {"reply": f"Let me help you find the perfect {message}. What features are you looking for?", "product_ids": []}
-    
-    # Default
-    return {"reply": f"I can help you find products related to '{message}'. Let me search for you! 🔍", "product_ids": []}
+            logger.error(f"Ollama generation error: {e}")
+            return {
+                "reply": "Hello! 👋 How can I help you shop today?",
+                "product_ids": [],
+            }
 
+    # ─── Classification (was missing — fixes ai_agent.py and intent_classifier.py) ───
+    def classify_with_prompt(self, prompt: str) -> str:
+        """
+        Run a classification/analysis prompt and return the raw JSON string.
+        Used by ai_agent.py for query analysis and intent_classifier.py for
+        ambiguous intent classification.
+        """
+        try:
+            return self._post_generate(
+                prompt=prompt,
+                format_json=True,
+                options={"temperature": 0.1, "num_predict": 150},
+            )
+        except OllamaClientError as e:
+            logger.warning(f"Classification failed: {e}")
+            raise
 
-def generate_intelligent_response(self, user_message, context, history=None):
-    """Generate intelligent response with full context"""
-    
-    prompt = f"""You are Vendora AI, an intelligent shopping assistant.
+    # ─── RAG-style grounded generation ───────────────────────────────────────
+    def generate_with_context(
+        self,
+        system_prompt: str,
+        user_message: str,
+        context: str,
+        chat_history: list = None,
+        temperature: float = 0.3,
+        max_tokens: int = 150,
+    ) -> dict:
+        """
+        Generate a grounded response using system prompt + retrieved context.
+        This is the main RAG generation method.
 
-CONTEXT:
+        Args:
+            system_prompt: The persona/system instructions.
+            user_message: The user's current message.
+            context: Retrieved product data and other context.
+            chat_history: Recent conversation history.
+            temperature: LLM temperature (lower = more factual).
+            max_tokens: Maximum tokens to generate.
+
+        Returns:
+            {"reply": str, "product_ids": list}
+        """
+        try:
+            # Build history context string
+            history_text = ""
+            if chat_history:
+                recent = chat_history[-6:]  # Last 3 turns
+                for msg in recent:
+                    role = msg.get("role", "user")
+                    content = msg.get("content", "")[:100]
+                    history_text += f"{role.capitalize()}: {content}\n"
+
+            prompt = f"""{system_prompt}
+
 {context}
 
-CHAT HISTORY:
-{history if history else "No previous conversation"}
+{f"RECENT CONVERSATION:{chr(10)}{history_text}" if history_text else ""}
 
-USER: {user_message}
+USER MESSAGE: {user_message[:300]}
 
-Instructions:
-1. Understand the user's real need
-2. Use the provided context (database data)
-3. Give a natural, human-like response
-4. If products exist, mention them
-5. If no products, suggest alternatives
-6. Keep it conversational and helpful
-7. End with a helpful question
+Respond naturally using ONLY the product data provided above. Never invent products.
+Response JSON: {{"reply": "your response here", "product_ids": [list of product IDs mentioned]}}"""
 
-Response should be JSON: {{"reply": "...", "product_ids": []}}"""
+            raw = self._post_generate(
+                prompt=prompt,
+                format_json=True,
+                options={"temperature": temperature, "num_predict": max_tokens},
+            )
+            parsed = json.loads(raw)
 
-    try:
-        raw = self._post_generate(prompt, format_json=True)
-        return json.loads(raw)
-    except:
-        return {"reply": "I understand you're looking for something. Could you tell me more about what you need?", "product_ids": []}
+            product_ids = parsed.get("product_ids", [])
+            if not isinstance(product_ids, list):
+                product_ids = []
+            product_ids = [int(pid) for pid in product_ids if str(pid).isdigit()][:5]
+
+            reply = (parsed.get("reply") or "").strip()
+            if not reply:
+                reply = "I'd be happy to help! Could you tell me more about what you're looking for?"
+
+            return {"reply": reply, "product_ids": product_ids}
+
+        except Exception as e:
+            logger.error(f"Context generation error: {e}")
+            return {
+                "reply": "I'd love to help you find something! What are you looking for?",
+                "product_ids": [],
+            }
+
+    # ─── Health check ────────────────────────────────────────────────────────
+    def is_available(self) -> bool:
+        """Check if Ollama is reachable."""
+        try:
+            resp = requests.get(f"{self.base_url}/api/tags", timeout=5)
+            return resp.status_code == 200
+        except Exception:
+            return False

@@ -1,9 +1,10 @@
-# apps/ai_assistant/json_knowledge_base.py
-
 import json
+import logging
 import os
 from typing import Dict, List, Any, Optional
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 class JSONKnowledgeBase:
     """Load and query JSON training data from exported database"""
@@ -20,11 +21,10 @@ class JSONKnowledgeBase:
         if os.path.exists(json_path):
             with open(json_path, 'r', encoding='utf-8') as f:
                 self.data = json.load(f)
-            print(f"✅ Loaded {len(self.data.get('products', []))} products from {self.json_file}")
+            logger.info(f"Loaded {len(self.data.get('products', []))} products from {self.json_file}")
             return self.data
         else:
-            print(f"❌ File {self.json_file} not found!")
-            print("💡 Run: python manage.py export_products_json")
+            logger.warning(f"File {self.json_file} not found! Run: python manage.py export_products_json")
             return None
     
     def get_all_products(self) -> List[Dict]:
