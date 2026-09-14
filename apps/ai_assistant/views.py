@@ -2,11 +2,14 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-
+from django.views.decorators.http import require_POST,require_GET
 from apps.ai_assistant.chatbot import process_chat_message
 from apps.ai_assistant.models import UserProductInterest
 from apps.products.models import Product
+from django.contrib.admin.views.decorators import staff_member_required
+from apps.ai_assistant.data_loader import WebsiteDataLoader, refresh_ai_data
+from django.core.cache import cache
+from apps.ai_assistant.data_loader import CACHE_KEY_STATS, CACHE_KEY_CATEGORIES, CACHE_KEY_TRENDING
 
 
 def _is_buyer(user):
@@ -82,3 +85,38 @@ def track_interest_api(request):
         metadata={"source": "api"},
     )
     return JsonResponse({"success": True}, status=201)
+
+
+####################################################
+
+@staff_member_required
+@require_POST
+def refresh_data_api(request):
+    """Admin endpoint to refresh AI data"""
+    try:
+        refresh_ai_data()
+        return JsonResponse({"success": True, "message": "Data refreshed successfully"})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@require_GET
+def get_stats_api(request):
+    """Get website statistics for AI"""
+    stats = cache.get(CACHE_KEY_STATS)
+    if not stats:
+        stats = WebsiteDataLoader.load_website_stats()
+    
+    categories = cache.get(CACHE_KEY_CATEGORIES)
+    if not categories:
+        categories = WebsiteDataLoader.load_categories()
+    
+    trending = cache.get(CACHE_KEY_TRENDING)
+    if not trending:
+        trending = WebsiteDataLoader.load_trending_products()
+    
+    return JsonResponse({
+        "stats": stats,
+        "categories": categories[:10],
+        "trending": trending[:5]
+    })

@@ -632,7 +632,7 @@ def run():
         user = User.objects.filter(role='admin').first() or User.objects.first()
         if not user:
             user = User.objects.create_superuser(
-                email='jamilahmed20201970@gmail.com',
+                email='2231046@ncbae.edu.pk',
                 password='12345666',
                 first_name='Moaz',
                 last_name='Jamil'
