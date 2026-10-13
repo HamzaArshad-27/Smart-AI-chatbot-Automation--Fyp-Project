@@ -1,4 +1,7 @@
+import logging
 from apps.ai_assistant.services.ollama_client import OllamaClient
+
+logger = logging.getLogger(__name__)
 
 VALID_INTENTS = {
     "SHOW_CATEGORIES",
@@ -19,16 +22,17 @@ def classify_user_intent(message, history=None, awaiting_category=False):
     
     # If it's clearly a product search, return immediately
     if quick_result["intent"] == "SEARCH_PRODUCTS":
-        print(f"⚡ Quick classification: SEARCH_PRODUCTS")
+        logger.debug("Quick classification: SEARCH_PRODUCTS")
         return quick_result
     
     # If it's a simple intent, return immediately
     if quick_result["intent"] in ["SHOW_CATEGORIES", "SHOW_FEATURED", "CHITCHAT", "ASK_CLARIFICATION"]:
-        print(f"⚡ Quick classification: {quick_result['intent']}")
+        logger.debug(f"Quick classification: {quick_result['intent']}")
         return quick_result
     
     # Only use Ollama for complex cases
     try:
+        import json
         client = OllamaClient()
         history_text = "\n".join(
             [f"User: {h.get('message', '')}\nAssistant: {h.get('response', '')}" for h in (history or [])[-4:]]
@@ -42,7 +46,8 @@ Options: SEARCH_PRODUCTS, ASK_CLARIFICATION, UNKNOWN.
 User message: {message[:100]}
 JSON:"""
         
-        parsed = client.classify_with_prompt(prompt)
+        raw_result = client.classify_with_prompt(prompt)
+        parsed = json.loads(raw_result) if isinstance(raw_result, str) else (raw_result or {})
         intent = (parsed.get("intent") or "UNKNOWN").upper()
         
         if intent not in VALID_INTENTS:
@@ -54,7 +59,7 @@ JSON:"""
             "category_hint": (parsed.get("category_hint") or "").strip(),
         }
     except Exception as e:
-        print(f"❌ Ollama error, using fallback: {e}")
+        logger.warning(f"Ollama error, using fallback: {e}")
         return quick_result
 
 

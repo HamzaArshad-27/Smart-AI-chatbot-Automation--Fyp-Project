@@ -4,445 +4,733 @@
 {% block title %}Vendora — Discover Amazing Products{% endblock %}
 
 {% block content %}
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 
 <style>
-/* ════════════════════════════════════════
-   HOME PAGE — SHOPALL INSPIRED DESIGN
-   ════════════════════════════════════════ */
+  .hero-carousel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    min-height: 560px;
+    height: calc(100vh - 120px);
+    background: #0f172a;
+  }
 
-/* ── Carousel Hero ── */
-.hero-carousel {
-  position: relative;
-  overflow: hidden;
-  border-radius: 0;
-}
-.hero-carousel .carousel-inner { border-radius: 0; }
-.hero-carousel .carousel-item {
-  height: 460px;
-}
-.hero-carousel .carousel-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-.hero-carousel .carousel-caption-custom {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(90deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
-  display: flex;
-  align-items: center;
-  padding: 0 5%;
-}
-.hero-carousel .slide-text { max-width: 480px; }
-.hero-carousel .slide-tag {
-  display: inline-block;
-  background: #f59e0b;
-  color: #1a1a1a;
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 4px 14px;
-  border-radius: 50px;
-  margin-bottom: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.hero-carousel h2 {
-  font-size: 2.4rem;
-  font-weight: 900;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 0.6rem;
-  letter-spacing: -1px;
-}
-.hero-carousel p {
-  font-size: 1rem;
-  color: rgba(255,255,255,0.85);
-  margin-bottom: 1.25rem;
-  font-weight: 400;
-}
-.hero-carousel .slide-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: #fff;
-  color: #1e3a8a;
-  border: none; border-radius: 50px;
-  padding: 0.6rem 1.5rem;
-  font-size: 0.9rem; font-weight: 700;
-  text-decoration: none;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-.hero-carousel .slide-btn:hover {
-  background: #1e3a8a;
-  color: #fff;
-  transform: translateY(-2px);
-}
-/* Carousel controls */
-.hero-carousel .carousel-control-prev,
-.hero-carousel .carousel-control-next {
-  width: 44px; height: 44px;
-  background: rgba(255,255,255,0.9);
-  border-radius: 50%;
-  top: 50%; transform: translateY(-50%);
-  opacity: 0;
-  transition: opacity 0.3s;
-  margin: 0 1rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-}
-.hero-carousel:hover .carousel-control-prev,
-.hero-carousel:hover .carousel-control-next { opacity: 1; }
-.hero-carousel .carousel-control-prev-icon,
-.hero-carousel .carousel-control-next-icon {
-  filter: invert(0.3);
-  width: 18px; height: 18px;
-}
-/* Indicators */
-.hero-carousel .carousel-indicators button {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(255,255,255,0.6);
-  border: none; margin: 0 4px;
-  transition: all 0.2s;
-}
-.hero-carousel .carousel-indicators .active {
-  background: #fff; width: 24px; border-radius: 50px;
-}
+  .hero-carousel .carousel-inner,
+  .hero-carousel .carousel-item {
+    height: 100%;
+  }
 
-/* ── Feature Strip ── */
-.feature-strip {
-  background: #fff;
-  border-radius: 0;
-  padding: 0.9rem 0;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-  margin-bottom: 2.5rem;
-  border-bottom: 1px solid #e8edf3;
-}
-.feature-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 0.5rem;
-}
-.feature-icon-circle {
-  width: 44px; height: 44px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-size: 1.1rem;
-}
-.feature-item h6 { font-size: 0.88rem; font-weight: 700; color: #1e293b; margin: 0; }
-.feature-item p { font-size: 0.75rem; color: #64748b; margin: 0; }
+  .hero-carousel .carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(1.08) contrast(1.05);
+  }
 
-/* ── Section header ── */
-.section-header { margin-bottom: 1.75rem; }
-.section-header h2 {
-  font-size: 1.8rem; font-weight: 800; color: #1e293b; margin: 0;
-  letter-spacing: -0.5px;
-}
-.section-header p { color: #64748b; margin: 0.35rem 0 0; font-size: 0.9rem; }
-.section-header a {
-  font-size: 0.875rem; font-weight: 600; color: #2563eb;
-  text-decoration: none; transition: 0.2s;
-}
-.section-header a:hover { color: #1d4ed8; text-decoration: underline; }
+  .hero-carousel .carousel-caption-custom {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 7%;
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.4) 38%, rgba(15, 23, 42, 0.12) 100%);
+  }
 
-/* ── Category Cards ── */
-.category-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 1.75rem 1rem 1.25rem;
-  text-align: center;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border: 1.5px solid #f0f4f8;
-  display: block;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-}
-.category-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 32px rgba(37,99,235,0.12);
-  border-color: rgba(37,99,235,0.2);
-}
-.cat-icon-wrap {
-  width: 64px; height: 64px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6rem; margin: 0 auto 0.75rem;
-  transition: transform 0.3s;
-}
-.category-card:hover .cat-icon-wrap { transform: scale(1.12) rotate(-5deg); }
-.cat-name { font-size: 0.88rem; font-weight: 700; color: #1e293b; margin: 0; }
-.cat-count { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
+  .hero-carousel .slide-text {
+    max-width: 540px;
+  }
 
-/* ── Deal Banners ── */
-.deal-banner {
-  border-radius: 20px;
-  padding: 2rem;
-  color: #fff;
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
-  position: relative;
-  text-decoration: none;
-  transition: transform 0.3s;
-}
-.deal-banner:hover { transform: scale(1.02); }
-.deal-banner::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.65) 40%, transparent);
-}
-.deal-banner .deal-content { position: relative; z-index: 2; }
-.deal-banner .deal-tag {
-  display: inline-block;
-  background: #f59e0b;
-  color: #1a1a1a;
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 3px 10px;
-  border-radius: 50px;
-  margin-bottom: 0.4rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.deal-banner h4 { font-size: 1.25rem; font-weight: 800; margin: 0 0 0.2rem; }
-.deal-banner p { font-size: 0.82rem; margin: 0; opacity: 0.85; }
+  .hero-carousel .slide-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.9rem;
+    margin-bottom: 1rem;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
 
-/* ── Product Cards (Home Tab) ── */
-.home-product-card {
-  background: #fff;
-  border-radius: 16px;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  border: 1px solid #f0f4f8;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.home-product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 16px 32px rgba(0,0,0,0.10);
-}
-.hp-img {
-  position: relative; height: 200px;
-  overflow: hidden; background: #f8fafc;
-}
-.hp-img img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform 0.5s ease;
-}
-.home-product-card:hover .hp-img img { transform: scale(1.06); }
-.hp-badge {
-  position: absolute; top: 10px; left: 10px;
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: #fff; font-size: 0.7rem; font-weight: 700;
-  padding: 3px 8px; border-radius: 50px;
-}
-.hp-body { padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; }
-.hp-cat { font-size: 0.7rem; font-weight: 600; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem; }
-.hp-name { font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem; min-height: 2.4rem;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.hp-stars { display: flex; align-items: center; gap: 2px; margin-bottom: 0.5rem; }
-.hp-stars i { font-size: 0.68rem; color: #fbbf24; }
-.hp-stars span { font-size: 0.7rem; color: #94a3b8; margin-left: 4px; }
-.hp-price-row { display: flex; align-items: baseline; gap: 0.4rem; margin-top: auto; margin-bottom: 0.75rem; }
-.hp-price { font-size: 1.05rem; font-weight: 800; color: #1e293b; }
-.hp-old-price { font-size: 0.8rem; color: #94a3b8; text-decoration: line-through; }
-.hp-cart-btn {
-  display: flex; align-items: center; justify-content: center; gap: 5px;
-  width: 100%; padding: 0.5rem;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #fff; border: none; border-radius: 10px;
-  font-size: 0.83rem; font-weight: 600; cursor: pointer;
-  transition: all 0.2s; text-decoration: none;
-}
-.hp-cart-btn:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); transform: translateY(-1px); color: #fff; }
+  .hero-carousel h2 {
+    font-size: clamp(2.5rem, 4.6vw, 5rem);
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+    margin: 0 0 1rem;
+    color: #fff;
+    font-weight: 800;
+  }
 
-/* ── Tab system ── */
-.home-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; overflow-x: auto; padding-bottom: 4px; }
-.home-tab {
-  padding: 0.5rem 1.25rem; border-radius: 50px;
-  font-size: 0.85rem; font-weight: 600; border: 1.5px solid #e2e8f0;
-  background: #fff; color: #64748b; cursor: pointer;
-  white-space: nowrap; transition: all 0.2s;
-}
-.home-tab.active {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #fff; border-color: transparent;
-  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
-}
-.home-tab:hover:not(.active) { border-color: #3b82f6; color: #2563eb; }
+  .hero-carousel p {
+    color: rgba(255,255,255,0.82);
+    margin-bottom: 1.5rem;
+    font-size: 1.08rem;
+    max-width: 470px;
+  }
 
-/* ── CTA Banner ── */
-.cta-section {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border-radius: 24px; padding: 3rem 2.5rem; margin: 4rem 0 2rem;
-  position: relative; overflow: hidden;
-}
-.cta-section::before {
-  content: '';
-  position: absolute;
-  width: 300px; height: 300px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%);
-  top: -100px; right: -80px;
-}
+  .hero-carousel .slide-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: #fff;
+    color: #111827;
+    padding: 0.9rem 1.4rem;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s ease;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+  }
 
-/* ── Toast ── */
-.home-toast {
-  position: fixed; bottom: 24px; right: 24px;
-  background: #1e293b; color: #fff;
-  padding: 0.75rem 1.25rem; border-radius: 12px;
-  font-size: 0.875rem; font-weight: 500; z-index: 9999;
-  display: flex; align-items: center; gap: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  animation: homeToastIn 0.3s ease;
-}
-@keyframes homeToastIn { from{transform:translateY(20px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  .hero-carousel .slide-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+    color: #111827;
+  }
 
-/* ── Responsive ── */
-@media (max-width: 991px) {
-  .hero-title { font-size: 2.8rem; }
-  .hero-stats { gap: 1.75rem; }
-}
-@media (max-width: 768px) {
-  .hero-section { min-height: auto; }
-  .hero-content { padding: 3rem 0 2rem; }
-  .hero-title { font-size: 2.2rem; text-align: center; letter-spacing: -1px; }
-  .hero-subtitle { text-align: center; }
-  .hero-search-bar { margin: 0 auto; }
-  .hero-stats { justify-content: center; gap: 1.5rem; margin-top: 2rem; }
-  .feature-strip { padding: 1rem; margin-bottom: 2rem; }
-}
-@media (max-width: 576px) {
-  .hero-title { font-size: 1.9rem; }
-  .hp-img { height: 160px; }
-}
+  .hero-carousel .carousel-control-prev,
+  .hero-carousel .carousel-control-next {
+    width: 52px;
+    height: 52px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.28);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    margin: 0 1rem;
+  }
+
+  .hero-carousel:hover .carousel-control-prev,
+  .hero-carousel:hover .carousel-control-next {
+    opacity: 1;
+  }
+
+  .hero-carousel .carousel-indicators {
+    bottom: 1.25rem;
+  }
+
+  .hero-carousel .carousel-indicators button {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    border: none;
+    margin: 0 6px;
+  }
+
+  .hero-carousel .carousel-indicators .active {
+    width: 32px;
+    border-radius: 999px;
+    background: #fff;
+  }
+
+  .feature-strip {
+    background: #fff;
+    border: 1px solid #edf2f7;
+    box-shadow: 0 14px 30px rgba(15,23,42,0.04);
+    border-radius: 22px;
+    margin: 2.2rem 0 2.8rem;
+    padding: 1.1rem 1.25rem;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .feature-icon-circle {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.05rem;
+  }
+
+  .feature-item h6 {
+    font-size: 0.9rem;
+    margin: 0;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .feature-item p {
+    font-size: 0.75rem;
+    margin: 0;
+    color: #64748b;
+  }
+
+  .section-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: clamp(1.7rem, 2vw, 2.3rem);
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.05em;
+  }
+
+  .section-header p {
+    margin: 0.4rem 0 0;
+    color: #64748b;
+  }
+
+  .section-header a {
+    color: #2563eb;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .section-header a:hover {
+    text-decoration: underline;
+  }
+
+  .category-card {
+    display: block;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #eef2f7;
+    border-radius: 20px;
+    padding: 1.5rem 1rem 1.2rem;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 12px 28px rgba(15,23,42,0.03);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    height: 100%;
+  }
+
+  .category-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 38px rgba(37,99,235,0.12);
+    border-color: rgba(59,130,246,0.25);
+  }
+
+  .cat-icon-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 0.9rem;
+    transition: transform 0.25s ease;
+  }
+
+  .category-card:hover .cat-icon-wrap {
+    transform: rotate(-5deg) scale(1.06);
+  }
+
+  .cat-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .cat-count {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+  }
+
+  .deal-banner {
+    position: relative;
+    display: flex;
+    min-height: 240px;
+    align-items: end;
+    padding: 2rem;
+    border-radius: 26px;
+    overflow: hidden;
+    text-decoration: none;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 22px 40px rgba(15,23,42,0.08);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .deal-banner:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 28px 50px rgba(15,23,42,0.12);
+  }
+
+  .deal-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15,23,42,0.12), rgba(15,23,42,0.72));
+  }
+
+  .deal-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .deal-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.9);
+    color: #111827;
+    border-radius: 999px;
+    padding: 0.38rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+
+  .deal-banner h4 {
+    font-size: clamp(1.4rem, 2vw, 2.1rem);
+    color: #fff;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.05em;
+  }
+
+  .deal-banner p {
+    color: rgba(255,255,255,0.82);
+    margin: 0;
+  }
+
+  .recommendation-gallery {
+    margin-bottom: 3rem;
+  }
+
+  .gallery-switch {
+    display: inline-flex;
+    gap: 0.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 0.3rem;
+  }
+
+  .switch-btn {
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+  }
+
+  .switch-btn.active {
+    background: #0f172a;
+    color: #fff;
+  }
+
+  .recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .recommend-card {
+    background: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 16px 36px rgba(15,23,42,0.04);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .recommend-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 42px rgba(15,23,42,0.08);
+  }
+
+  .recommend-image-wrap {
+    position: relative;
+    height: 310px;
+    overflow: hidden;
+  }
+
+  .recommend-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+  }
+
+  .recommend-card:hover .recommend-image-wrap img {
+    transform: scale(1.04);
+  }
+
+  .recommend-overlay {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1rem 0.9rem;
+    background: linear-gradient(180deg, transparent, rgba(15,23,42,0.72));
+  }
+
+  .recommend-price {
+    color: #fff;
+    font-weight: 800;
+  }
+
+  .recommend-link {
+    color: #fff;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.34);
+    border-radius: 999px;
+    padding: 0.45rem 0.75rem;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .recommend-meta {
+    padding: 1rem 1rem 1.1rem;
+  }
+
+  .recommend-meta h4 {
+    margin: 0 0 0.25rem;
+    font-size: 1.03rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .recommend-meta p {
+    margin: 0 0 0.8rem;
+    color: #64748b;
+    font-size: 0.82rem;
+  }
+
+  .thumb-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .thumb-strip img {
+    width: 100%;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .home-tabs {
+    display: flex;
+    gap: 0.7rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+  }
+
+  .home-tab {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
+    transition: 0.2s ease;
+  }
+
+  .home-tab.active {
+    background: linear-gradient(135deg, #111827, #2563eb);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 16px 25px rgba(37,99,235,0.2);
+  }
+
+  .home-tab:hover:not(.active) {
+    border-color: #93c5fd;
+    color: #2563eb;
+  }
+
+  .home-product-card {
+    background: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 12px 26px rgba(15,23,42,0.03);
+    transition: 0.25s ease;
+    height: 100%;
+  }
+
+  .home-product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(15,23,42,0.08);
+  }
+
+  .hp-img {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+  }
+
+  .hp-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+  }
+
+  .home-product-card:hover .hp-img img {
+    transform: scale(1.05);
+  }
+
+  .hp-badge {
+    position: absolute;
+    left: 0.8rem;
+    top: 0.8rem;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+  }
+
+  .hp-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .hp-cat {
+    color: #2563eb;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hp-name {
+    min-height: 2.8rem;
+    margin: 0.5rem 0 0.35rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .hp-stars {
+    display: flex;
+    align-items: center;
+    gap: 0.12rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .hp-stars i {
+    color: #fbbf24;
+    font-size: 0.7rem;
+  }
+
+  .hp-stars span {
+    color: #64748b;
+    font-size: 0.7rem;
+    margin-left: 0.35rem;
+  }
+
+  .hp-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin-top: auto;
+    margin-bottom: 0.8rem;
+  }
+
+  .hp-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .hp-old-price {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-decoration: line-through;
+  }
+
+  .hp-cart-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 0.7rem 0.8rem;
+    background: linear-gradient(135deg, #111827, #2563eb);
+    color: #fff;
+    font-weight: 700;
+    transition: transform 0.2s ease;
+  }
+
+  .hp-cart-btn:hover {
+    transform: translateY(-1px);
+    color: #fff;
+  }
+
+  .cta-section {
+    margin: 4rem 0 2rem;
+    border-radius: 26px;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, #111827, #1d4ed8);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: "";
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(96,165,250,0.38), transparent 70%);
+    top: -140px;
+    right: -90px;
+  }
+
+  .cta-section > .row {
+    position: relative;
+    z-index: 1;
+  }
+
+  .home-toast {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: rgba(15,23,42,0.96);
+    color: #fff;
+    border-radius: 14px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 18px 35px rgba(15,23,42,0.22);
+  }
+
+  @media (max-width: 1200px) {
+    .recommendation-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-carousel {
+      height: 72vh;
+      min-height: 420px;
+    }
+
+    .hero-carousel .carousel-caption-custom {
+      padding: 0 1.25rem;
+    }
+
+    .hero-carousel .slide-text {
+      max-width: 100%;
+    }
+
+    .feature-strip {
+      padding: 0.9rem;
+    }
+
+    .recommendation-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .gallery-switch {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 </style>
 
-<!-- ═══════ HERO CAROUSEL ═══════ -->
 <div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel" data-bs-interval="4500">
-
-  <!-- Indicators -->
   <div class="carousel-indicators">
     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"></button>
     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="4"></button>
-    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="5"></button>
-    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="6"></button>
   </div>
 
-  <!-- Slides -->
   <div class="carousel-inner">
-
-    <!-- Slide 1: Tech / Electronics -->
     <div class="carousel-item active">
-      <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1400&h=460&fit=crop" alt="Electronics Sale">
+      <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1600&h=900&fit=crop" alt="Electronics sale">
       <div class="carousel-caption-custom">
         <div class="slide-text">
-          <span class="slide-tag">🔥 Flash Sale</span>
-          <h2>Your All-In-One<br>Global Marketplace</h2>
-          <p>Discover millions of products — Fashion, Tech, Food, Home &amp; More!</p>
-          <a href="{% url 'products:category_list' 'electronics' %}" class="slide-btn">
-            Shop Electronics <i class="fas fa-arrow-right"></i>
-          </a>
+          <span class="slide-tag">Flash Sale</span>
+          <h2>Everything your shop needs.</h2>
+          <p>Discover premium products, everyday essentials and standout finds across all categories.</p>
+          <a href="{% url 'products:category_list' 'electronics' %}" class="slide-btn">Shop electronics <i class="fas fa-arrow-right"></i></a>
         </div>
       </div>
     </div>
 
-    <!-- Slide 2: Fashion -->
     <div class="carousel-item">
-      <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=1400&h=460&fit=crop" alt="Fashion">
+      <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=1600&h=900&fit=crop" alt="Fashion collection">
       <div class="carousel-caption-custom">
         <div class="slide-text">
-          <span class="slide-tag">🆕 New Season</span>
-          <h2>Fashion &amp;<br>Style Essentials</h2>
-          <p>Latest trends from top brands — dress to impress every day.</p>
-          <a href="{% url 'products:category_list' 'fashion' %}" class="slide-btn">
-            Shop Fashion <i class="fas fa-arrow-right"></i>
-          </a>
+          <span class="slide-tag">New Season</span>
+          <h2>Fashion that feels current.</h2>
+          <p>Refresh your closet with polished essentials, elevated basics and statement silhouettes.</p>
+          <a href="{% url 'products:category_list' 'fashion' %}" class="slide-btn">Shop fashion <i class="fas fa-arrow-right"></i></a>
         </div>
       </div>
     </div>
 
-    <!-- Slide 3: Home & Kitchen -->
     <div class="carousel-item">
-      <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1400&h=460&fit=crop" alt="Home & Kitchen">
+      <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&h=900&fit=crop" alt="Home collection">
       <div class="carousel-caption-custom">
         <div class="slide-text">
-          <span class="slide-tag">🏠 Home Living</span>
-          <h2>Transform Your<br>Living Space</h2>
-          <p>Furniture, decor, and kitchen essentials at unbeatable prices.</p>
-          <a href="{% url 'products:category_list' 'home-kitchen' %}" class="slide-btn">
-            Shop Home <i class="fas fa-arrow-right"></i>
-          </a>
+          <span class="slide-tag">Home Edit</span>
+          <h2>Design a calmer space.</h2>
+          <p>Bring thoughtful touches to your everyday living with functional, refined home finds.</p>
+          <a href="{% url 'products:category_list' 'home-kitchen' %}" class="slide-btn">Shop home <i class="fas fa-arrow-right"></i></a>
         </div>
       </div>
     </div>
 
-    <!-- Slide 4: Beauty -->
     <div class="carousel-item">
-      <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1400&h=460&fit=crop" alt="Beauty">
+      <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1600&h=900&fit=crop" alt="Lifestyle products">
       <div class="carousel-caption-custom">
         <div class="slide-text">
-          <span class="slide-tag">✨ Top Picks</span>
-          <h2>Beauty &amp;<br>Skincare Favorites</h2>
-          <p>Premium beauty products handpicked for you. Glow every day.</p>
-          <a href="{% url 'products:category_list' 'beauty-health' %}" class="slide-btn">
-            Shop Beauty <i class="fas fa-arrow-right"></i>
-          </a>
+          <span class="slide-tag">Wellness</span>
+          <h2>Smart buys for daily life.</h2>
+          <p>Build a routine with beauty, wellness and everyday essentials chosen for quality and comfort.</p>
+          <a href="{% url 'products:list' %}" class="slide-btn">Browse essentials <i class="fas fa-arrow-right"></i></a>
         </div>
       </div>
     </div>
 
-    <!-- Slide 5: Sports & Outdoors -->
     <div class="carousel-item">
-      <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1400&h=460&fit=crop" alt="Sports">
+      <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1600&h=900&fit=crop" alt="Trending products">
       <div class="carousel-caption-custom">
         <div class="slide-text">
-          <span class="slide-tag">💪 Active Life</span>
-          <h2>Sports &amp;<br>Outdoor Gear</h2>
-          <p>Gear up for your next adventure with top sporting equipment.</p>
-          <a href="{% url 'products:category_list' 'sports' %}" class="slide-btn">
-            Shop Sports <i class="fas fa-arrow-right"></i>
-          </a>
+          <span class="slide-tag">Trending</span>
+          <h2>Popular picks, better value.</h2>
+          <p>Shop the products customers keep returning to for quality, style and convenience.</p>
+          <a href="{% url 'products:list' %}?sort=-total_sold" class="slide-btn">Shop trending <i class="fas fa-arrow-right"></i></a>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Slide 6: Grocery & Food -->
-    <div class="carousel-item">
-      <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=1400&h=460&fit=crop" alt="Grocery">
-      <div class="carousel-caption-custom">
-        <div class="slide-text">
-          <span class="slide-tag">🛒 Fresh Deals</span>
-          <h2>Grocery &amp;<br>Food Essentials</h2>
-          <p>Fresh produce, snacks and daily essentials delivered to your door.</p>
-          <a href="{% url 'products:list' %}" class="slide-btn">
-            Shop Now <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Slide 7: Jewelry / Luxury -->
-    <div class="carousel-item">
-      <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1400&h=460&fit=crop" alt="Luxury Accessories">
-      <div class="carousel-caption-custom">
-        <div class="slide-text">
-          <span class="slide-tag">✨ Premium</span>
-          <h2>Elegant Luxury &amp;<br>Accessories</h2>
-          <p>Refined jewelry, watches and designer bags to elevate your style.</p>
-          <a href="{% url 'products:list' %}" class="slide-btn">
-            Shop Luxury <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /carousel-inner -->
-
-  <!-- Controls -->
   <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
     <span class="visually-hidden">Previous</span>
@@ -452,212 +740,200 @@
     <span class="visually-hidden">Next</span>
   </button>
 </div>
-<!-- ═══════ END CAROUSEL ═══════ -->
 
 <div class="container">
-
-  <!-- ── Feature strip ── -->
-  <div class="feature-strip" data-aos="fade-up" data-aos-delay="100">
-    <div class="container">
+  <div class="feature-strip" data-aos="fade-up">
     <div class="row g-3 align-items-center text-center text-md-start">
       <div class="col-6 col-md-3">
         <div class="feature-item justify-content-center justify-content-md-start">
-          <div class="feature-icon-circle bg-primary bg-opacity-10 text-primary">
-            <i class="fas fa-truck"></i>
-          </div>
+          <div class="feature-icon-circle bg-primary bg-opacity-10 text-primary"><i class="fas fa-truck"></i></div>
           <div>
-            <h6>Free Delivery</h6>
+            <h6>Free delivery</h6>
             <p>Orders over $99</p>
           </div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="feature-item justify-content-center justify-content-md-start">
-          <div class="feature-icon-circle bg-success bg-opacity-10 text-success">
-            <i class="fas fa-shield-halved"></i>
-          </div>
+          <div class="feature-icon-circle bg-success bg-opacity-10 text-success"><i class="fas fa-shield-alt"></i></div>
           <div>
-            <h6>Secure Payment</h6>
-            <p>100% protected</p>
+            <h6>Secure payment</h6>
+            <p>Protected checkout</p>
           </div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="feature-item justify-content-center justify-content-md-start">
-          <div class="feature-icon-circle bg-warning bg-opacity-10 text-warning">
-            <i class="fas fa-headset"></i>
-          </div>
+          <div class="feature-icon-circle bg-warning bg-opacity-10 text-warning"><i class="fas fa-headset"></i></div>
           <div>
-            <h6>24/7 Support</h6>
-            <p>Dedicated team</p>
+            <h6>Support</h6>
+            <p>Always online</p>
           </div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="feature-item justify-content-center justify-content-md-start">
-          <div class="feature-icon-circle bg-danger bg-opacity-10 text-danger">
-            <i class="fas fa-rotate-left"></i>
-          </div>
+          <div class="feature-icon-circle bg-danger bg-opacity-10 text-danger"><i class="fas fa-undo-alt"></i></div>
           <div>
-            <h6>Easy Returns</h6>
+            <h6>Easy returns</h6>
             <p>30-day policy</p>
           </div>
         </div>
       </div>
     </div>
-    </div>
   </div>
 
-  <!-- ── Shop by Category ── -->
   <section class="mb-5" data-aos="fade-up">
-    <div class="d-flex justify-content-between align-items-center section-header">
+    <div class="d-flex justify-content-between align-items-center section-header flex-wrap gap-3">
       <div>
-        <h2>Shop by Category</h2>
-        <p>Find exactly what you're looking for</p>
+        <h2>Shop by category</h2>
+        <p>Find exactly what you need, faster.</p>
       </div>
-      <a href="{% url 'products:list' %}">View All <i class="fas fa-arrow-right ms-1"></i></a>
+      <a href="{% url 'products:list' %}">View all <i class="fas fa-arrow-right ms-1"></i></a>
     </div>
+
     <div class="row g-3">
       {% for category in categories %}
-      <div class="col-6 col-sm-4 col-md-3 col-lg-2" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'50' }}">
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
         <a href="{% url 'products:category_list' category.slug %}" class="category-card">
           {% if category.slug == 'electronics' or category.slug == 'mobile-tablets' %}
-            <div class="cat-icon-wrap" style="background:#dbeafe; color:#2563eb;">
-              <i class="fas {% if category.slug == 'mobile-tablets' %}fa-mobile-screen{% else %}fa-laptop{% endif %}"></i>
-            </div>
+            <div class="cat-icon-wrap" style="background:#dbeafe; color:#2563eb;"><i class="fas fa-laptop"></i></div>
           {% elif category.slug == 'fashion' or category.slug == 'apparel' or category.slug == 'clothing' %}
-            <div class="cat-icon-wrap" style="background:#fce7f3; color:#db2777;">
-              <i class="fas fa-shirt"></i>
-            </div>
+            <div class="cat-icon-wrap" style="background:#fce7f3; color:#db2777;"><i class="fas fa-tshirt"></i></div>
           {% elif category.slug == 'home-kitchen' or category.slug == 'home' %}
-            <div class="cat-icon-wrap" style="background:#dcfce7; color:#16a34a;">
-              <i class="fas fa-house"></i>
-            </div>
+            <div class="cat-icon-wrap" style="background:#dcfce7; color:#16a34a;"><i class="fas fa-home"></i></div>
           {% elif category.slug == 'beauty-health' or category.slug == 'beauty' or category.slug == 'health' %}
-            <div class="cat-icon-wrap" style="background:#fee2e2; color:#dc2626;">
-              <i class="fas fa-spa"></i>
-            </div>
+            <div class="cat-icon-wrap" style="background:#fee2e2; color:#dc2626;"><i class="fas fa-spa"></i></div>
           {% elif category.slug == 'books' %}
-            <div class="cat-icon-wrap" style="background:#fef9c3; color:#ca8a04;">
-              <i class="fas fa-book-open"></i>
-            </div>
+            <div class="cat-icon-wrap" style="background:#fef9c3; color:#ca8a04;"><i class="fas fa-book-open"></i></div>
           {% elif category.slug == 'sports' or category.slug == 'sports-outdoor' %}
-            <div class="cat-icon-wrap" style="background:#cffafe; color:#0891b2;">
-              <i class="fas fa-dumbbell"></i>
-            </div>
-          {% elif category.slug == 'toys' or category.slug == 'toys-games' %}
-            <div class="cat-icon-wrap" style="background:#ede9fe; color:#7c3aed;">
-              <i class="fas fa-gamepad"></i>
-            </div>
+            <div class="cat-icon-wrap" style="background:#cffafe; color:#0891b2;"><i class="fas fa-dumbbell"></i></div>
           {% elif category.slug == 'grocery' or category.slug == 'food' or category.slug == 'grocery-food' %}
-            <div class="cat-icon-wrap" style="background:#d1fae5; color:#059669;">
-              <i class="fas fa-basket-shopping"></i>
-            </div>
-          {% elif category.slug == 'automotive' %}
-            <div class="cat-icon-wrap" style="background:#f1f5f9; color:#475569;">
-              <i class="fas fa-car"></i>
-            </div>
-          {% elif category.slug == 'jewelry' or category.slug == 'jewelry-accessories' %}
-            <div class="cat-icon-wrap" style="background:#fef3c7; color:#d97706;">
-              <i class="fas fa-gem"></i>
-            </div>
+            <div class="cat-icon-wrap" style="background:#d1fae5; color:#059669;"><i class="fas fa-basket-shopping"></i></div>
           {% else %}
-            <div class="cat-icon-wrap" style="background:#dbeafe; color:#2563eb;">
-              <i class="fas fa-tag"></i>
-            </div>
+            <div class="cat-icon-wrap" style="background:#e0e7ff; color:#4338ca;"><i class="fas fa-tag"></i></div>
           {% endif %}
           <div class="cat-name">{{ category.name }}</div>
           <div class="cat-count">{{ category.product_count }} items</div>
         </a>
       </div>
       {% empty %}
-      <!-- Fallback categories when DB is empty -->
-      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-        <a href="{% url 'products:list' %}" class="category-card">
-          <div class="cat-icon-wrap bg-primary bg-opacity-10 text-primary"><i class="fas fa-laptop"></i></div>
-          <div class="cat-name">Electronics</div>
-        </a>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-        <a href="{% url 'products:list' %}" class="category-card">
-          <div class="cat-icon-wrap" style="background:#fce7f3; color:#db2777;"><i class="fas fa-shirt"></i></div>
-          <div class="cat-name">Fashion</div>
-        </a>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-        <a href="{% url 'products:list' %}" class="category-card">
-          <div class="cat-icon-wrap bg-success bg-opacity-10 text-success"><i class="fas fa-house"></i></div>
-          <div class="cat-name">Home</div>
-        </a>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-        <a href="{% url 'products:list' %}" class="category-card">
-          <div class="cat-icon-wrap bg-danger bg-opacity-10 text-danger"><i class="fas fa-spa"></i></div>
-          <div class="cat-name">Beauty</div>
-        </a>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-        <a href="{% url 'products:list' %}" class="category-card">
-          <div class="cat-icon-wrap bg-warning bg-opacity-10 text-warning"><i class="fas fa-book-open"></i></div>
-          <div class="cat-name">Books</div>
-        </a>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-        <a href="{% url 'products:list' %}" class="category-card">
-          <div class="cat-icon-wrap bg-info bg-opacity-10 text-info"><i class="fas fa-dumbbell"></i></div>
-          <div class="cat-name">Sports</div>
-        </a>
-      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><a href="{% url 'products:list' %}" class="category-card"><div class="cat-icon-wrap" style="background:#dbeafe; color:#2563eb;"><i class="fas fa-laptop"></i></div><div class="cat-name">Electronics</div></a></div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><a href="{% url 'products:list' %}" class="category-card"><div class="cat-icon-wrap" style="background:#fce7f3; color:#db2777;"><i class="fas fa-tshirt"></i></div><div class="cat-name">Fashion</div></a></div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><a href="{% url 'products:list' %}" class="category-card"><div class="cat-icon-wrap" style="background:#dcfce7; color:#16a34a;"><i class="fas fa-home"></i></div><div class="cat-name">Home</div></a></div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><a href="{% url 'products:list' %}" class="category-card"><div class="cat-icon-wrap" style="background:#fee2e2; color:#dc2626;"><i class="fas fa-spa"></i></div><div class="cat-name">Beauty</div></a></div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><a href="{% url 'products:list' %}" class="category-card"><div class="cat-icon-wrap" style="background:#fef9c3; color:#ca8a04;"><i class="fas fa-book-open"></i></div><div class="cat-name">Books</div></a></div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><a href="{% url 'products:list' %}" class="category-card"><div class="cat-icon-wrap" style="background:#cffafe; color:#0891b2;"><i class="fas fa-dumbbell"></i></div><div class="cat-name">Sports</div></a></div>
       {% endfor %}
     </div>
   </section>
 
-  <!-- ── Deal Banners ── -->
   <section class="mb-5" data-aos="fade-up">
-    <div class="row g-3">
+    <div class="row g-4">
       <div class="col-md-6">
-        <a href="{% url 'products:list' %}?sort=-price" class="deal-banner"
-           style="background-image: url('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&h=220&fit=crop');">
+        <a href="{% url 'products:list' %}?sort=-price" class="deal-banner" style="background-image: url('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=900&h=520&fit=crop');">
           <div class="deal-content">
-            <span class="deal-tag">🔥 Hot Deal</span>
+            <span class="deal-tag">Hot Deal</span>
             <h4>Tech Gadgets</h4>
-            <p>Save up to 40% on electronics</p>
+            <p>Upgrade your setup with premium deals.</p>
           </div>
         </a>
       </div>
       <div class="col-md-6">
-        <a href="{% url 'products:list' %}" class="deal-banner"
-           style="background-image: url('https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&h=220&fit=crop');">
+        <a href="{% url 'products:list' %}" class="deal-banner" style="background-image: url('https://images.unsplash.com/photo-1445205170230-053b83016050?w=900&h=520&fit=crop');">
           <div class="deal-content">
-            <span class="deal-tag">⭐ New Arrivals</span>
-            <h4>Fashion & Style</h4>
-            <p>Latest trends now available</p>
+            <span class="deal-tag">New Arrivals</span>
+            <h4>Fashion &amp; style</h4>
+            <p>Fresh looks for everyday confidence.</p>
           </div>
         </a>
       </div>
     </div>
   </section>
 
-  <!-- ── Products section with tabs ── -->
-  <section class="mb-5" data-aos="fade-up">
-    <div class="d-flex justify-content-between align-items-center section-header">
+  <section class="recommendation-gallery" data-aos="fade-up">
+    <div class="d-flex justify-content-between align-items-center section-header flex-wrap gap-3">
       <div>
-        <h2>Our Products</h2>
-        <p>Handpicked just for you</p>
+        <h2>Recommended for you</h2>
+        <p>Curated picks built around your taste.</p>
       </div>
-      <a href="{% url 'products:list' %}">Browse All <i class="fas fa-arrow-right ms-1"></i></a>
+      <div class="gallery-switch">
+        <button type="button" class="switch-btn active">Gallery</button>
+        <button type="button" class="switch-btn">Recommended</button>
+      </div>
     </div>
 
-    <!-- Tabs -->
+    <div class="recommendation-grid">
+      {% for product in featured_products|slice:":4" %}
+      <article class="recommend-card">
+        <div class="recommend-image-wrap">
+          {% with img=product.images.all.0 %}
+            {% if img %}
+              <img src="{{ img.image.url }}" alt="{{ product.name }}">
+            {% else %}
+              <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&h=900&fit=crop" alt="{{ product.name }}">
+            {% endif %}
+          {% endwith %}
+          <div class="recommend-overlay">
+            <span class="recommend-price">${{ product.price }}</span>
+            <a href="{% url 'products:detail' product.slug %}" class="recommend-link">View</a>
+          </div>
+        </div>
+        <div class="recommend-meta">
+          <h4>{{ product.name }}</h4>
+          <p>{{ product.category.name }}</p>
+          <div class="thumb-strip">
+            {% for image in product.images.all|slice:":4" %}
+              <img src="{{ image.image.url }}" alt="{{ product.name }} image {{ forloop.counter }}">
+            {% empty %}
+              <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop" alt="thumb 1">
+              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop" alt="thumb 2">
+              <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=200&h=200&fit=crop" alt="thumb 3">
+              <img src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&h=200&fit=crop" alt="thumb 4">
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+      {% empty %}
+      {% for i in '1234' %}
+      <article class="recommend-card">
+        <div class="recommend-image-wrap">
+          <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&h=900&fit=crop" alt="Recommended product">
+          <div class="recommend-overlay"><span class="recommend-price">$120</span><a href="{% url 'products:list' %}" class="recommend-link">View</a></div>
+        </div>
+        <div class="recommend-meta">
+          <h4>Signature essentials</h4>
+          <p>Featured collection</p>
+          <div class="thumb-strip">
+            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop" alt="thumb 1">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop" alt="thumb 2">
+            <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=200&h=200&fit=crop" alt="thumb 3">
+            <img src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&h=200&fit=crop" alt="thumb 4">
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="mb-5" data-aos="fade-up">
+    <div class="d-flex justify-content-between align-items-center section-header flex-wrap gap-3">
+      <div>
+        <h2>Our products</h2>
+        <p>Handpicked just for you.</p>
+      </div>
+      <a href="{% url 'products:list' %}">Browse all <i class="fas fa-arrow-right ms-1"></i></a>
+    </div>
+
     <div class="home-tabs" id="homeTabs">
-      <button class="home-tab active" data-tab="featured">🔥 Featured</button>
-      <button class="home-tab" data-tab="new">🆕 New Arrivals</button>
-      <button class="home-tab" data-tab="rated">⭐ Top Rated</button>
-      <button class="home-tab" data-tab="reviewed">💬 Most Reviewed</button>
-      <button class="home-tab" data-tab="selling">🏆 Best Selling</button>
+      <button class="home-tab active" data-tab="featured">Featured</button>
+      <button class="home-tab" data-tab="new">New Arrivals</button>
+      <button class="home-tab" data-tab="rated">Top Rated</button>
+      <button class="home-tab" data-tab="reviewed">Most Reviewed</button>
+      <button class="home-tab" data-tab="selling">Best Selling</button>
     </div>
 
-    <!-- Featured panel (pre-loaded from context) -->
     <div id="panel-featured" class="tab-panel">
       <div class="row g-3">
         {% for product in featured_products %}
@@ -673,9 +949,7 @@
                 {% endif %}
               </a>
               {% endwith %}
-              {% if product.compare_price %}
-                <span class="hp-badge">-{{ product.discount_percentage }}%</span>
-              {% endif %}
+              {% if product.compare_price %}<span class="hp-badge">-{{ product.discount_percentage }}%</span>{% endif %}
             </div>
             <div class="hp-body">
               <div class="hp-cat">{{ product.category.name }}</div>
@@ -683,11 +957,7 @@
               <div class="hp-stars">
                 {% with r=product.average_rating|floatformat:0 %}
                 {% for i in "12345" %}
-                  {% if forloop.counter <= r|add:0 %}
-                    <i class="fas fa-star"></i>
-                  {% else %}
-                    <i class="far fa-star" style="color:#e2e8f0;"></i>
-                  {% endif %}
+                  {% if forloop.counter <= r|add:0 %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star" style="color:#e2e8f0;"></i>{% endif %}
                 {% endfor %}
                 {% endwith %}
                 <span>({{ product.total_reviews }})</span>
@@ -696,113 +966,59 @@
                 <span class="hp-price">${{ product.price }}</span>
                 {% if product.compare_price %}<span class="hp-old-price">${{ product.compare_price }}</span>{% endif %}
               </div>
-              <button class="hp-cart-btn home-add-cart" data-product-id="{{ product.id }}">
-                <i class="fas fa-shopping-bag"></i> Add to Cart
-              </button>
+              <button class="hp-cart-btn home-add-cart" data-product-id="{{ product.id }}"><i class="fas fa-shopping-bag"></i> Add to cart</button>
             </div>
           </div>
         </div>
         {% empty %}
-        <div class="col-12 text-center py-5">
-          <i class="fas fa-box-open fa-3x text-muted opacity-50 mb-3 d-block"></i>
-          <p class="text-muted">No featured products yet. Check back soon!</p>
-          <a href="{% url 'products:list' %}" class="btn btn-primary rounded-pill px-4 mt-2">Browse All Products</a>
-        </div>
+        <div class="col-12 text-center py-5"><p class="text-muted">No featured products yet. Check back soon!</p><a href="{% url 'products:list' %}" class="btn btn-primary rounded-pill px-4 mt-2">Browse all products</a></div>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Other tab panels (loaded via AJAX) -->
     <div id="panel-new" class="tab-panel" style="display:none;" data-loaded="false">
-      <div class="d-flex justify-content-center py-5">
-        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-      </div>
+      <div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>
       <div class="row g-3 ajax-products"></div>
     </div>
     <div id="panel-rated" class="tab-panel" style="display:none;" data-loaded="false">
-      <div class="d-flex justify-content-center py-5">
-        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-      </div>
+      <div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>
       <div class="row g-3 ajax-products"></div>
     </div>
     <div id="panel-reviewed" class="tab-panel" style="display:none;" data-loaded="false">
-      <div class="d-flex justify-content-center py-5">
-        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-      </div>
+      <div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>
       <div class="row g-3 ajax-products"></div>
     </div>
     <div id="panel-selling" class="tab-panel" style="display:none;" data-loaded="false">
-      <div class="d-flex justify-content-center py-5">
-        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-      </div>
+      <div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>
       <div class="row g-3 ajax-products"></div>
     </div>
   </section>
 
-  <!-- ── CTA Section ── -->
   <div class="cta-section text-white" data-aos="fade-up">
     <div class="row align-items-center">
       <div class="col-md-8">
-        <h3 class="fw-bold mb-2" style="position:relative;z-index:2;">Ready to Start Selling?</h3>
-        <p class="opacity-75 mb-0" style="position:relative;z-index:2;">Join thousands of vendors and reach millions of customers across the globe.</p>
+        <h3 class="fw-bold mb-2">Ready to start selling?</h3>
+        <p class="opacity-75 mb-0">Join thousands of vendors and reach millions of customers across the globe.</p>
       </div>
       <div class="col-md-4 text-md-end mt-3 mt-md-0">
         {% if user.is_authenticated %}
-          <a href="{% url 'dashboard:index' %}" class="btn btn-light btn-lg rounded-pill px-4">
-            <i class="fas fa-chart-line me-2"></i>Dashboard
-          </a>
+          <a href="{% url 'dashboard:index' %}" class="btn btn-light btn-lg rounded-pill px-4"><i class="fas fa-chart-line me-2"></i>Dashboard</a>
         {% else %}
-          <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg rounded-pill px-4">
-            <i class="fas fa-user-plus me-2"></i>Get Started
-          </a>
+          <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg rounded-pill px-4"><i class="fas fa-user-plus me-2"></i>Get started</a>
         {% endif %}
       </div>
     </div>
   </div>
-
-</div><!-- /container -->
+</div>
 
 <div id="homeToastContainer"></div>
-{% endblock %}
 
-{% block extra_js %}
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-  AOS.init({ duration: 700, once: true, offset: 50 });
-
-  // Randomize Carousel Slides for premium feel
-  document.addEventListener("DOMContentLoaded", function() {
-    const carouselInner = document.querySelector("#heroCarousel .carousel-inner");
-    if (carouselInner) {
-      const items = Array.from(carouselInner.querySelectorAll(".carousel-item"));
-      // Shuffle slides
-      for (let i = items.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [items[i], items[j]] = [items[j], items[i]];
-      }
-      // Re-append items with new order
-      carouselInner.innerHTML = "";
-      items.forEach((item, index) => {
-        if (index === 0) {
-          item.classList.add("active");
-        } else {
-          item.classList.remove("active");
-        }
-        carouselInner.appendChild(item);
-      });
-
-      // Update indicators active state to match
-      const indicators = document.querySelectorAll("#heroCarousel .carousel-indicators button");
-      indicators.forEach((ind, index) => {
-        if (index === 0) {
-          ind.classList.add("active");
-          ind.setAttribute("aria-current", "true");
-        } else {
-          ind.classList.remove("active");
-          ind.removeAttribute("aria-current");
-        }
-      });
-    }
+  AOS.init({
+    duration: 800,
+    easing: 'ease-out-cubic',
+    once: true
   });
 
   const IS_AUTH = {{ user.is_authenticated|yesno:"true,false" }};
@@ -824,7 +1040,8 @@
     t.innerHTML = `<i class="fas fa-check-circle" style="color:${color}"></i>${msg}`;
     document.getElementById('homeToastContainer').appendChild(t);
     setTimeout(() => {
-      t.style.opacity = '0'; t.style.transition = 'opacity 0.3s';
+      t.style.opacity = '0';
+      t.style.transition = 'opacity 0.3s';
       setTimeout(() => t.remove(), 300);
     }, 2500);
   }
@@ -901,7 +1118,6 @@
     });
   });
 
-  // Add to Cart (home page)
   document.addEventListener('click', async function(e) {
     const btn = e.target.closest('.home-add-cart');
     if (!btn) return;

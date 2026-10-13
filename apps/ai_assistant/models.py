@@ -58,3 +58,33 @@ class UserProductInterest(models.Model):
 
     def __str__(self):
         return f"{self.user.email} -> {self.product_id} ({self.interest_type})"
+
+
+
+class UserChatPreference(models.Model):
+    """Track user preferences for personalization"""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='chat_preferences')
+    category = models.CharField(max_length=100, blank=True, null=True)
+    keyword = models.CharField(max_length=200, blank=True, null=True)
+    viewed_products = models.ManyToManyField(Product, blank=True, related_name='viewed_by')
+    interest_score = models.FloatField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_chat_preferences'
+        indexes = [
+            models.Index(fields=['user', 'category']),
+            models.Index(fields=['user', 'keyword']),
+        ]
+
+class UserRecommendation(models.Model):
+    """Store product recommendations for users"""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='recommendations')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='recommended_to')
+    reason = models.CharField(max_length=255, blank=True)
+    clicked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'user_recommendations'

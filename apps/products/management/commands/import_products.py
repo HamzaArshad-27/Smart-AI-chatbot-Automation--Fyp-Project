@@ -1,116 +1,312 @@
-import pandas as pd
-import requests
-import os
-from django.core.management.base import BaseCommand
-from django.core.files.base import ContentFile
-from django.contrib.auth import get_user_model
-from apps.products.models import Product, ProductImage, Category
-from apps.companies.models import Company
+
+import csv
+import io
 import time
+from decimal import Decimal
+from pathlib import Path
+
+import requests
+from PIL import Image, UnidentifiedImageError
+
+from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
+from django.db.models.deletion import ProtectedError, RestrictedError
+
+from apps.companies.models import Company
+from apps.products.models import Product, ProductImage, Category
+
+
+EMAIL = "moazjamil046@gmail.com"
+COMPANY_ID = 1
+
 
 class Command(BaseCommand):
-    help = 'Import products with unique images for a specific company'
+    help = "Replace company products using the existing CSV and image URLs"
 
     def add_arguments(self, parser):
-        parser.add_argument('file_path', type=str)
+        parser.add_argument("file_path")
+        parser.add_argument(
+            "--commit",
+            action="store_true",
+            help="Delete existing company products and import new products",
+        )
 
     def handle(self, *args, **options):
-        User = get_user_model()
-        file_path = options['file_path']
-        
-        # Target user based on email
-        target_email = "moazjamil046@gmail.com"
-        owner_user = User.objects.filter(email=target_email).first()
-        
-        if not owner_user:
-            self.stdout.write(self.style.ERROR(f"× Error: User with email {target_email} not found!"))
-            return
+        csv_path = Path(options["file_path"])
 
-        try:
-            ext = os.path.splitext(file_path)[1].lower()
-            df = pd.read_csv(file_path) if ext == '.csv' else pd.read_excel(file_path)
-            
-            total = len(df)
-            self.stdout.write(self.style.SUCCESS(f'Total: {total}. Starting Fast Import...'))
+        if not csv_path.is_file():
+            raise CommandError("CSV file not found.")
 
-            # Ensure the company exists for this specific user
-            target_company, _ = Company.objects.get_or_create(
-                user=owner_user,
-                defaults={'name': 'Main Company'} # Change name as needed
+        with csv_path.open(
+            "r", encoding="utf-8-sig", newline=""
+        ) as file:
+            rows = list(csv.DictReader(file))
+
+        required_columns = {
+            "sku",
+            "name",
+            "category",
+            "description",
+            "price",
+            "stock_quantity",
+            "image_url",
+        }
+
+        if not rows:
+            raise CommandError("CSV is empty.")
+
+        missing_columns = required_columns - set(rows[0].keys())
+
+        if missing_columns:
+            raise CommandError(
+                f"Missing columns: {missing_columns}"
             )
 
-            for index, row in df.iterrows():
-                try:
-                    # 1. Category Setup - Ensure Category is Active
-                    cat_name = str(row['category']).strip()
+        if len(rows) != 200:
+            raise CommandError(
+                f"Expected 200 products, found {len(rows)}"
+            )
+
+        skus = [row["sku"].strip() for row in rows]
+
+        if len(set(skus)) != 200 or any(not sku for sku in skus):
+            raise CommandError("Duplicate or empty SKU found.")
+
+        User = get_user_model()
+
+        user = User.objects.filter(email=EMAIL).first()
+
+        if not user:
+            raise CommandError("Target user not found.")
+
+        company = Company.objects.filter(
+            id=COMPANY_ID,
+            user=user,
+        ).first()
+
+        if not company:
+            raise CommandError("Target company not found.")
+
+        conflicting = Product.objects.filter(
+            sku__in=skus
+        ).exclude(company=company)
+
+        if conflicting.exists():
+            raise CommandError(
+                "Some SKUs belong to another company."
+            )
+
+        existing_count = Product.objects.filter(
+            company=company
+        ).count()
+
+        self.stdout.write(
+            f"Company: {company.name}\n"
+            f"Existing products: {existing_count}\n"
+            f"CSV products: {len(rows)}"
+        )
+
+        if not options["commit"]:
+            self.stdout.write(
+                "DRY RUN: No database changes made.\n"
+                "Use --commit to start image validation and import."
+            )
+            return
+
+        # STEP 1: Download and validate ALL images first.
+        # Existing products are not deleted if any image fails.
+        self.stdout.write(
+            "Downloading and validating 200 product images..."
+        )
+
+        downloaded_images = {}
+        failures = []
+
+        session = requests.Session()
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0"
+        })
+
+        for index, row in enumerate(rows, start=1):
+            sku = row["sku"].strip()
+            url = row["image_url"].strip()
+
+            if not url.startswith(("https://", "http://")):
+                failures.append(f"{sku}: invalid image URL")
+                continue
+
+            try:
+                response = session.get(
+                    url,
+                    timeout=20,
+                    allow_redirects=True,
+                )
+                response.raise_for_status()
+
+                content = response.content
+
+                with Image.open(io.BytesIO(content)) as img:
+                    img.verify()
+
+                with Image.open(io.BytesIO(content)) as img:
+                    image_format = img.format
+
+                extension = {
+                    "JPEG": "jpg",
+                    "PNG": "png",
+                    "WEBP": "webp",
+                }.get(image_format)
+
+                if not extension:
+                    raise ValueError(
+                        f"Unsupported image format: {image_format}"
+                    )
+
+                downloaded_images[sku] = (
+                    f"{sku}.{extension}",
+                    content,
+                )
+
+                self.stdout.write(
+                    f"[{index}/200] Image ready: {sku}"
+                )
+
+            except (
+                requests.RequestException,
+                UnidentifiedImageError,
+                ValueError,
+                OSError,
+            ) as exc:
+                failures.append(f"{sku}: {exc}")
+
+            time.sleep(0.2)
+
+        session.close()
+
+        if failures:
+            self.stderr.write(
+                f"{len(failures)} images failed."
+            )
+            for failure in failures[:15]:
+                self.stderr.write(failure)
+
+            raise CommandError(
+                "Import stopped. Existing products were NOT deleted. "
+                "Fix the image URLs or connection before retrying."
+            )
+
+        def to_decimal(value, default="0"):
+            value = str(value or "").strip()
+            return Decimal(value) if value else Decimal(default)
+
+        def to_bool(value):
+            return str(value).strip().lower() in (
+                "true", "1", "yes"
+            )
+
+        # STEP 2: Validate product values before deletion.
+        try:
+            for row in rows:
+                to_decimal(row["price"])
+                int(row["stock_quantity"])
+                to_decimal(row.get("compare_price"))
+                to_decimal(row.get("cost_per_item"))
+        except (ValueError, ArithmeticError) as exc:
+            raise CommandError(
+                f"Invalid CSV product data: {exc}"
+            )
+
+        # STEP 3: Replace products in one DB transaction.
+        # Protected relationships can prevent deletion.
+        try:
+            with transaction.atomic():
+                Product.objects.filter(
+                    company=company
+                ).delete()
+
+                for index, row in enumerate(rows, start=1):
+                    sku = row["sku"].strip()
+                    name = row["name"].strip()
+
                     category, _ = Category.objects.get_or_create(
-                        name=cat_name,
-                        defaults={'is_active': True} 
-                    )
-                    
-                    # Force active if category already existed but was inactive
-                    if not category.is_active:
-                        category.is_active = True
-                        category.save()
-
-                    # 2. Product Create/Update - Set is_active to True
-                    product, created = Product.objects.update_or_create(
-                        sku=row['sku'],
-                        defaults={
-                            'name': row['name'],
-                            'category': category,
-                            'company': target_company,
-                            'description': row['description'],
-                            'price': row['price'],
-                            'stock_quantity': row['stock_quantity'],
-                            'is_active': True, # Ensures product is active
-                        }
+                        name=row["category"].strip()
                     )
 
-# ... (Previous imports remain the same)
+                    product = Product.objects.create(
+                        company=company,
+                        category=category,
+                        sku=sku,
+                        name=name,
+                        description=row["description"].strip(),
+                        short_description=(
+                            row.get("short_description") or ""
+                        )[:500],
+                        price=to_decimal(row["price"]),
+                        compare_price=(
+                            to_decimal(row["compare_price"])
+                            if row.get("compare_price")
+                            else None
+                        ),
+                        cost_per_item=to_decimal(
+                            row.get("cost_per_item")
+                        ),
+                        stock_quantity=int(
+                            row["stock_quantity"]
+                        ),
+                        barcode=(
+                            row.get("barcode") or ""
+                        ).strip(),
+                        weight=(
+                            to_decimal(row["weight"])
+                            if row.get("weight")
+                            else None
+                        ),
+                        dimensions=(
+                            row.get("dimensions") or ""
+                        ).strip(),
+                        is_active=to_bool(
+                            row.get("is_active", "true")
+                        ),
+                        is_featured=to_bool(
+                            row.get("is_featured", "false")
+                        ),
+                        is_digital=to_bool(
+                            row.get("is_digital", "false")
+                        ),
+                    )
 
-# 3. RELEVANT Image Logic with Fallback
-# ... inside the loop
-                    # 3. STABLE RELEVANT Image Logic
-                    status_msg = "Image Exists"
-                    if not product.images.exists():
-                        # We use a keyword-based search via a reliable placeholder or a different source
-                        # Replacing spaces with hyphens often helps these scrapers/APIs
-                        keyword = product.name.split(' ')[0].lower() # Gets the first word (e.g., 'Tennis')
-                        
-                        # New Strategy: Use a more stable endpoint or a better formatted query
-                        # If Unsplash is failing, we can try this specific format which is sometimes more resilient
-                        stable_url = f"https://loremflickr.com/600/600/{keyword}"
-                        
-                        try:
-                            headers = {'User-Agent': 'Mozilla/5.0'}
-                            res = requests.get(stable_url, headers=headers, timeout=10)
-                            
-                            if res.status_code == 200:
-                                img_obj = ProductImage(product=product, is_main=True)
-                                img_obj.image.save(f"{product.sku}.jpg", ContentFile(res.content), save=True)
-                                status_msg = f"Relevant Image ({keyword}) Saved ✔"
-                            else:
-                                # Final Fallback to Picsum if even Flickr fails
-                                fallback_url = f"https://picsum.photos/seed/{product.sku}/600/600"
-                                res = requests.get(fallback_url, headers=headers, timeout=5)
-                                img_obj = ProductImage(product=product, is_main=True)
-                                img_obj.image.save(f"{product.sku}.jpg", ContentFile(res.content), save=True)
-                                status_msg = "Generic Fallback Saved ⚠"
-                                
-                        except Exception:
-                            status_msg = "Timeout ⚠"
+                    filename, content = downloaded_images[sku]
 
-                    # Crucial: Keep this sleep to avoid being blocked!
-                    time.sleep(1.0)
+                    image = ProductImage(
+                        product=product,
+                        is_main=True,
+                        alt_text=name,
+                    )
 
-                    self.stdout.write(f"[{index+1}/{total}] {product.name} ... {status_msg}")
+                    image.image.save(
+                        filename,
+                        ContentFile(content),
+                        save=True,
+                    )
 
+                    self.stdout.write(
+                        f"[{index}/200] Imported: {name}"
+                    )
 
-                except Exception as row_err:
-                    self.stdout.write(self.style.ERROR(f"Row {index} skipped: {row_err}"))
+        except (ProtectedError, RestrictedError) as exc:
+            raise CommandError(
+                f"Deletion blocked by related data: {exc}"
+            )
 
-            self.stdout.write(self.style.SUCCESS('\n--- IMPORT SUCCESSFUL! ---'))
+        except Exception as exc:
+            raise CommandError(
+                f"Import failed. Database transaction rolled back: {exc}"
+            )
 
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Critical Error: {e}'))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "SUCCESS! Imported 200 products with images."
+            )
+        )

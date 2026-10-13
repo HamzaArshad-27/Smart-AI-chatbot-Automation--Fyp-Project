@@ -1,10 +1,13 @@
 # apps/ai_assistant/json_trainer.py
 
 import json
+import logging
 import os
 import random
 from typing import Dict, List, Any
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 class JSONTrainer:
     """Train AI model using JSON data"""
@@ -24,9 +27,9 @@ class JSONTrainer:
         if os.path.exists(json_path):
             with open(json_path, 'r', encoding='utf-8') as f:
                 self.data = json.load(f)
-            print(f"✅ Loaded {len(self.data.get('products', []))} products from {self.json_file}")
+            logger.info(f"Loaded {len(self.data.get('products', []))} products from {self.json_file}")
         else:
-            print(f"❌ File {self.json_file} not found!")
+            logger.warning(f"File {self.json_file} not found!")
     
     def build_index(self):
         """Build search index from data"""

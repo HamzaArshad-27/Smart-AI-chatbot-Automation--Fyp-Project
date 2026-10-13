@@ -323,13 +323,17 @@ def product_edit(request, product_id):
                 product.cost_per_item = convert_currency(product.cost_per_item, company_currency, 'USD')
         form = ProductForm(instance=product)
     
+
     context = {
         'form': form,
         'product': product,
+        'categories': form.fields['category'].queryset,
+        'existing_images': product.images.all(),
         'is_edit': True,
         'company_currency': company_currency,
         'company_currency_symbol': company_currency_symbol,
     }
+
     return render(request, 'products/form.html', context)
 
 @login_required
