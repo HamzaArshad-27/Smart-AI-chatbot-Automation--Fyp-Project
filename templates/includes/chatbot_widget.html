@@ -770,6 +770,388 @@
       width: calc(100vw - 28px);
     }
   }
+  /* ================================
+   JINNI PREMIUM UI UPGRADE
+================================= */
+
+:root{
+  --jinni-purple: #7c3aed;
+  --jinni-purple-dark: #5b21b6;
+  --jinni-blue: #2563eb;
+  --jinni-blue-dark: #1d4ed8;
+  --jinni-soft: #f8fafc;
+  --jinni-glow: rgba(124, 58, 237, 0.38);
+  --jinni-glow-blue: rgba(37, 99, 235, 0.28);
+}
+
+/* Floating widget container */
+.vendora-chatbot{
+  right: 22px;
+  bottom: 20px;
+}
+
+/* =========================
+   TOGGLE BUTTON WOW VERSION
+========================= */
+.vendora-chat-toggle{
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, #9f67ff 0%, #7c3aed 35%, #2563eb 100%);
+  border: 3px solid rgba(255,255,255,0.95);
+  box-shadow:
+    0 18px 45px rgba(37,99,235,0.30),
+    0 10px 30px rgba(124,58,237,0.28),
+    0 0 0 10px rgba(124,58,237,0.06);
+  overflow: visible;
+  animation: jinniFloat 3.4s ease-in-out infinite;
+}
+
+.vendora-chat-toggle:hover{
+  transform: scale(1.08) translateY(-4px);
+  box-shadow:
+    0 22px 55px rgba(37,99,235,0.35),
+    0 12px 35px rgba(124,58,237,0.32),
+    0 0 0 12px rgba(124,58,237,0.10);
+}
+
+.vendora-chat-toggle.jinni-bounce{
+  animation:
+    jinniFloat 3.4s ease-in-out infinite,
+    jinniBounce 0.8s ease;
+}
+
+.vendora-chat-toggle.jinni-wiggle{
+  animation:
+    jinniFloat 3.4s ease-in-out infinite,
+    jinniWiggle 0.9s ease;
+}
+
+.vendora-chat-toggle::before{
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.18), rgba(37,99,235,0.08), transparent 70%);
+  z-index: -1;
+  animation: jinniPulseRing 2.4s ease-out infinite;
+}
+
+.vendora-chat-toggle::after{
+  content: "";
+  position: absolute;
+  inset: -15px;
+  border-radius: 50%;
+  border: 2px solid rgba(124,58,237,0.16);
+  z-index: -2;
+  animation: jinniOuterPulse 3.2s ease-out infinite;
+}
+
+.jinni-toggle-avatar{
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.2);
+}
+
+.vendora-chat-toggle .badge-dot{
+  width: 15px;
+  height: 15px;
+  top: 6px;
+  right: 6px;
+  background: #10b981;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 4px rgba(16,185,129,0.18);
+}
+
+/* =========================
+   WELCOME TEASER BUBBLE
+========================= */
+.jinni-teaser{
+  position: absolute;
+  right: 92px;
+  bottom: 12px;
+  width: 250px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 12px 14px 12px 14px;
+  box-shadow: 0 18px 45px rgba(15,23,42,0.16);
+  display: none;
+  animation: jinniTeaserIn 0.35s ease;
+}
+
+.jinni-teaser.show{
+  display: block;
+}
+
+.jinni-teaser::after{
+  content: "";
+  position: absolute;
+  right: -8px;
+  bottom: 22px;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  transform: rotate(-45deg);
+}
+
+.jinni-teaser-top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.jinni-teaser-title{
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.jinni-teaser-close{
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.jinni-teaser-text{
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #64748b;
+  margin-bottom: 9px;
+}
+
+.jinni-teaser-chips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.jinni-teaser-chip{
+  background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+  color: #334155;
+  border: 1px solid #dbeafe;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.jinni-teaser-chip:hover{
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   CHAT WINDOW PREMIUM LOOK
+========================= */
+.vendora-chat-window{
+  width: 420px;
+  height: 620px;
+  bottom: 92px;
+  border-radius: 22px;
+  border: 1px solid rgba(226,232,240,0.9);
+  box-shadow:
+    0 30px 80px rgba(15,23,42,0.18),
+    0 0 0 1px rgba(255,255,255,0.7);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.vendora-chat-window.open{
+  animation: jinniWindowIn 0.34s cubic-bezier(.2,.9,.2,1);
+}
+
+.vendora-chat-header{
+  background:
+    linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #312e81 100%);
+  padding: 15px 16px;
+}
+
+.vendora-avatar-wrap{
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+  overflow: hidden;
+  padding: 2px;
+  box-shadow: 0 8px 22px rgba(124,58,237,0.25);
+}
+
+.jinni-header-avatar{
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+}
+
+.vendora-chat-header-title{
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.vendora-chat-header-sub{
+  color: #cbd5e1;
+  font-size: 0.75rem;
+}
+
+/* messages */
+.vendora-chat-messages{
+  background:
+    radial-gradient(circle at top right, rgba(124,58,237,0.04), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(37,99,235,0.04), transparent 30%),
+    #f8fafc;
+}
+
+.vendora-msg-row.user .vendora-chat-bubble{
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-radius: 18px 18px 6px 18px;
+}
+
+.vendora-msg-row.bot .vendora-chat-bubble{
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px 18px 18px 6px;
+}
+
+/* quick replies */
+.quick-reply-btn{
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.quick-reply-btn:hover{
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+}
+
+/* input area */
+.vendora-chat-input-area{
+  background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
+}
+
+.vendora-input-wrapper{
+  border-radius: 16px;
+  padding: 5px 7px 5px 13px;
+}
+
+.vendora-send-btn{
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  box-shadow: 0 8px 18px rgba(37,99,235,0.22);
+}
+
+.vendora-send-btn:hover:not(:disabled){
+  transform: scale(1.06) translateY(-1px);
+}
+
+/* product cards */
+.vendora-card-item{
+  border-radius: 14px;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+/* guest popup */
+.vendora-chat-guest{
+  border-radius: 18px;
+  bottom: 92px;
+}
+
+/* =========================
+   KEYFRAMES
+========================= */
+@keyframes jinniFloat{
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(-8px); }
+}
+
+@keyframes jinniBounce{
+  0%,100%{ transform: translateY(0) scale(1); }
+  30%{ transform: translateY(-10px) scale(1.03); }
+  55%{ transform: translateY(0) scale(0.98); }
+  75%{ transform: translateY(-4px) scale(1.01); }
+}
+
+@keyframes jinniWiggle{
+  0%,100%{ transform: rotate(0deg); }
+  20%{ transform: rotate(-7deg); }
+  40%{ transform: rotate(6deg); }
+  60%{ transform: rotate(-4deg); }
+  80%{ transform: rotate(2deg); }
+}
+
+@keyframes jinniPulseRing{
+  0%{ transform: scale(0.96); opacity: 0.75; }
+  70%{ transform: scale(1.12); opacity: 0.12; }
+  100%{ transform: scale(1.16); opacity: 0; }
+}
+
+@keyframes jinniOuterPulse{
+  0%{ transform: scale(0.96); opacity: 0.45; }
+  100%{ transform: scale(1.22); opacity: 0; }
+}
+
+@keyframes jinniTeaserIn{
+  from{ opacity: 0; transform: translateY(8px) scale(0.96); }
+  to{ opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes jinniWindowIn{
+  from{ opacity: 0; transform: translateY(20px) scale(0.96); }
+  to{ opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* mobile */
+@media (max-width: 576px){
+  .vendora-chat-toggle{
+    width: 68px;
+    height: 68px;
+  }
+
+  .jinni-toggle-avatar{
+    width: 56px;
+    height: 56px;
+  }
+
+  .jinni-teaser{
+    width: 220px;
+    right: 82px;
+    bottom: 8px;
+  }
+
+  .vendora-chat-window{
+    width: calc(100vw - 24px);
+    height: calc(100vh - 100px);
+    bottom: 84px;
+    right: 0;
+  }
+}
+
+/* reduced motion support */
+@media (prefers-reduced-motion: reduce){
+  .vendora-chat-toggle,
+  .vendora-chat-toggle::before,
+  .vendora-chat-toggle::after{
+    animation: none !important;
+  }
+}
 </style>
 
 <!-- ===== CHATBOT HTML MARKUP ===== -->
@@ -779,15 +1161,15 @@
     <!-- Header -->
     <div class="vendora-chat-header">
       <div class="vendora-chat-header-left">
-        <div class="vendora-avatar-wrap">
-          <i class="fas fa-robot"></i>
-          <span class="status-indicator-dot" id="vendoraHeaderDot"></span>
-        </div>
+<div class="vendora-avatar-wrap">
+    <img src="{% static 'images/jinni-avatar.png' %}" alt="JINNI" class="jinni-header-avatar">
+    <span class="status-indicator-dot" id="vendoraHeaderDot"></span>
+</div>
         <div class="vendora-header-info">
-          <span class="vendora-chat-header-title">Vendora AI</span>
-          <span class="vendora-chat-header-sub" id="vendoraHeaderSub">
-            <span style="color: #10b981;">●</span> Shopping Assistant
-          </span>
+<span class="vendora-chat-header-title">JINNI AI</span>
+<span class="vendora-chat-header-sub" id="vendoraHeaderSub">
+    <span style="color: #10b981;">●</span> Your smart shopping assistant
+</span>
         </div>
       </div>
       <div class="vendora-chat-header-actions">
@@ -873,19 +1255,32 @@
       <a href="{% url 'accounts:register' %}" class="btn-auth secondary">Create Account</a>
     </div>
   </div>
-
+<div id="jinniTeaser" class="jinni-teaser">
+    <div class="jinni-teaser-top">
+        <div class="jinni-teaser-title">Hey! I’m JINNI ✨</div>
+        <button type="button" id="jinniTeaserClose" class="jinni-teaser-close" aria-label="Close">×</button>
+    </div>
+    <div class="jinni-teaser-text">
+        Need help finding the right products, deals, or recommendations? I’m here to help.
+    </div>
+    <div class="jinni-teaser-chips">
+        <button type="button" class="jinni-teaser-chip" data-msg="show me trending products">Trending</button>
+        <button type="button" class="jinni-teaser-chip" data-msg="recommend products for me">Recommend</button>
+        <button type="button" class="jinni-teaser-chip" data-msg="what are your categories">Categories</button>
+    </div>
+</div>
   <!-- Main Floating Toggle Button -->
-  <button type="button" id="vendoraChatToggle" class="vendora-chat-toggle" aria-label="Open AI Shopping Assistant">
-    <i class="fas fa-comment-dots" id="vendoraToggleIcon"></i>
+<button type="button" id="vendoraChatToggle" class="vendora-chat-toggle" aria-label="Open JINNI AI Assistant">
+    <img src="{% static 'images/jinni-avata.png' %}" alt="JINNI AI" class="jinni-toggle-avatar" id="vendoraToggleIcon">
     <span class="badge-dot"></span>
-  </button>
+</button>
 </div>
 
+<!-- ===== CHATBOT SCRIPT LOGIC ===== -->
 <!-- ===== CHATBOT SCRIPT LOGIC ===== -->
 <script>
   (function() {
     'use strict';
-
     const isLoggedIn = {{ user.is_authenticated|yesno:"true,false" }};
     const windowEl = document.getElementById("vendoraChatWindow");
     const guestEl = document.getElementById("vendoraChatGuest");
@@ -907,12 +1302,49 @@
     const quickRepliesEl = document.getElementById("vendoraQuickReplies");
     const stopBanner = document.getElementById("vendoraStopBanner");
     const stopBtn = document.getElementById("vendoraStopBtn");
-
     const storageKey = "vendora_chat_history_v2";
     let isProcessing = false;
     let isFullscreen = false;
     let activeAbortController = null;
     let quickReplyTimer = null;
+
+    // JINNI visual interactions (existing AI logic is unchanged)
+    const teaserEl = document.getElementById("jinniTeaser");
+    const teaserCloseBtn = document.getElementById("jinniTeaserClose");
+    const teaserChipBtns = document.querySelectorAll(".jinni-teaser-chip");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const teaserSessionKey = "jinni_teaser_dismissed";
+    let teaserDismissed = false;
+    try { teaserDismissed = sessionStorage.getItem(teaserSessionKey) === "1"; } catch (_) {}
+    let attentionInterval = null;
+    let idleTimer = null;
+
+    function hideTeaser() {
+      if (teaserEl) teaserEl.classList.remove("show");
+    }
+    function showTeaser() {
+      if (!teaserEl || teaserDismissed || windowEl.classList.contains("open") ||
+          (guestEl && guestEl.style.display === "block") || document.hidden) return;
+      teaserEl.classList.add("show");
+    }
+    function animateJinni(name) {
+      if (reduceMotion.matches || !toggleBtn || windowEl.classList.contains("open") || document.hidden) return;
+      toggleBtn.classList.remove("jinni-bounce", "jinni-wiggle");
+      void toggleBtn.offsetWidth;
+      toggleBtn.classList.add(name);
+      setTimeout(() => toggleBtn.classList.remove(name), 1000);
+    }
+    function startJinniAttention() {
+      if (attentionInterval) clearInterval(attentionInterval);
+      attentionInterval = setInterval(() => animateJinni("jinni-bounce"), 16000);
+    }
+    function startIdleWiggle() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        animateJinni("jinni-wiggle");
+        showTeaser();
+      }, 9000);
+    }
 
     // ─── CSRF Token ────────────────────────────────────────────────────────────
     function getCsrfToken() {
@@ -922,7 +1354,6 @@
         .find((v) => v.startsWith("csrftoken="));
       return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     }
-
     // ─── Chat History Storage ──────────────────────────────────────────────────
     function getChatHistory() {
       try {
@@ -932,7 +1363,6 @@
         return [];
       }
     }
-
     function saveChatHistory(history) {
       try {
         sessionStorage.setItem(storageKey, JSON.stringify(history));
@@ -940,7 +1370,6 @@
         console.warn('Unable to persist chat history:', e);
       }
     }
-
     // ─── Status Updates ────────────────────────────────────────────────────────
     function updateStatus(text, state = 'online') {
       if (statusText) statusText.textContent = text;
@@ -953,28 +1382,12 @@
         headerDot.style.background = (state === 'offline') ? '#ef4444' : (state === 'busy') ? '#f59e0b' : '#10b981';
       }
     }
-
     // ─── Markdown / Text Formatter ─────────────────────────────────────────────
     function formatMessageText(text) {
       if (!text) return "";
-      let safe = text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-      // Bold: **text** -> <strong>text</strong>
-      safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      // Bullet points
-      safe = safe.replace(/^[•\-\*]\s+(.*)$/gm, '<li>$1</li>');
-      // Wrap list items
-      safe = safe.replace(/(<li>.*<\/li>(\n|$))+/g, '<ul>$&</ul>');
-      // URLs to clickable links
-      safe = safe.replace(
-        /(https?:\/\/[^\s<]+)/g,
-        '<a href="$1" target="_blank" rel="noopener noreferrer">$1 <i class="fas fa-external-link-alt" style="font-size: 0.65rem;"></i></a>'
-      );
-      // Newlines to <br>
-      safe = safe.replace(/\n/g, '<br>');
+      let safe = String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      safe = safe.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      safe = safe.replace(/\n/g, "<br>");
       return safe;
     }
 
@@ -987,34 +1400,27 @@
         });
       }
     };
-
     // ─── Message Renderer ──────────────────────────────────────────────────────
     function renderMessage(role, text, suggestions = [], timestamp = null, isStopped = false) {
       const row = document.createElement("div");
       row.className = `vendora-msg-row ${role}`;
-
       const bubble = document.createElement("div");
       bubble.className = "vendora-chat-bubble";
       bubble.innerHTML = formatMessageText(text);
-
       if (isStopped) {
         const stopNotice = document.createElement("div");
         stopNotice.style.cssText = "font-size: 0.72rem; color: #dc2626; margin-top: 4px; font-style: italic;";
         stopNotice.textContent = "(Response stopped)";
         bubble.appendChild(stopNotice);
       }
-
       row.appendChild(bubble);
-
       // Metadata (timestamp & copy button)
       const meta = document.createElement("div");
       meta.className = "vendora-msg-meta";
-
       const timeSpan = document.createElement("span");
       const timeDate = timestamp ? new Date(timestamp) : new Date();
       timeSpan.textContent = timeDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       meta.appendChild(timeSpan);
-
       if (role === "bot" && text) {
         const copyBtn = document.createElement("button");
         copyBtn.className = "vendora-copy-btn";
@@ -1023,81 +1429,64 @@
         copyBtn.onclick = function() { window.vendoraCopyText(copyBtn, text); };
         meta.appendChild(copyBtn);
       }
-
       row.appendChild(meta);
       messagesEl.appendChild(row);
-
       // Render product suggestion cards if provided
       if (role === "bot" && Array.isArray(suggestions) && suggestions.length > 0) {
         const cardsWrap = document.createElement("div");
         cardsWrap.className = "vendora-product-cards-wrap";
-
         suggestions.forEach((item) => {
           const card = document.createElement("a");
           card.className = "vendora-card-item";
           const productUrl = item.absolute_url || item.url || "#";
           card.href = productUrl;
-          card.target = "_blank";
+          card.target = "\_blank";
           card.rel = "noopener noreferrer";
-
           const title = document.createElement("div");
           title.className = "vendora-card-title";
           title.textContent = item.name || "Product";
-
           const metaDiv = document.createElement("div");
           metaDiv.className = "vendora-card-meta";
-
           const price = document.createElement("span");
           price.className = "vendora-card-price";
           const priceVal = parseFloat(item.price || 0);
           price.textContent = `$${priceVal.toFixed(2)}`;
-
           metaDiv.appendChild(price);
-
           if (item.category) {
             const catBadge = document.createElement("span");
             catBadge.className = "vendora-card-badge";
             catBadge.textContent = item.category;
             metaDiv.appendChild(catBadge);
           }
-
           const action = document.createElement("div");
           action.className = "vendora-card-action";
           action.innerHTML = 'View Details <i class="fas fa-chevron-right" style="font-size: 0.65rem;"></i>';
-
           card.appendChild(title);
           card.appendChild(metaDiv);
           card.appendChild(action);
           cardsWrap.appendChild(card);
         });
-
         messagesEl.appendChild(cardsWrap);
       }
-
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
-
     // ─── Typing Indicator ──────────────────────────────────────────────────────
     function showTyping() {
       removeTyping();
       const row = document.createElement("div");
       row.className = "vendora-msg-row bot";
       row.id = "vendoraTypingRow";
-
       const bubble = document.createElement("div");
       bubble.className = "vendora-typing-bubble";
       bubble.innerHTML = "<span></span><span></span><span></span>";
-
       row.appendChild(bubble);
       messagesEl.appendChild(row);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
-
     function removeTyping() {
       const typingRow = document.getElementById("vendoraTypingRow");
       if (typingRow) typingRow.remove();
     }
-
     // ─── Switch Send Button into Stop Mode ─────────────────────────────────────
     function setGeneratingState(generating) {
       isProcessing = generating;
@@ -1106,7 +1495,7 @@
         sendBtn.title = "Stop generating";
         sendIcon.className = "fas fa-stop";
         if (stopBanner) stopBanner.style.display = "flex";
-        updateStatus("Vendora is thinking...", "busy");
+        updateStatus("JINNI is thinking...", "busy");
       } else {
         sendBtn.classList.remove("is-stop");
         sendBtn.title = "Send message (Enter)";
@@ -1118,7 +1507,6 @@
         inputEl.focus();
       }
     }
-
     // ─── Stop / Cancel Active Request ──────────────────────────────────────────
     function stopGenerating() {
       if (activeAbortController && isProcessing) {
@@ -1129,7 +1517,6 @@
       setGeneratingState(false);
       updateStatus("Response stopped", "online");
     }
-
     // ─── Render Entire Chat History ────────────────────────────────────────────
     function renderHistory() {
       messagesEl.innerHTML = "";
@@ -1137,7 +1524,7 @@
       if (history.length === 0) {
         renderMessage(
           "bot",
-          "👋 Hi there! I'm **Vendora**, your personal shopping assistant.\n\nI can help you find products, compare prices, check categories, and discover trending items.\n\nHow can I help you shop today?",
+          "👋 Hi there! I'm \*\*Vendora\*\*, your personal shopping assistant.\n\nI can help you find products, compare prices, check categories, and discover trending items.\n\nHow can I help you shop today?",
           [],
           Date.now()
         );
@@ -1148,7 +1535,6 @@
       });
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
-
     // ─── Quick Replies Handler ─────────────────────────────────────────────────
     function renderQuickReplies(replies) {
       if (!quickRepliesEl) return;
@@ -1156,17 +1542,14 @@
         quickRepliesEl.style.display = "none";
         return;
       }
-
       quickRepliesEl.innerHTML = "";
       quickRepliesEl.style.display = "flex";
-
       replies.forEach((reply) => {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "quick-reply-btn";
         btn.textContent = reply.label || reply;
         btn.dataset.message = reply.message || reply;
-
         btn.addEventListener("click", function(e) {
           e.preventDefault();
           const msg = this.dataset.message;
@@ -1175,17 +1558,14 @@
             sendMessage();
           }
         });
-
         quickRepliesEl.appendChild(btn);
       });
-
       // Hide chips after 15 seconds if unclicked
       clearTimeout(quickReplyTimer);
       quickReplyTimer = setTimeout(() => {
         if (quickRepliesEl) quickRepliesEl.style.display = "none";
       }, 15000);
     }
-
     // ─── Send Message Pipeline with Abort Support ──────────────────────────────
     async function sendMessage() {
       // If already processing and button clicked, act as Stop!
@@ -1193,19 +1573,15 @@
         stopGenerating();
         return;
       }
-
       const message = inputEl.value.trim();
       if (!message || !isLoggedIn) return;
-
       // Clear & set UI state
       inputEl.value = "";
       setGeneratingState(true);
-
       if (quickRepliesEl) {
         quickRepliesEl.style.display = "none";
         clearTimeout(quickReplyTimer);
       }
-
       // Record & display user message
       const history = getChatHistory();
       const userTimestamp = Date.now();
@@ -1216,13 +1592,10 @@
       });
       saveChatHistory(history);
       renderMessage("user", message, [], userTimestamp);
-
       // Display typing indicator
       showTyping();
-
       // Create new AbortController instance for this request
       activeAbortController = new AbortController();
-
       try {
         const response = await fetch("/ai/chat/", {
           method: "POST",
@@ -1234,18 +1607,14 @@
           credentials: "same-origin",
           signal: activeAbortController.signal,
         });
-
         removeTyping();
-
         if (!response.ok) {
           throw new Error(`Server returned status ${response.status}`);
         }
-
         const data = await response.json();
         const replyText = data.response || "I could not find an answer at the moment.";
         const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
         const botTimestamp = Date.now();
-
         // Save bot response
         history.push({
           role: "bot",
@@ -1254,17 +1623,13 @@
           timestamp: botTimestamp,
         });
         saveChatHistory(history);
-
         renderMessage("bot", replyText, suggestions, botTimestamp);
-
         // Display quick replies
         if (data.quick_replies && data.quick_replies.length > 0) {
           renderQuickReplies(data.quick_replies);
         }
-
       } catch (error) {
         removeTyping();
-
         // Handle user-initiated stop
         if (error.name === "AbortError") {
           const stoppedNotice = "Response was stopped.";
@@ -1279,8 +1644,7 @@
           renderMessage("bot", stoppedNotice, [], Date.now(), true);
           return;
         }
-
-        console.error("Vendora Chatbot Error:", error);
+        console.error("JINNI Chatbot Error:", error);
         const fallbackText = "I'm having a brief issue connecting to my catalog. Please ask again or browse our categories!";
         history.push({
           role: "bot",
@@ -1291,13 +1655,11 @@
         saveChatHistory(history);
         renderMessage("bot", fallbackText, [], Date.now());
         updateStatus("Connection issue", "offline");
-
       } finally {
         activeAbortController = null;
         setGeneratingState(false);
       }
     }
-
     // ─── Fullscreen Toggle ─────────────────────────────────────────────────────
     function toggleFullscreen() {
       isFullscreen = !isFullscreen;
@@ -1314,70 +1676,61 @@
       }
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
-
     // ─── Window Visibility Controls ────────────────────────────────────────────
-    function toggleChat() {
-      if (!isLoggedIn) {
-        guestEl.style.display = (guestEl.style.display === "block") ? "none" : "block";
-        return;
-      }
-
-      const isOpen = windowEl.classList.contains('open');
-      if (!isOpen) {
-        windowEl.classList.add('open');
-        guestEl.style.display = "none";
-        renderHistory();
-        setTimeout(() => inputEl.focus(), 150);
-
-        // Show welcome quick replies if fresh
-        const history = getChatHistory();
-        if (history.length <= 1) {
-          renderQuickReplies([
-            { label: "🔥 Trending", message: "trending products" },
-            { label: "📂 Categories", message: "what are your categories" },
-            { label: "⭐ Featured", message: "featured products" },
-            { label: "❓ What can you do?", message: "help" }
-          ]);
-        }
-      } else {
-        closeChat();
-      }
+function toggleChat() {
+  if (!isLoggedIn) {
+    guestEl.style.display = (guestEl.style.display === "block") ? "none" : "block";
+    hideTeaser();
+    return;
+  }
+  const isOpen = windowEl.classList.contains('open');
+  if (!isOpen) {
+    windowEl.classList.add('open');
+    guestEl.style.display = "none";
+    hideTeaser();
+    renderHistory();
+    setTimeout(() => inputEl.focus(), 150);
+    const history = getChatHistory();
+    if (history.length <= 1) {
+      renderQuickReplies([
+        { label: "🔥 Trending", message: "trending products" },
+        { label: "✨ Recommend", message: "recommend products for me" },
+        { label: "📂 Categories", message: "what are your categories" },
+        { label: "⭐ Featured", message: "featured products" }
+      ]);
     }
-
+  } else {
+    closeChat();
+  }
+}
     function closeChat() {
       windowEl.classList.remove('open');
       if (isFullscreen) toggleFullscreen();
       document.body.style.overflow = '';
       if (quickRepliesEl) quickRepliesEl.style.display = "none";
+      startIdleWiggle();
     }
-
     // ─── Event Listeners ───────────────────────────────────────────────────────
     toggleBtn.addEventListener("click", toggleChat);
     closeBtn.addEventListener("click", closeChat);
-
     // Stop button in banner & send button click
     sendBtn.addEventListener("click", sendMessage);
     if (stopBtn) stopBtn.addEventListener("click", stopGenerating);
-
     // Fullscreen toggle
     fullscreenBtn.addEventListener("click", toggleFullscreen);
-
     // Clear history flow
     clearBtn.addEventListener("click", () => {
       clearConfirmEl.style.display = "flex";
     });
-
     confirmClearBtn.addEventListener("click", () => {
       clearConfirmEl.style.display = "none";
       saveChatHistory([]);
       renderHistory();
       updateStatus("Conversation cleared", "online");
     });
-
     cancelClearBtn.addEventListener("click", () => {
       clearConfirmEl.style.display = "none";
     });
-
     // Keyboard controls
     inputEl.addEventListener("keydown", function(event) {
       if (event.key === "Enter" && !event.shiftKey) {
@@ -1385,7 +1738,6 @@
         sendMessage();
       }
     });
-
     // Escape closes confirmation or window, or stops generating
     document.addEventListener("keydown", function(event) {
       if (event.key === "Escape") {
@@ -1402,7 +1754,6 @@
         }
       }
     });
-
     // Close guest popover if clicked outside
     document.addEventListener("click", function(event) {
       const chatbot = document.getElementById("vendoraChatbot");
@@ -1411,12 +1762,40 @@
         guestEl.style.display = "none";
       }
     });
+    // JINNI greeting, click actions and gentle engagement
+    if (teaserCloseBtn) teaserCloseBtn.addEventListener("click", () => {
+      teaserDismissed = true;
+      try { sessionStorage.setItem(teaserSessionKey, "1"); } catch (_) {}
+      hideTeaser();
+    });
+    teaserChipBtns.forEach(btn => btn.addEventListener("click", () => {
+      const message = btn.dataset.msg || "";
+      hideTeaser();
+      if (!isLoggedIn) {
+        guestEl.style.display = "block";
+        return;
+      }
+      if (!windowEl.classList.contains("open")) toggleChat();
+      if (message) {
+        inputEl.value = message;
+        inputEl.focus();
+      }
+    }));
+    toggleBtn.addEventListener("click", hideTeaser);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) hideTeaser();
+    });
+    setTimeout(() => {
+      animateJinni("jinni-bounce");
+      showTeaser();
+    }, 2500);
+    startJinniAttention();
+    startIdleWiggle();
 
     // Initialize state
     if (isLoggedIn) {
       renderHistory();
       updateStatus("Ready to assist", "online");
     }
-
   })();
 </script>

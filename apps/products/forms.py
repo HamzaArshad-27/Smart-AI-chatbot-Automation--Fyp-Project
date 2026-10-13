@@ -41,9 +41,29 @@ class ProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields['sku'].required = False
         self.fields['low_stock_threshold'].required = False
 
+        # Load categories created by admin
+        self.fields['category'].queryset = Category.objects.filter(
+            is_active=True
+        ).order_by('name')
+
+        self.fields['category'].empty_label = "Select Category"
+        self.fields['category'].widget.attrs.update({
+            'class': 'form-select'
+        })
+
+        # Keep the existing category selectable when editing
+        if self.instance and self.instance.pk and self.instance.category_id:
+            self.fields['category'].queryset = Category.objects.filter(
+                is_active=True
+            ) | Category.objects.filter(pk=self.instance.category_id)
+
+            self.fields['category'].queryset = (
+                self.fields['category'].queryset.distinct().order_by('name')
+            )
     def clean(self):
         cleaned_data = super().clean()
         price = cleaned_data.get('price')
